@@ -46,7 +46,7 @@ export const alterProfile = async (req: Request, res: Response) => {
     
     var urlImage = '';
     if (req.body.image != "" && req.body.image.indexOf('http') == -1) {
-        const result = await saveImage(req.body.image);
+        const result = await saveImage(req.body.image, user, 'PROFILES');
         if (typeof(result) == 'string') {
             urlImage = result;
             setObj.$set.picture_route = urlImage;

@@ -6,12 +6,22 @@ dotenv.config({ path: path.resolve("./.env") })
     MONGO_DB: string | undefined;
     SECRET: string | undefined;
     REFRESH_SECRET: string | undefined;
+    SECRET_KEY_MINIO: string | undefined;
+    ACCESS_KEY_MINIO: string | undefined;
+    PORT_MINIO: number;
+    ENDPOINT_MINIO: string | undefined;
+    GENERIC_BUCKET_NAME: string | undefined;
   }
   
   interface Config {
     MONGO_DB: string;
     SECRET: string;
     REFRESH_SECRET: string;
+    SECRET_KEY_MINIO: string;
+    ACCESS_KEY_MINIO: string;
+    PORT_MINIO: number;
+    ENDPOINT_MINIO: string;
+    GENERIC_BUCKET_NAME: string;
   }
   
   // Loading process.env as ENV interface
@@ -20,7 +30,12 @@ dotenv.config({ path: path.resolve("./.env") })
     return {
       MONGO_DB: process.env.MONGO_DB,
       SECRET: process.env.SECRET,
-      REFRESH_SECRET: process.env.REFRESH_SECRET
+      REFRESH_SECRET: process.env.REFRESH_SECRET,
+      ENDPOINT_MINIO: process.env.ENDPOINT_MINIO,
+      PORT_MINIO: Number.parseInt(process.env.PORT_MINIO || '9000'),
+      ACCESS_KEY_MINIO: process.env.ACCESS_KEY_MINIO,
+      SECRET_KEY_MINIO: process.env.SECRET_KEY_MINIO,
+      GENERIC_BUCKET_NAME: process.env.GENERIC_BUCKET_NAME,
     };
   };
   

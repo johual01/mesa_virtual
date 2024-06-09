@@ -1,28 +1,25 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { Request, Response} from 'express'
+import * as Minio from 'minio'
+import { IUser } from './models/User'
+import { BUCKET_KEY } from './constants'
+import config from './env'
 
-const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
-const AWS_BUCKET_REGION = process.env.AWS_BUCKET_REGION;
-const AWS_PUBLIC_KEY = process.env.AWS_PUBLIC_KEY || "";
-const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY || "";
+const GENERIC_BUCKET_NAME = config.GENERIC_BUCKET_NAME || ''
 
-const client = new S3Client(
-    {
-        region: AWS_BUCKET_REGION,
-        credentials: {
-            accessKeyId: AWS_PUBLIC_KEY,
-            secretAccessKey: AWS_SECRET_KEY
-        }
-    }
-)
+const minioClient = new Minio.Client({
+  endPoint: config.ENDPOINT_MINIO,
+  port: config.PORT_MINIO,
+  useSSL: true,
+  accessKey: config.ACCESS_KEY_MINIO,
+  secretKey: config.SECRET_KEY_MINIO,
+})
 
 interface formatImage {
     type: string,
     data: Buffer
 }
 
-export const saveImage = async (base64: string) => {
-
+export const saveImage = async (base64: string, user: IUser, bucketName: string = GENERIC_BUCKET_NAME) => {
     var matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     var response: formatImage = {
         type: "",
@@ -36,39 +33,37 @@ export const saveImage = async (base64: string) => {
     response.data = Buffer.from(matches[2], 'base64');
     const now = new Date();
 
-    const uploadParams = {
-        Bucket: AWS_BUCKET_NAME,
-        Key: (now.getTime() + "." + response.type.split('/')[1]),
-        Body: Buffer.from(matches[2], 'base64')
-    } 
+    const fileName = (now.getTime() + "." + response.type.split('/')[1])
 
-    const command = new PutObjectCommand(uploadParams);
-    await client.send(command);
-    const escritura = process.env.URL + 'dynamicFiles/' + (now.getTime() + "." + response.type.split('/')[1]);
+    await minioClient.putObject(bucketName, fileName, response.data, response.data.length, { "userId": user._id });
+
+    const escritura = process.env.URL + 'dynamicFiles/' + BUCKET_KEY[bucketName] + '.' + fileName;
     return escritura;
 }
 
 export const readFile = async (key: string) => {
-    const command = new GetObjectCommand({
-        Bucket: AWS_BUCKET_NAME,
-        Key: key
-     })
-     return await client.send(command);
+    const bucket = key.split('.')[0];
+    const realKey = key.split('.')[1] + '.' + key.split('.')[2];
+    return await minioClient.getObject(bucket, realKey);
 }
 
 export const requestFile = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
         if (typeof id != "string") return;
-        const result = await readFile(id);        
-        if (!result.Body) return;
+        const result = await readFile(id);  
+        
+        res.write(result);
+        res.end();
+
+        /*if (!result.Body) return;
         const stringResult = await result.Body.transformToString('base64');
         const buffer = Buffer.from(stringResult, "base64");
         res.writeHead(200, {
             'Content-Type': 'image/' + id.split('.')[1],
             'Content-Length': buffer.length
         });
-        res.end(buffer); 
+        res.end(buffer); */
     } catch (e) {
         res.send({msgError: "Error solicitando el archivo", error: e})
     }
