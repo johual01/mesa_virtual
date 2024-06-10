@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
-import Campana, { ICampana } from '../models/Campanas';
-import Personaje, { IPersonaje } from '../models/Personajes';
+import Campana, { ICampana } from '../models/Campaign';
+import Personaje, { IPersonaje } from '../models/Character';
 import { Types, disconnect } from 'mongoose';
 import { saveImage } from '../functions';
 import { IUser } from '../models/User';

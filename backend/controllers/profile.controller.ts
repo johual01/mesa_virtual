@@ -8,20 +8,14 @@ interface setObj {
         username: string,
         email: string,
         password?: string,
-        picture_route?: string
+        pictureRoute?: string
     }
 }
 
 export const profile = async (req: Request, res: Response) => {
-    const user = await User.findById(req.body.userId);
+    const user = await User.findById(req.body.userId).select('email joinDate pictureRoute username _id');
     if (!user) return res.status(406).json('No User found');
-    res.send({
-        email: user.email,
-        join_date: user.join_date,
-        picture_route: user.picture_route,
-        username: user.username,
-        _id: user._id
-    });
+    res.send(user);
 }
 
 export const alterProfile = async (req: Request, res: Response) => {
@@ -34,7 +28,7 @@ export const alterProfile = async (req: Request, res: Response) => {
             username: req.body.username,
             email: req.body.mail,
             password: '',
-            picture_route: ''
+            pictureRoute: ''
         }
     } 
     if (req.body.contrasena == '') {
@@ -49,12 +43,12 @@ export const alterProfile = async (req: Request, res: Response) => {
         const result = await saveImage(req.body.image, user, 'PROFILES');
         if (typeof(result) == 'string') {
             urlImage = result;
-            setObj.$set.picture_route = urlImage;
+            setObj.$set.pictureRoute = urlImage;
         } else {
             return res.status(406).json({errMsg: 'No se pudo guardar la imagen'});
         }
     } else {
-        delete setObj.$set['picture_route']
+        delete setObj.$set['pictureRoute']
     }
     
     const recievedUser = await User.findOneAndUpdate(

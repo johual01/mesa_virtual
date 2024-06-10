@@ -1,11 +1,11 @@
 import {Schema, model, Document} from 'mongoose';
 
-export interface IPersonaje extends Document {
+export interface ICharacter extends Document {
     name: string,
     dueno: Schema.Types.ObjectId
 }
 
-const personajeSchema = new Schema({
+const characterSchema = new Schema({
     name: {
         type: String,
         required: true,
@@ -19,4 +19,4 @@ const personajeSchema = new Schema({
 })
 
 
-export default model<IPersonaje>('Personaje', personajeSchema);
+export default model<ICharacter>('Characters', characterSchema);

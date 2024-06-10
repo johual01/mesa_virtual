@@ -5,8 +5,8 @@ export interface IUser extends Document {
     username: string,
     email: string,
     password: string,
-    join_date: Date,
-    picture_route?: string,
+    joinDate: Date,
+    pictureRoute?: string,
     encryptPassword(password: string): Promise<string>,
     validatePassword(password: string): Promise<boolean>
 }
@@ -29,11 +29,11 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
-    join_date: {
+    joinDate: {
         type: Date,
         required: true
     },
-    picture_route: {
+    pictureRoute: {
         type: String,
         required: false
     },
@@ -50,4 +50,4 @@ userSchema.methods.validatePassword = async function (password: string): Promise
 
 }
 
-export default model<IUser>('User', userSchema);
+export default model<IUser>('Users', userSchema);
