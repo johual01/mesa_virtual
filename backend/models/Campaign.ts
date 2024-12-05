@@ -4,16 +4,24 @@ import { IUser } from './User';
 import { INote } from './Note';
 import { IHistory } from './History';
 
+export enum campaignState {
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+    DELETED = 'DELETED'
+}
+
 export interface ICampaign extends Document {
     name: string,
     owner: Schema.Types.ObjectId | IUser,
-    players: [ Types.ObjectId ] | [ IUser ],
-    characters: [ Types.ObjectId ] | [ ICharacter ],
+    players: [ Types.ObjectId | IUser ],
+    characters: [ Types.ObjectId | ICharacter],
     image?: string,
     description?: string,
-    notes?: [ Types.ObjectId ] | [ INote ],
-    history: [ Types.ObjectId ] | [ IHistory ],
-    stadistics: {
+    notes?: [ Types.ObjectId | INote ],
+    publicEntries?: [ Types.ObjectId | INote ],
+    history: [ Types.ObjectId | IHistory ],
+    state: campaignState,
+    stadistics?: {
         //muchas cosas, sí
     }
 }
@@ -28,6 +36,11 @@ const campaignSchema = new Schema({
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'Users'
+    },
+    state: {
+        type: String,
+        enum: campaignState,
+        default: campaignState.ACTIVE
     },
     players: [
         {
@@ -48,6 +61,12 @@ const campaignSchema = new Schema({
         type: String
     },
     notes: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Notes'
+        }
+    ],
+    publicEntries: [
         {
             type: Schema.Types.ObjectId,
             ref: 'Notes'

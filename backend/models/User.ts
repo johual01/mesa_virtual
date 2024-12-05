@@ -16,14 +16,12 @@ const userSchema = new Schema({
         type: String,
         required: true,
         min: 4,
-        lowercase: true,
         unique: true
     },
     email: {
         type: String,
         unique: true,
         required: true,
-        lowercase: true
     },
     password: {
         type: String,
@@ -36,8 +34,9 @@ const userSchema = new Schema({
     pictureRoute: {
         type: String,
         required: false
-    },
-
+    }
+}, {
+    timestamps: true
 })
 
 userSchema.methods.encryptPassword = async (password: string): Promise<string> => {

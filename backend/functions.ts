@@ -1,8 +1,8 @@
 import { Request, Response} from 'express'
 import * as Minio from 'minio'
-import { IUser } from './models/User'
 import { BUCKET_KEY } from './constants'
 import config from './env'
+import { ObjectId } from 'mongoose'
 
 const GENERIC_BUCKET_NAME = config.GENERIC_BUCKET_NAME || ''
 
@@ -19,7 +19,7 @@ interface formatImage {
     data: Buffer
 }
 
-export const saveImage = async (base64: string, user: IUser, bucketName: string = GENERIC_BUCKET_NAME) => {
+export const saveImage = async (base64: string, userId: ObjectId, bucketName: string = GENERIC_BUCKET_NAME) => {
     var matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     var response: formatImage = {
         type: "",
@@ -35,7 +35,7 @@ export const saveImage = async (base64: string, user: IUser, bucketName: string 
 
     const fileName = (now.getTime() + "." + response.type.split('/')[1])
 
-    await minioClient.putObject(bucketName, fileName, response.data, response.data.length, { "userId": user._id });
+    await minioClient.putObject(bucketName, fileName, response.data, response.data.length, { "userId": userId });
 
     const escritura = process.env.URL + 'dynamicFiles/' + BUCKET_KEY[bucketName] + '.' + fileName;
     return escritura;
@@ -55,15 +55,6 @@ export const requestFile = async (req: Request, res: Response) => {
         
         res.write(result);
         res.end();
-
-        /*if (!result.Body) return;
-        const stringResult = await result.Body.transformToString('base64');
-        const buffer = Buffer.from(stringResult, "base64");
-        res.writeHead(200, {
-            'Content-Type': 'image/' + id.split('.')[1],
-            'Content-Length': buffer.length
-        });
-        res.end(buffer); */
     } catch (e) {
         res.send({msgError: "Error solicitando el archivo", error: e})
     }

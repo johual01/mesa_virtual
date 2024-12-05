@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validateToken } from "../jwt";
 import * as Profile from "../controllers/profile.controller"
-import * as Campanas from "../controllers/campanas.controller"
+import * as Campanas from "../controllers/campaign.controller"
 
 const router = Router();
 
@@ -10,16 +10,15 @@ router.post('/profile', validateToken, Profile.profile);
 router.post('/alterProfile', validateToken, Profile.alterProfile);
 
 //rutas de las campañas
-router.post('/campanas', validateToken, Campanas.getCampanas);
-router.post('/createCampana', validateToken, Campanas.createCampana);
-router.post('/campana', validateToken, Campanas.openCampana);
-router.post('/checkNombreCampana', validateToken, Campanas.checkNombreCampana);
-router.post('/editCampana', validateToken, Campanas.editCampana);
-router.post('/joinCampana', validateToken, Campanas.joinCampana);
+router.post('/campanas', validateToken, Campanas.getCampaign);
+router.post('/createCampana', validateToken, Campanas.createCampaign);
+router.post('/campana', validateToken, Campanas.openCampaign);
+router.post('/editCampana', validateToken, Campanas.editCampaign);
+router.post('/joinCampana', validateToken, Campanas.joinCampaign);
 router.post('/addRegister', validateToken, Campanas.addRegister);
 router.post('/updateRegister', validateToken, Campanas.updateRegister);
 router.post('/deleteRegister', validateToken, Campanas.deleteRegister);
-router.post('/removeFromCampana', validateToken, Campanas.removeFromCampana);
-router.post('/deleteCampana', validateToken, Campanas.deleteCampana);
+router.post('/removeFromCampana', validateToken, Campanas.removeFromCampaign);
+router.post('/deleteCampana', validateToken, Campanas.deleteCampaign);
 
 export default router;

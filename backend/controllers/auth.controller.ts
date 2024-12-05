@@ -26,7 +26,7 @@ export const login = async (req: Request, res: Response) => {
     })
   }
 
-export const singup = async (req: Request, res: Response) => {
+export const signup = async (req: Request, res: Response) => {
   const user : IUser = new User({
     username: req.body.username,
     email: req.body.email,

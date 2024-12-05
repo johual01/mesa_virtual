@@ -2,7 +2,7 @@ import {Schema, model, Document} from 'mongoose';
 
 export interface ICharacter extends Document {
     name: string,
-    dueno: Schema.Types.ObjectId
+    player: Schema.Types.ObjectId
 }
 
 const characterSchema = new Schema({
@@ -12,10 +12,12 @@ const characterSchema = new Schema({
         min: 4,
         lowercase: true
     },
-    dueno: {
+    player: {
         type: Schema.Types.ObjectId,
         required: true
     }
+}, {
+    timestamps: true
 })
 
 
