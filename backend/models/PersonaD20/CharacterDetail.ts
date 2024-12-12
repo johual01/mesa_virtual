@@ -1,36 +1,13 @@
 import {Schema, model, Document} from 'mongoose';
-import { ISpell } from './Spell';
-import { IClass } from './Class';
-import { ISubclass } from './Subclass';
-import { modifier } from './Modifier';
+import { ISpell } from '../Spell';
+import { IPersonaClass } from './Class';
+import { IPersonaSubclass } from './Subclass';
+import { IModifier, elements, personaStadistics } from '../types';
 
-export enum stadistics {
-    KNOWLEDGE = 'knowledge',
-    INSTINCTS = 'instincts',
-    DEXTERITY = 'dexterity',
-    COURAGE = 'courage',
-    CHARISMA = 'charisma'
-}
-
-export enum elements {
-    PSY = 'psy',
-    NUKE = 'nuke',
-    FIRE = 'fire',
-    ICE = 'ice',
-    ELEC = 'elec',
-    WIND = 'wind',
-    CURSE = 'curse',
-    BLESS = 'bless',
-    ALMIGHTY = 'almighty',
-    SLASH = 'slash',
-    STRIKE = 'strike',
-    PIERCE = 'pierce',
-}
-
-export interface ICharacterDetail extends Document {
+export interface ICharacterPersonaDetail extends Document {
     class: {
-        type: Schema.Types.ObjectId | IClass,
-        subclass: Schema.Types.ObjectId | ISubclass
+        type: Schema.Types.ObjectId | IPersonaClass,
+        subclass: Schema.Types.ObjectId | IPersonaSubclass
     },
     persona: string,
     experience: number,
@@ -51,102 +28,102 @@ export interface ICharacterDetail extends Document {
     },
     secondaryAbilities: {
         acrobatics: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         art: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         consciousness: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         empathy: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         expression: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         folklore: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         handcraft: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         insight: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         investigation: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         meditation: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         mysticism: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         orientation: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         reflexes: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         resistance: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         speed: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         stealth: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         strength: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         style: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         technology: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         },
         willpower: {
-            statistic: stadistics,
+            statistic: personaStadistics,
             bonus: number
         }
     },
     combatData: {
         PV: {
             base: number,
-            modifiers: modifier[]
+            modifiers: IModifier[]
         },
         defense: {
             baseDefense: number,
-            defenseModifiers: modifier[],
+            defenseModifiers: IModifier[],
             baseMagicResistance: number,
-            magicResistanceModifiers: modifier[]
+            magicResistanceModifiers: IModifier[]
         },
         speed: {
             baseSpeed: number,
             baseInitiative: number,
-            initiativeModifiers: modifier[],
-            speedModifiers: modifier[]
+            initiativeModifiers: IModifier[],
+            speedModifiers: IModifier[]
         },
         elements: {
             affinity: elements,
@@ -157,11 +134,11 @@ export interface ICharacterDetail extends Document {
         },
         magic: {
             baseAP: number,
-            APModifiers: modifier[],
+            APModifiers: IModifier[],
             baseSave: number,
-            saveModifiers: modifier[],
+            saveModifiers: IModifier[],
             baseLaunch: number,
-            launchModifiers: modifier[]
+            launchModifiers: IModifier[]
         },
         spells: {
             list: ISpell[],
@@ -171,7 +148,7 @@ export interface ICharacterDetail extends Document {
     }
 }
 
-const characterDetailSchema = new Schema({
+const characterPersonaDetailSchema = new Schema({
     class: {
         type: Schema.Types.ObjectId,
         ref: 'Class'
@@ -553,4 +530,4 @@ const characterDetailSchema = new Schema({
 })
 
 
-export default model<ICharacterDetail>('CharacterDetail', characterDetailSchema);
+export default model<ICharacterPersonaDetail>('CharacterPersonaDetail', characterPersonaDetailSchema);

@@ -1,12 +1,11 @@
 import {Schema, model, Document} from 'mongoose';
+import {IUser} from './User';
+import { ICharacterPersonaDetail } from './PersonaD20/CharacterDetail';
+import { system } from './types';
 
-export enum system {
-    DND5E = 'DND5E',
-    PERSONAD20 = 'PERSONAD20',
-}
 export interface ICharacter extends Document {
     name: string,
-    player: Schema.Types.ObjectId,
+    player: Schema.Types.ObjectId | IUser,
     system: system,
     backstory: {
         history: string,
@@ -19,14 +18,13 @@ export interface ICharacter extends Document {
         bonds: string,
         trauma: string,
     }
+    characterData?: Schema.Types.ObjectId | ICharacterPersonaDetail
 }
 
 const characterSchema = new Schema({
     name: {
         type: String,
         required: true,
-        min: 4,
-        lowercase: true
     },
     player: {
         type: Schema.Types.ObjectId,
