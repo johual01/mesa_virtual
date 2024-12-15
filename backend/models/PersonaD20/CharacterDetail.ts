@@ -109,7 +109,7 @@ export interface ICharacterPersonaDetail extends Document {
         }
     },
     combatData: {
-        PV: {
+        HP: {
             base: number,
             modifiers: IModifier[]
         },
@@ -127,6 +127,7 @@ export interface ICharacterPersonaDetail extends Document {
         },
         elements: {
             affinity: elements,
+            secondaryAffinity?: elements,
             resistance: elements[],
             weakness: elements[],
             immunity: elements[],
@@ -416,7 +417,7 @@ const characterPersonaDetailSchema = new Schema({
         }
     },
     combatData: {
-        PV: {
+        HP: {
             base: {
                 type: Number,
                 required: true
@@ -466,6 +467,9 @@ const characterPersonaDetailSchema = new Schema({
             affinity: {
                 type: String,
                 required: true
+            },
+            secondaryAffinity: {
+                type: String
             },
             resistance: {
                 type: [String],

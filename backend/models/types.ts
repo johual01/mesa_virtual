@@ -1,13 +1,3 @@
-export interface IModifier {
-    origin: string,
-    element: string,
-    value: number,
-    type: string,
-    description: string,
-    target?: targetTypes,
-    duration?: string
-}
-
 export enum healingTypes {
     HP = 'hp',
     SP = 'sp',
@@ -58,8 +48,12 @@ export enum targetTypes {
     SELF = 'self',
     ALLY = 'ally',
     ENEMY = 'enemy',
+    ENEMIES_AT_RANGE = 'enemies_at_range',
+    ALLIES_AT_RANGE = 'allies_at_range',
     ALL_ENEMIES = 'all_enemies',
     ALL_ALLIES = 'all_allies',
+    ONLY_ALLY = 'only_ally',
+    ALL = 'all',
 }
 
 export enum rangeTypes {
@@ -78,23 +72,23 @@ export enum rangeShapeTypes {
 }
 
 export enum triggerTypes {
-    AT_ATTACK = 'at_attack',
-    AT_SPELL = 'at_spell',
-    AT_DAMAGE = 'at_damage',
-    AT_HEAL = 'at_heal',
-    AT_COUNTER = 'at_counter',
-    AT_RECEIVE_DAMAGE = 'at_receive_damage',
-    AT_WEAPON = 'at_weapon',
-    AT_ALL_WEAPONS = 'at_all_weapons',
-    AT_DEATH = 'at_death',
-    BEFORE_RECEIVE_ATTACK = 'before_receive_attack',
-    AT_ZONE = 'at_zone',
-    REACTION = 'reaction',
-    COUNTER = 'counter',
-    END_OF_TURN = 'end_of_turn',
-    START_OF_TURN = 'start_of_turn',
-    NEXT_ATTACK = 'next_attack',
-    NEXT_SPELL = 'next_spell',
+    AT_ATTACK = 'at_attack', // Se activa al atacar
+    AT_SPELL = 'at_spell', // Se activa al lanzar un hechizo
+    AT_SPELL_ATTACK = 'at_spell_attack', // Se activa al lanzar un hechizo de ataque
+    AT_DAMAGE = 'at_damage', // Se activa al causar daño
+    AT_HEAL = 'at_heal', // Se activa al curar
+    AT_RECEIVE_DAMAGE = 'at_receive_damage', // Se activa al recibir daño
+    AT_WEAPON = 'at_weapon', // Se activa al usar un arma
+    AT_ALL_WEAPONS = 'at_all_weapons', // Se activa al usar cualquier arma
+    AT_DEATH = 'at_death', // Se activa al morir
+    BEFORE_RECEIVE_ATTACK = 'before_receive_attack', // Se activa antes de recibir un ataque
+    AT_RECEIVE_ATTACK = 'at_receive_attack', // Se activa al recibir un ataque
+    AT_ZONE = 'at_zone', // Se activa al entrar en una zona
+    REACTION = 'reaction', // Se activa como reacción
+    END_OF_TURN = 'end_of_turn', // Se activa al final del turno
+    START_OF_TURN = 'start_of_turn', // Se activa al inicio del turno
+    NEXT_ATTACK = 'next_attack', // Se activa al siguiente ataque
+    NEXT_SPELL = 'next_spell', // Se activa al siguiente hechizo
 }
 
 export enum costTypes {
@@ -106,6 +100,21 @@ export interface IRange {
     type: rangeTypes,
     range?: number,
     shape?: rangeShapeTypes,
+}
+
+export interface IDuration {
+    type: string,
+    duration: number,
+    medition: string,
+}
+
+export interface IModifier {
+    // origin: string, // Esto debe agregarse al momento de recuperar los modificadores
+    value: number,
+    type: string,
+    description: string,
+    target?: targetTypes,
+    duration?: IDuration,
 }
 
 export enum system {
@@ -128,6 +137,7 @@ export enum actions {
     FREE_ACTION = 'free_action',
     MOVEMENT = 'movement',
     INTERACTION = 'interaction',
+    NONE = 'none',
 }
 
 export enum useTypes {
@@ -148,5 +158,6 @@ export interface IFeature {
     duration?: string,
     resource?: string,
     uses?: number,
+    cd?: number | string, // Dificultad a superar
     subfeatures?: IFeature[],
 }
