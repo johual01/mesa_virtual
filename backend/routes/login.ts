@@ -5,7 +5,7 @@ import { refreshToken } from "../jwt";
 const router = Router();
 
 router.post('/login', API.login);
-router.post('/signup', API.signup);
+router.put('/signup', API.signup);
 router.get('/refresh', refreshToken);
 router.get('/logout', API.logout);
 

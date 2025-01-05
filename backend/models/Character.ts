@@ -17,8 +17,9 @@ export interface ICharacter extends Document {
         dreams: string,
         bonds: string,
         trauma: string,
-    }
-    characterData?: Schema.Types.ObjectId | ICharacterPersonaDetail
+    },
+    characterData: Schema.Types.ObjectId | ICharacterPersonaDetail,
+    pictureRoute?: string,
 }
 
 const characterSchema = new Schema({
@@ -63,6 +64,13 @@ const characterSchema = new Schema({
         trauma: {
             type: String
         }
+    },
+    pictureRoute: {
+        type: String,
+        required: false
+    },
+    characterData: {
+        type: Schema.Types.ObjectId
     }
 }, {
     timestamps: true

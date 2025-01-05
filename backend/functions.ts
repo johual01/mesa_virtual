@@ -2,7 +2,7 @@ import { Request, Response} from 'express'
 import * as Minio from 'minio'
 import { BUCKET_KEY } from './constants'
 import config from './env'
-import { ObjectId } from 'mongoose'
+import { Types } from 'mongoose'
 
 const GENERIC_BUCKET_NAME = config.GENERIC_BUCKET_NAME || ''
 
@@ -19,7 +19,7 @@ interface formatImage {
     data: Buffer
 }
 
-export const saveImage = async (base64: string, userId: ObjectId, bucketName: string = GENERIC_BUCKET_NAME) => {
+export const saveImage = async (base64: string, userId: Types.ObjectId, bucketName: string = GENERIC_BUCKET_NAME) => {
     var matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     var response: formatImage = {
         type: "",

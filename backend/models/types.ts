@@ -146,6 +146,7 @@ export enum useTypes {
 }
 
 export interface IFeature {
+    id: string,
     name: string,
     description: string,
     useType: useTypes,
@@ -158,6 +159,7 @@ export interface IFeature {
     duration?: string,
     resource?: string,
     uses?: number,
+    triggerForRecover?: triggerTypes | triggerTypes[],
     cd?: number | string, // Dificultad a superar
     subfeatures?: IFeature[],
 }

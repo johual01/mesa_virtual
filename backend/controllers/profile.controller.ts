@@ -12,8 +12,8 @@ interface setObj {
     }
 }
 
-export const profile = async (req: Request, res: Response) => {
-    const user = await User.findById(req.body.userId).select('email joinDate pictureRoute username _id');
+export const getProfile = async (req: Request, res: Response) => {
+    const user = await User.findById(req.params.userId).select('email joinDate pictureRoute username _id');
     if (!user) return res.status(406).json('No User found');
     res.send(user);
 }

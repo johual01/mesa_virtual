@@ -7,7 +7,7 @@ import { Types } from 'mongoose';
 import { saveImage } from '../functions';
 import { IUser } from '../models/User';
 
-export const getCampaign =  async (req: Request, res: Response) => {
+export const getCampaigns =  async (req: Request, res: Response) => {
     var id = new Types.ObjectId(req.body.userId);
     const buscarCampanas = await Campaign.aggregate(
         [
@@ -59,7 +59,7 @@ export const createCampaign = async (req: Request, res: Response) => {
         if (req.body.image) {
             var srcImage = '';
             if ((req.body.image).indexOf('https://') == -1) {
-                const srcImageFinal = await saveImage(req.body.image, req.body.userId, 'profilePics');
+                const srcImageFinal = await saveImage(req.body.image,  new Types.ObjectId(req.body.userId), 'profilePics');
                 if (typeof(srcImageFinal) == 'string') {
                     srcImage = srcImageFinal;
                 }
@@ -97,20 +97,20 @@ export const createCampaign = async (req: Request, res: Response) => {
 
 export const deleteCampaign = async (req: Request, res: Response) => {
     try {
-        const objectid = req.body.userId;
+        const objectid = new Types.ObjectId(req.body.userId);
         const doc = await Campaign.findOne(
             {
-                _id: req.body.id
+                _id: new Types.ObjectId(req.params.campaignId)
             }
         );
         if (doc) {
-            if (doc.owner.toString() == objectid) {
+            if (doc.owner as unknown as Types.ObjectId == objectid) {
                 doc.state = campaignState.DELETED;
                 const history = new History(
                     {
                         event: 'Campaña eliminada',
                         description: 'La campaña ha sido eliminada',
-                        user: new Types.ObjectId(req.body.userId),
+                        user: objectid,
                         origin: origin.USER,
                         referenceType: referenceType.CAMPAIGN,
                         reference: doc._id
@@ -132,15 +132,15 @@ export const deleteCampaign = async (req: Request, res: Response) => {
 }
 
 export const openCampaign = async (req: Request, res: Response) => {
-    const abrirCampana = await Campaign.findById(req.body.idCampana)
+    const campaign = await Campaign.findById(new Types.ObjectId(req.params.campaignId))
                         .populate<{ owner: IUser }>('owner', '-password -email')
                         .populate<{ players: IUser }>('players', '-password -email -joinDate')
                         .populate('characters')
                         .populate('publicEntries')
                         .populate('notes')
-    if (!abrirCampana) return;
-    var object = abrirCampana.toJSON();
-    if (object.owner._id.toString() != req.body.userId) {
+    if (!campaign) return res.send({success: false, error: 'No se encontró la campaña'});
+    var object = campaign.toJSON();
+    if (object.owner._id.toString() != req.params.userId) {
         delete object['notes'];
     }
     res.send(
@@ -162,7 +162,7 @@ export const editCampaign = async (req: Request, res: Response) => {
         if (req.body.image) {
             var srcImage = '';
             if ((req.body.image).indexOf('https://') == -1) {
-                const srcImageFinal = await saveImage(req.body.image, req.body.userId, 'campaignPics');
+                const srcImageFinal = await saveImage(req.body.image, new Types.ObjectId(req.body.userId), 'campaignPics');
                 if (typeof(srcImageFinal) == 'string') {
                     srcImage = srcImageFinal;
                 }
@@ -178,14 +178,14 @@ export const editCampaign = async (req: Request, res: Response) => {
                 user: new Types.ObjectId(req.body.userId),
                 origin: origin.USER,
                 referenceType: referenceType.CAMPAIGN,
-                reference: new Types.ObjectId(req.body.id),
+                reference: new Types.ObjectId(req.params.campaignId),
                 body: req.body
             }
         )
         const savedHistory = await history.save();
         const updatedCampaign = await Campaign.findOneAndUpdate(
             {
-                _id: req.body.id
+                _id: new Types.ObjectId(req.params.campaignId)
             }, 
             {
                $set: objCampana,
@@ -216,13 +216,13 @@ export const joinCampaign = async (req: Request, res: Response) => {
                 user: new Types.ObjectId(req.body.userId),
                 origin: origin.USER,
                 referenceType: referenceType.CAMPAIGN,
-                reference: new Types.ObjectId(req.body.idCampaign)
+                reference: new Types.ObjectId(req.params.campaignId)
             }
         )
         const savedHistory = await history.save();
         const updated = await Campaign.findOneAndUpdate(
             {
-                _id: req.body.idCampaign,
+                _id: new Types.ObjectId(req.params.campaignId),
                 owner: {$ne: objectid},
                 players: {
                     $nin: [objectid]
@@ -244,20 +244,21 @@ export const joinCampaign = async (req: Request, res: Response) => {
 
 export const removeFromCampaign = async (req: Request, res: Response) => {
     try {
-        const objectid = req.body.userId;
-        const player = req.body.playerId;
+        const user = new Types.ObjectId(req.body.userId);
+        const player = new Types.ObjectId(req.body.playerId);
+        const campaign = new Types.ObjectId(req.body.campaignId);
         const doc = await Campaign.findOne(
             {
-                _id: req.body.id
+                _id: new Types.ObjectId(req.body.id)
             }
         );
         if (doc) {
-            if (doc.owner.toString() == objectid || objectid == player) {
+            if (doc.owner as unknown as Types.ObjectId == user || user == player) {
                 const history = new History(
                     {
                         event: 'Un jugador ha abandonado la campaña',
                         description: 'El jugador ' + player + ' ha abandonado la campaña.',
-                        user: new Types.ObjectId(req.body.userId),
+                        user,
                         origin: origin.USER,
                         referenceType: referenceType.CAMPAIGN,
                         reference: doc._id
@@ -265,9 +266,9 @@ export const removeFromCampaign = async (req: Request, res: Response) => {
                 )
                 const savedHistory = await history.save();
                 var object = doc.toObject();
-                object.players = object.players.filter(val => val.toString() != player);
+                object.players = object.players.filter(val => val != player);
                 await doc.populate('characters');
-                object.characters = (object.characters as ICharacter[]).filter(val => val.player.toString() != player);
+                object.characters = (object.characters as ICharacter[]).filter(val => val.player as unknown as Types.ObjectId != player);
                 doc.overwrite(object);
                 doc.history.push(savedHistory._id)
                 await doc.save();
@@ -288,7 +289,7 @@ export const addRegister = async (req: Request, res: Response) => {
         const obj = new Note({
             title: req.body.title,
             text: req.body.text,
-            owner: req.body.userId
+            owner: new Types.ObjectId(req.body.userId)
         })
         const note = await obj.save()
         const updateBody: any = {
@@ -301,12 +302,12 @@ export const addRegister = async (req: Request, res: Response) => {
         }
         const updated = await Campaign.updateOne(
             {
-                _id: req.body.idCampaign
+                _id: new Types.ObjectId(req.body.campaignId)
             },
             updateBody
         );
         console.log(updated);
-        res.send({success: true})
+        res.send({success: true, note })
     } catch (e) {
         res.send({success: false})
     }
@@ -316,7 +317,7 @@ export const updateRegister = async (req: Request, res: Response) => {
     try {
         const note = await Note.updateOne(
             {
-                _id: req.body.idNote
+                _id: new Types.ObjectId(req.params.registerId)
             },
             {
                 title: req.body.title,
@@ -324,7 +325,7 @@ export const updateRegister = async (req: Request, res: Response) => {
             }
         )
         console.log(note);
-        res.send({success: true})
+        res.send({success: true, note })
     } catch (e) {
         res.send({success: false, error: e})
     }
@@ -334,7 +335,7 @@ export const deleteRegister = async (req: Request, res: Response) => {
     try {
         const note = await Note.updateOne(
             {
-                _id: req.body.idNote
+                _id: new Types.ObjectId(req.params.registerId)
             },
             {
                 state: noteState.DELETED
@@ -342,14 +343,14 @@ export const deleteRegister = async (req: Request, res: Response) => {
         )
         const campaign = await Campaign.updateOne(
             {
-                _id: req.body.idCampaign
+                _id: new Types.ObjectId(req.body.campaignId)
             },
             {
                 $pull: { notes: req.body.idNote, publicEntries: req.body.idNote }
             }
         )
         console.log(note, campaign);
-        res.send({success: true})
+        res.send({success: true, campaign })
     } catch (e) {
         res.send({success: false, error: e})
     }

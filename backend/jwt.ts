@@ -26,7 +26,7 @@ export async function validateToken(req: Request, res: Response, next: Function)
     }
     try {
         const user = jwt.verify(accessToken, config.SECRET) as IUser;
-        const userFrom = await User.findById(req.body.userId);
+        const userFrom = await User.findById(req.body.userId || req.params.userId);
         var userFinal = "";
         if (!user) return res.status(406).json('No User found');
         if (!userFrom) return res.status(406).json('El id del usuario no fue enviado');

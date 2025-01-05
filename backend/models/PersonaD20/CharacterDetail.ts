@@ -13,6 +13,7 @@ export interface ICharacterPersonaDetail extends Document {
     experience: number,
     level: number,
     money: boolean,
+    proficency: number,
     inspiration: {
         reroll: boolean,
         bonus: number,
@@ -172,6 +173,10 @@ const characterPersonaDetailSchema = new Schema({
     },
     money: {
         type: Boolean,
+        required: true
+    },
+    proficency: {
+        type: Number,
         required: true
     },
     inspiration: {

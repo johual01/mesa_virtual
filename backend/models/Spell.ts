@@ -1,6 +1,6 @@
-import {Schema, model, Document} from 'mongoose';
+import {Schema, model, Document, Types } from 'mongoose';
 import { IStatusEffect } from './StatusEffect';
-import { IModifier, elements, healingTypes, barrierTypes, targetTypes, IRange, triggerTypes, costTypes, system, useTypes, IDuration } from './types';
+import { IModifier, elements, healingTypes, barrierTypes, targetTypes, IRange, triggerTypes, costTypes, system, useTypes } from './types';
 
 export interface ISpellEffect {
     type: string, // Tipo de hechizo
@@ -26,6 +26,8 @@ export interface ISpellEffect {
 export interface ISpell extends Document {
     name: string,
     system: system,
+    custom?: boolean,
+    owner?: Types.ObjectId,
     cost?: string,
     AP?: number,
     costHP?: string,
@@ -52,7 +54,7 @@ const SpellSchema = new Schema({
     trigger: {type: String},
     concentration: {type: Boolean, required: true},
     effects: {type: [ Object ]},
-    modifier: {type: [ Object ] },
+    modifiers: {type: [ Object ] },
 });
 
 export default model<ISpell>('Spell', SpellSchema);
