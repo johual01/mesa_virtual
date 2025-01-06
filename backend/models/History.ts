@@ -1,4 +1,4 @@
-import {Schema, model, Document} from 'mongoose';
+import {Schema, model, Document, Types } from 'mongoose';
 
 export enum origin {
     USER = 'USER',
@@ -15,11 +15,11 @@ export enum referenceType {
 export interface IHistory extends Document {
     event: string,
     description: string,
-    user: Schema.Types.ObjectId,
+    user: Types.ObjectId,
     origin: origin,
     referenceType: string,
     body: any,
-    reference: Schema.Types.ObjectId
+    reference: Types.ObjectId
 }
 
 const historySchema = new Schema({

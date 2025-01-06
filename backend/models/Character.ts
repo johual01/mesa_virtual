@@ -1,11 +1,19 @@
-import {Schema, model, Document} from 'mongoose';
+import {Schema, model, Document, Types } from 'mongoose';
 import {IUser} from './User';
 import { ICharacterPersonaDetail } from './PersonaD20/CharacterDetail';
 import { system } from './types';
 
+export enum state {
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+    DELETED = 'DELETED',
+    DEAD = 'DEAD',
+    NON_PLAYER = 'NON_PLAYER'
+}
+
 export interface ICharacter extends Document {
     name: string,
-    player: Schema.Types.ObjectId | IUser,
+    player: Types.ObjectId | IUser,
     system: system,
     backstory: {
         history: string,
@@ -18,7 +26,8 @@ export interface ICharacter extends Document {
         bonds: string,
         trauma: string,
     },
-    characterData: Schema.Types.ObjectId | ICharacterPersonaDetail,
+    characterData: Types.ObjectId | ICharacterPersonaDetail,
+    state: state,
     pictureRoute?: string,
 }
 
@@ -71,6 +80,11 @@ const characterSchema = new Schema({
     },
     characterData: {
         type: Schema.Types.ObjectId
+    },
+    state: {
+        type: String,
+        enum: state,
+        required: true
     }
 }, {
     timestamps: true

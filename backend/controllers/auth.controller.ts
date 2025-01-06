@@ -3,6 +3,7 @@ import {Request, Response, CookieOptions} from 'express';
 import User, { IUser } from '../models/User';
 
 export const login = async (req: Request, res: Response) => {
+    if (!req.body.email || !req.body.password) return res.status(400).json({errMsg: 'Faltan datos'});
     const user = await User.findOne({email: req.body.email});
     if (!user) return res.status(406).json({errMsg: 'Usuario no valido'});
     const correctPassword: boolean = await user.validatePassword(req.body.password);
@@ -27,6 +28,7 @@ export const login = async (req: Request, res: Response) => {
   }
 
 export const signup = async (req: Request, res: Response) => {
+  if (!req.body.username || !req.body.email || !req.body.password) return res.status(400).json({errMsg: 'Faltan datos'});
   const user : IUser = new User({
     username: req.body.username,
     email: req.body.email,

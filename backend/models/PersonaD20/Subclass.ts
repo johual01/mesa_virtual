@@ -1,4 +1,4 @@
-import {Schema, model, Document} from 'mongoose';
+import {Schema, model, Document, Types } from 'mongoose';
 import { IFeature, personaStadistics } from '../types';
 import { IClassLevel, IPersonaClass } from './Class';
 import { ISpell } from '../Spell';
@@ -10,7 +10,7 @@ export interface ISubclassLevel extends Omit<IClassLevel, "proficency" | "spells
 export interface IPersonaSubclass extends Document {
     name: string,
     description: string,
-    class: Schema.Types.ObjectId | IPersonaClass,
+    class: Types.ObjectId | IPersonaClass,
     levels: ISubclassLevel[],
     resourceType?: string | string[],   
 }

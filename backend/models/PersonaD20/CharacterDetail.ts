@@ -1,25 +1,48 @@
-import {Schema, model, Document} from 'mongoose';
+import {Schema, model, Document, Types } from 'mongoose';
 import { ISpell } from '../Spell';
 import { IPersonaClass } from './Class';
 import { IPersonaSubclass } from './Subclass';
 import { IModifier, elements, personaStadistics } from '../types';
 
-export interface ICharacterPersonaDetail extends Document {
+export enum personaSecondaryAbilities {
+    Acrobatics = 'acrobatics',
+    Art = 'art',
+    Athletics = 'athletics',
+    Consciousness = 'consciousness',
+    Empathy = 'empathy',
+    Expression = 'expression',
+    Folklore = 'folklore',
+    Handcraft = 'handcraft',
+    Investigation = 'investigation',
+    Meditation = 'meditation',
+    Mysticism = 'mysticism',
+    Orientation = 'orientation',
+    Quibble = 'quibble',
+    Reflexes = 'reflexes',
+    Speed = 'speed',
+    Stealth = 'stealth',
+    Strength = 'strength',
+    Technology = 'technology',
+    Willpower = 'willpower'
+}
+
+interface StatisticDetail {
+    statistic: personaStadistics;
+    bonus: number;
+}
+
+
+
+export interface ICharacterPersonaDetail {
     class: {
-        type: Schema.Types.ObjectId | IPersonaClass,
-        subclass: Schema.Types.ObjectId | IPersonaSubclass
+        type: Types.ObjectId | IPersonaClass,
+        subclass?: Types.ObjectId | IPersonaSubclass
     },
     persona: string,
     experience: number,
     level: number,
-    money: boolean,
+    money: number,
     proficency: number,
-    inspiration: {
-        reroll: boolean,
-        bonus: number,
-        critic: boolean,
-        automaticSuccess: boolean
-    },
     stadistics: {
         charisma: number,
         courage: number,
@@ -28,101 +51,35 @@ export interface ICharacterPersonaDetail extends Document {
         knowledge: number,
     },
     secondaryAbilities: {
-        acrobatics: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        art: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        consciousness: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        empathy: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        expression: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        folklore: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        handcraft: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        insight: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        investigation: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        meditation: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        mysticism: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        orientation: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        reflexes: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        resistance: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        speed: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        stealth: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        strength: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        style: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        technology: {
-            statistic: personaStadistics,
-            bonus: number
-        },
-        willpower: {
-            statistic: personaStadistics,
-            bonus: number
-        }
+        acrobatics: StatisticDetail;
+        art: StatisticDetail;
+        athletics: StatisticDetail;
+        consciousness: StatisticDetail;
+        empathy: StatisticDetail;
+        expression: StatisticDetail;
+        folklore: StatisticDetail;
+        handcraft: StatisticDetail;
+        investigation: StatisticDetail;
+        meditation: StatisticDetail;
+        mysticism: StatisticDetail;
+        orientation: StatisticDetail;
+        quibble: StatisticDetail;
+        reflexes: StatisticDetail;
+        speed: StatisticDetail;
+        stealth: StatisticDetail;
+        strength: StatisticDetail;
+        technology: StatisticDetail;
+        willpower: StatisticDetail;
     },
     combatData: {
         HP: {
-            base: number,
             modifiers: IModifier[]
         },
         defense: {
-            baseDefense: number,
             defenseModifiers: IModifier[],
-            baseMagicResistance: number,
-            magicResistanceModifiers: IModifier[]
+            magicDefenseModifiers: IModifier[]
         },
         speed: {
-            baseSpeed: number,
-            baseInitiative: number,
             initiativeModifiers: IModifier[],
             speedModifiers: IModifier[]
         },
@@ -135,20 +92,19 @@ export interface ICharacterPersonaDetail extends Document {
             reflection: elements[]
         },
         magic: {
-            baseAP: number,
             APModifiers: IModifier[],
-            baseSave: number,
             saveModifiers: IModifier[],
-            baseLaunch: number,
             launchModifiers: IModifier[]
         },
         spells: {
-            list: ISpell[],
-            freeList: ISpell[],
-            additionalList: ISpell[]
+            list: (ISpell | Types.ObjectId)[],
+            freeList: (ISpell | Types.ObjectId)[],
+            additionalList: (ISpell | Types.ObjectId)[]
         }
     }
 }
+
+export interface ICharacterPersonaDetailDocument extends ICharacterPersonaDetail, Document {}
 
 const characterPersonaDetailSchema = new Schema({
     class: {
@@ -172,30 +128,12 @@ const characterPersonaDetailSchema = new Schema({
         required: true
     },
     money: {
-        type: Boolean,
+        type: Number,
         required: true
     },
     proficency: {
         type: Number,
         required: true
-    },
-    inspiration: {
-        reroll: {
-            type: Boolean,
-            required: true
-        },
-        bonus: {
-            type: Number,
-            required: true
-        },
-        critic: {
-            type: Boolean,
-            required: true
-        },
-        automaticSuccess: {
-            type: Boolean,
-            required: true
-        }
     },
     stadistics: {
         charisma: {
@@ -221,244 +159,104 @@ const characterPersonaDetailSchema = new Schema({
     },
     secondaryAbilities: {
         acrobatics: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         art: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         consciousness: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         empathy: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         expression: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         folklore: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         handcraft: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         insight: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         investigation: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         meditation: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         mysticism: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         orientation: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         reflexes: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         resistance: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         speed: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         stealth: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         strength: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         style: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         technology: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         },
         willpower: {
-            statistic: {
-                type: String,
-                required: true
-            },
-            bonus: {
-                type: Number,
-                required: true
-            }
+            type: Object,
+            required: true
         }
     },
     combatData: {
         HP: {
-            base: {
-                type: Number,
-                required: true
-            },
             modifiers: {
                 type: [Object],
                 required: true
             }
         },
         defense: {
-            baseDefense: {
-                type: Number,
-                required: true
-            },
             defenseModifiers: {
                 type: [Object],
                 required: true
             },
-            baseMagicResistance: {
-                type: Number,
-                required: true
-            },
-            magicResistanceModifiers: {
+            magicDefenseModifiers: {
                 type: [Object],
                 required: true
             }
         },
         speed: {
-            baseSpeed: {
-                type: Number,
-                required: true
-            },
-            baseInitiative: {
-                type: Number,
-                required: true
-            },
             initiativeModifiers: {
                 type: [Object],
                 required: true
@@ -494,24 +292,12 @@ const characterPersonaDetailSchema = new Schema({
             }
         },
         magic: {
-            baseAP: {
-                type: Number,
-                required: true
-            },
             APModifiers: {
                 type: [Object],
                 required: true
             },
-            baseSave: {
-                type: Number,
-                required: true
-            },
             saveModifiers: {
                 type: [Object],
-                required: true
-            },
-            baseLaunch: {
-                type: Number,
                 required: true
             },
             launchModifiers: {
@@ -521,15 +307,15 @@ const characterPersonaDetailSchema = new Schema({
         },
         spells: {
             list: {
-                type: [Object],
+                type: [Schema.Types.ObjectId],
                 required: true
             },
             freeList: {
-                type: [Object],
+                type: [Schema.Types.ObjectId],
                 required: true
             },
             additionalList: {
-                type: [Object],
+                type: [Schema.Types.ObjectId],
                 required: true
             }
         }
@@ -539,4 +325,4 @@ const characterPersonaDetailSchema = new Schema({
 })
 
 
-export default model<ICharacterPersonaDetail>('CharacterPersonaDetail', characterPersonaDetailSchema);
+export default model<ICharacterPersonaDetailDocument>('CharacterPersonaDetail', characterPersonaDetailSchema);

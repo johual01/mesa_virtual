@@ -1,4 +1,4 @@
-import {Schema, model, Document} from 'mongoose';
+import {Schema, model, Document, Types } from 'mongoose';
 import { ICharacter } from '../Character';
 import { personaStadistics, targetTypes, elements, healingTypes, barrierTypes, triggerTypes, IRange, IFeature, IModifier } from '../types';
 import { IStatusEffect } from '../StatusEffect';
@@ -86,7 +86,7 @@ export interface IConsumibleProperties {
 }
 
 export interface ICharacterEquipment extends Document {
-    character: Schema.Types.ObjectId | ICharacter,
+    character: Types.ObjectId | ICharacter,
     equipmentName: string,
     description: string,
     type: equipmentType,

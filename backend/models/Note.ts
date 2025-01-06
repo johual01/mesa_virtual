@@ -1,4 +1,4 @@
-import {Schema, model, Document} from 'mongoose';
+import {Schema, model, Document, Types } from 'mongoose';
 
 export enum noteState {
     ACTIVE = 'ACTIVE',
@@ -8,7 +8,7 @@ export enum noteState {
 export interface INote extends Document {
     title: string,
     text: string,
-    owner: Schema.Types.ObjectId,
+    owner: Types.ObjectId,
     state: noteState
 }
 

@@ -44,6 +44,7 @@ export const getCampaigns =  async (req: Request, res: Response) => {
 
 export const createCampaign = async (req: Request, res: Response) => {
     try {
+        if (!req.body.name || !req.body.description || !req.body.notes || !req.body.publicEntries) return res.status(400).json({errMsg: 'Faltan datos'});
         var objCampana = {
             name: req.body.name,
             owner: new Types.ObjectId(req.body.userId),
@@ -82,7 +83,7 @@ export const createCampaign = async (req: Request, res: Response) => {
             }
         )
         const savedHistory = await history.save();
-        savedCampaign.history.push(savedHistory._id);
+        savedCampaign.history.push(savedHistory._id as Types.ObjectId);
         await savedCampaign.save();
         res.send(
             {
@@ -117,7 +118,7 @@ export const deleteCampaign = async (req: Request, res: Response) => {
                     }
                 )
                 const savedHistory = await history.save();
-                doc.history.push(savedHistory._id);
+                doc.history.push(savedHistory._id as Types.ObjectId);
                 await doc.save();
                 res.send({success: true})
             } else {
@@ -152,6 +153,9 @@ export const openCampaign = async (req: Request, res: Response) => {
 
 export const editCampaign = async (req: Request, res: Response) => {
     try {
+        if (!req.body.name || !req.body.description || !req.body.notes || !req.body.publicEntries) return res.status(400).json({errMsg: 'Faltan datos'});
+        const campaign = await Campaign.findById(new Types.ObjectId(req.params.campaignId));
+        if (!campaign) return res.status(400).json({errMsg: 'No se encontró la campaña'});
         var objCampana = {
             name: req.body.name,
             image: '',
@@ -209,6 +213,10 @@ export const editCampaign = async (req: Request, res: Response) => {
 export const joinCampaign = async (req: Request, res: Response) => {
     try {
         const objectid = req.body.userId;
+        const campaign = await Campaign.findOne({ _id: new Types.ObjectId(req.params.campaignId) });
+        if (!campaign) return res.send({success: false, error: 'No se encontró la campaña'});
+        if (campaign.owner == objectid) return res.send({success: false, error: 'No puedes unirte a tu propia campaña'});
+        if (campaign.players.includes(objectid)) return res.send({success: false, error: 'Ya estás en la campaña'});
         const history = new History(
             {
                 event: 'Se ha unido un nuevo jugador',
@@ -249,7 +257,7 @@ export const removeFromCampaign = async (req: Request, res: Response) => {
         const campaign = new Types.ObjectId(req.body.campaignId);
         const doc = await Campaign.findOne(
             {
-                _id: new Types.ObjectId(req.body.id)
+                _id: campaign
             }
         );
         if (doc) {
@@ -270,7 +278,7 @@ export const removeFromCampaign = async (req: Request, res: Response) => {
                 await doc.populate('characters');
                 object.characters = (object.characters as ICharacter[]).filter(val => val.player as unknown as Types.ObjectId != player);
                 doc.overwrite(object);
-                doc.history.push(savedHistory._id)
+                doc.history.push(savedHistory._id as Types.ObjectId);
                 await doc.save();
                 res.send({success: true})
             } else {
@@ -286,6 +294,9 @@ export const removeFromCampaign = async (req: Request, res: Response) => {
 
 export const addRegister = async (req: Request, res: Response) => {
     try {
+        if (!req.body.title || !req.body.text || !req.body.campaignId) return res.status(400).json({errMsg: 'Faltan datos'});
+        const campaign = await Campaign.findById(new Types.ObjectId(req.body.campaignId));
+        if (!campaign) return res.send({success: false, error: 'No se encontró la campaña'});
         const obj = new Note({
             title: req.body.title,
             text: req.body.text,
@@ -315,7 +326,10 @@ export const addRegister = async (req: Request, res: Response) => {
 
 export const updateRegister = async (req: Request, res: Response) => {
     try {
-        const note = await Note.updateOne(
+        if (!req.body.title || !req.body.text) return res.status(400).json({errMsg: 'Faltan datos'});
+        const note = await Note.findOne({ _id: new Types.ObjectId(req.params.registerId) });
+        if (!note) return res.send({success: false, error: 'No se encontró la nota'});
+        const updateNote = await Note.updateOne(
             {
                 _id: new Types.ObjectId(req.params.registerId)
             },
@@ -324,8 +338,8 @@ export const updateRegister = async (req: Request, res: Response) => {
                 text: req.body.text,
             }
         )
-        console.log(note);
-        res.send({success: true, note })
+        console.log(updateNote);
+        res.send({success: true, note: updateNote })
     } catch (e) {
         res.send({success: false, error: e})
     }
@@ -333,7 +347,10 @@ export const updateRegister = async (req: Request, res: Response) => {
 
 export const deleteRegister = async (req: Request, res: Response) => {
     try {
-        const note = await Note.updateOne(
+        if (!req.body.campaignId) return res.status(400).json({errMsg: 'Faltan datos'});
+        const note = await Note.findOne({ _id: new Types.ObjectId(req.params.registerId) });
+        if (!note) return res.send({success: false, error: 'No se encontró la nota'});
+        const updatedNote = await Note.updateOne(
             {
                 _id: new Types.ObjectId(req.params.registerId)
             },
@@ -346,10 +363,10 @@ export const deleteRegister = async (req: Request, res: Response) => {
                 _id: new Types.ObjectId(req.body.campaignId)
             },
             {
-                $pull: { notes: req.body.idNote, publicEntries: req.body.idNote }
+                $pull: { notes: req.params.registerId, publicEntries: req.params.registerId }
             }
         )
-        console.log(note, campaign);
+        console.log(updatedNote, campaign);
         res.send({success: true, campaign })
     } catch (e) {
         res.send({success: false, error: e})

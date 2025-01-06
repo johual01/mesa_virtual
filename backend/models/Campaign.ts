@@ -12,14 +12,14 @@ export enum campaignState {
 
 export interface ICampaign extends Document {
     name: string,
-    owner: Schema.Types.ObjectId | IUser,
-    players: [ Types.ObjectId | IUser ],
-    characters: [ Types.ObjectId | ICharacter],
+    owner: Types.ObjectId | IUser,
+    players: (Types.ObjectId | IUser)[],
+    characters: (Types.ObjectId | ICharacter)[],
     image?: string,
     description?: string,
-    notes?: [ Types.ObjectId | INote ],
-    publicEntries?: [ Types.ObjectId | INote ],
-    history: [ Types.ObjectId | IHistory ],
+    notes?: (Types.ObjectId | INote)[],
+    publicEntries?: (Types.ObjectId | INote)[],
+    history: (Types.ObjectId | IHistory)[],
     state: campaignState,
     stadistics?: {
         //muchas cosas, sí

@@ -2,6 +2,7 @@ import {CookieOptions, Request, Response} from 'express';
 import User from '../models/User';
 import {saveImage} from '../functions';
 import { generateAccessToken, generateRefreshToken } from '../jwt';
+import { Types } from 'mongoose';
 
 interface setObj {
     $set: {
@@ -19,6 +20,7 @@ export const getProfile = async (req: Request, res: Response) => {
 }
 
 export const alterProfile = async (req: Request, res: Response) => {
+    if (!req.body.username || !req.body.mail || !req.body.contrasenaActual) return res.status(400).json({errMsg: 'Faltan datos'});
     const user = await User.findById(req.body.userId);
     if (!user) return res.status(406).json({errMsg: 'No User found'});
     const correctPassword: boolean = await user.validatePassword(req.body.contrasenaActual);
@@ -40,7 +42,7 @@ export const alterProfile = async (req: Request, res: Response) => {
     
     var urlImage = '';
     if (req.body.image != "" && req.body.image.indexOf('http') == -1) {
-        const result = await saveImage(req.body.image, user._id, 'PROFILES');
+        const result = await saveImage(req.body.image, user._id as Types.ObjectId, 'PROFILES');
         if (typeof(result) == 'string') {
             urlImage = result;
             setObj.$set.pictureRoute = urlImage;

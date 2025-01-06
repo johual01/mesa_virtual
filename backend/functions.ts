@@ -59,3 +59,22 @@ export const requestFile = async (req: Request, res: Response) => {
         res.send({msgError: "Error solicitando el archivo", error: e})
     }
 }
+
+const stringIsNumber = (value: string | number) => isNaN(Number(value)) === false;
+export function enumToArray(enumme: any) {
+    return Object.keys(enumme)
+        .filter(stringIsNumber)
+        .map(key => enumme[key]);
+}
+
+export function arraysEqual<T>(arr1: T[], arr2: T[]): boolean {
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) {
+            return false;
+        }
+    }
+    return true;
+}
