@@ -2,4 +2,3 @@ node_modules
 .env
 dist
 server.code-workspace
-package-lock.json
