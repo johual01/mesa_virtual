@@ -146,7 +146,7 @@ export enum useTypes {
 }
 
 export interface IFeature {
-    id: string,
+    featureId: string,
     name: string,
     description: string,
     useType: useTypes,

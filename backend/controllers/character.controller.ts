@@ -8,6 +8,7 @@ import Campaign, { ICampaign, campaignState } from '../models/Campaign';
 import Class, { IPersonaClass } from '../models/PersonaD20/Class';
 import { elements, system as systems, personaStadistics } from '../models/types';
 import { enumToArray, saveImage, arraysEqual } from '../functions';
+import { calculateBonification, rollMaxDiceString } from '../../diceLogic';
 
 // getCreateCharacterInfo
 export const getCreateCharacterInfo = async (req: Request, res: Response) => {
@@ -65,6 +66,8 @@ export const createCharacter = async (req: Request, res: Response) => {
     const characterClassObjectId = new Types.ObjectId(characterClass);
     const characterClassObj = await Class.findById(characterClassObjectId);
     if (!characterClassObj) return res.status(406).json({ message: 'No se encontró la clase' });
+    const baseHPDices = characterClassObj.HPDice + '+' + calculateBonification(stadistics.courage);
+    const { total: baseHP } = rollMaxDiceString(baseHPDices);
     const character: any = {
         name,
         player: userIdObj,
@@ -162,7 +165,9 @@ export const createCharacter = async (req: Request, res: Response) => {
         },
         combatData: {
             HP: {
-                modifiers: []
+                modifiers: [
+                    { value: baseHP, type: 'base', description: 'Vida base' }
+                ]
             },
             defense: {
                 defenseModifiers: [],
@@ -183,11 +188,6 @@ export const createCharacter = async (req: Request, res: Response) => {
                 APModifiers: [],
                 saveModifiers: [],
                 launchModifiers: []
-            },
-            spells: {
-                list: [],
-                freeList: [],
-                additionalList: []
             }
         }
     }

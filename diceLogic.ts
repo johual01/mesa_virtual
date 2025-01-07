@@ -13,6 +13,10 @@ interface IDicesTotalizer {
     modifier: number;
 }
 
+export function calculateBonification(value: number): number {
+    return Math.floor((value - 10) / 2)
+}
+
 function compressNotation (notation: string) {
     return notation.trim().replace(/\s+/g, '');
 }
@@ -55,4 +59,17 @@ export function rollDice(dices: IDices, randomizer?: Function): IDicesTotalizer 
 
 export function rollDiceString(str: string, randomizer?: Function): IDicesTotalizer {
     return rollDice(parseDiceString(str), randomizer);
+}
+
+export function rollMaxDice(dices: IDices): IDicesTotalizer {
+    let totalizer = 0;
+    const diceResults = dices.dices.map((dice) => {
+        totalizer += dice;
+        return { value: dice, dice: dice };
+    })
+    return { total: totalizer + dices.modifier, dices: diceResults, modifier: dices.modifier };
+}
+
+export function rollMaxDiceString(str: string): IDicesTotalizer {
+    return rollMaxDice(parseDiceString(str));
 }

@@ -101,11 +101,9 @@ export interface ICharacterEquipment extends Document {
     additionalProperties?: IFeature[],
 }
 
-const CharacterEquipmentSchema = new Schema({
-    character: {
-        type: Schema.Types.ObjectId,
-        required: true,
-    },
+export interface IItem extends Omit<ICharacterEquipment, 'character'> {}
+
+const itemObject = {
     equipmentName: {
         type: String,
         required: true,
@@ -152,6 +150,17 @@ const CharacterEquipmentSchema = new Schema({
     additionalProperties: {
         type: [ Object ],
     }
+}
+
+const CharacterEquipmentSchema = new Schema({
+    character: {
+        type: Schema.Types.ObjectId,
+        required: true,
+    },
+    ...itemObject
 });
 
 export default model<ICharacterEquipment>('CharacterEquipment', CharacterEquipmentSchema);
+
+const itemSchema = new Schema(itemObject);
+export const Item = model<IItem>('Item', itemSchema);

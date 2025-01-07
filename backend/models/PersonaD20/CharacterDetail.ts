@@ -73,14 +73,14 @@ export interface ICharacterPersonaDetail {
     },
     combatData: {
         HP: {
-            modifiers: IModifier[]
+            modifiers: IModifier[] // Suma coraje
         },
         defense: {
-            defenseModifiers: IModifier[],
-            magicDefenseModifiers: IModifier[]
+            defenseModifiers: IModifier[], // Suma destreza
+            magicDefenseModifiers: IModifier[] // Suma carisma
         },
         speed: {
-            initiativeModifiers: IModifier[],
+            initiativeModifiers: IModifier[], // Suma instintos
             speedModifiers: IModifier[]
         },
         elements: {
@@ -92,14 +92,9 @@ export interface ICharacterPersonaDetail {
             reflection: elements[]
         },
         magic: {
-            APModifiers: IModifier[],
-            saveModifiers: IModifier[],
-            launchModifiers: IModifier[]
-        },
-        spells: {
-            list: (ISpell | Types.ObjectId)[],
-            freeList: (ISpell | Types.ObjectId)[],
-            additionalList: (ISpell | Types.ObjectId)[]
+            APModifiers: IModifier[], // suma conocimiento
+            saveModifiers: IModifier[], // suma instintos
+            launchModifiers: IModifier[] // suma conocimiento
         }
     }
 }
@@ -302,20 +297,6 @@ const characterPersonaDetailSchema = new Schema({
             },
             launchModifiers: {
                 type: [Object],
-                required: true
-            }
-        },
-        spells: {
-            list: {
-                type: [Schema.Types.ObjectId],
-                required: true
-            },
-            freeList: {
-                type: [Schema.Types.ObjectId],
-                required: true
-            },
-            additionalList: {
-                type: [Schema.Types.ObjectId],
                 required: true
             }
         }
