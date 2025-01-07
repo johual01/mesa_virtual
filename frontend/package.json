@@ -1,6 +1,7 @@
 {
   "name": "frontend",
   "version": "0.1.0",
+  "homepage": "https://johual01.github.io/mesa_virtual",
   "private": true,
   "scripts": {
     "dev": "next dev",
