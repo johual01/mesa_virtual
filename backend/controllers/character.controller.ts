@@ -88,79 +88,98 @@ export const createCharacter = async (req: Request, res: Response) => {
         secondaryAbilities: {
             acrobatics: {
                 statistic: personaStadistics.DEXTERITY,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Acrobatics)
             },
             art: {
                 statistic: personaStadistics.CHARISMA,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Art)
             },
             athletics: {
                 statistic: personaStadistics.COURAGE,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Athletics)
             },
             consciousness: {
                 statistic: personaStadistics.INSTINCTS,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Consciousness)
             },
             empathy: {
                 statistic: personaStadistics.CHARISMA,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Empathy)
             },
             expression: {
                 statistic: personaStadistics.CHARISMA,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Expression)
             },
             folklore: {
                 statistic: personaStadistics.KNOWLEDGE,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Folklore)
             },
             handcraft: {
                 statistic: personaStadistics.DEXTERITY,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Handcraft)
             },
             investigation: {
                 statistic: personaStadistics.KNOWLEDGE,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Investigation)
             },
             meditation: {
                 statistic: personaStadistics.COURAGE,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Meditation)
             },
             mysticism: {
                 statistic: personaStadistics.KNOWLEDGE,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Mysticism)
             },
             orientation: {
                 statistic: personaStadistics.INSTINCTS,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Orientation)
             },
             quibble: {
-                statistic: personaStadistics.CHARISMA,
-                bonus: 0
+                statistic: personaStadistics.INSTINCTS,
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Quibble)
             },
             reflexes: {
                 statistic: personaStadistics.INSTINCTS,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Reflexes)
             },
             speed: {
                 statistic: personaStadistics.DEXTERITY,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Speed)
             },
             stealth: {
                 statistic: personaStadistics.DEXTERITY,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Stealth)
             },
             strength: {
                 statistic: personaStadistics.COURAGE,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Strength)
             },
             technology: {
                 statistic: personaStadistics.KNOWLEDGE,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Technology)
             },
             willpower: {
                 statistic: personaStadistics.COURAGE,
-                bonus: 0
+                bonus: 0,
+                isProficient: proficency.includes(personaSecondaryAbilities.Willpower)
             }
         },
         combatData: {

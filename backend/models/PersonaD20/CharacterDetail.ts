@@ -23,12 +23,14 @@ export enum personaSecondaryAbilities {
     Stealth = 'stealth',
     Strength = 'strength',
     Technology = 'technology',
-    Willpower = 'willpower'
+    Willpower = 'willpower',
+    // una habilidad para tener calle para carisma
 }
 
 interface StatisticDetail {
     statistic: personaStadistics;
     bonus: number;
+    isProficient: boolean;
 }
 
 
