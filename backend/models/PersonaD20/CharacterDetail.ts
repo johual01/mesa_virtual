@@ -79,11 +79,11 @@ export interface ICharacterPersonaDetail {
         },
         defense: {
             defenseModifiers: IModifier[], // Suma destreza
-            magicDefenseModifiers: IModifier[] // Suma carisma
+            magicDefenseModifiers: IModifier[] // Suma instintos
         },
         speed: {
             initiativeModifiers: IModifier[], // Suma instintos
-            speedModifiers: IModifier[]
+            speedModifiers: IModifier[] 
         },
         elements: {
             affinity: elements,
@@ -95,8 +95,9 @@ export interface ICharacterPersonaDetail {
         },
         magic: {
             APModifiers: IModifier[], // suma conocimiento
-            saveModifiers: IModifier[], // suma instintos
+            saveModifiers: IModifier[], // suma carisma
             launchModifiers: IModifier[] // suma conocimiento
+            healingModifiers: IModifier[] // suma carisma
         }
     }
 }

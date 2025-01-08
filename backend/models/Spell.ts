@@ -45,6 +45,7 @@ const SpellSchema = new Schema({
     name: {type: String, required: true},
     system: {type: String, required: true},
     cost: {type: String},
+    owner: {type: Schema.Types.ObjectId, ref: 'Character'},
     AP: {type: Number},
     costHP: {type: String},
     costType: {type: String},

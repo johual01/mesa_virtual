@@ -110,7 +110,7 @@ export interface IDuration {
 
 export interface IModifier {
     // origin: string, // Esto debe agregarse al momento de recuperar los modificadores
-    value: number,
+    value: number | string,
     type: string,
     description: string,
     target?: targetTypes,

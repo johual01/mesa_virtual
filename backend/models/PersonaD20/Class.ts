@@ -19,7 +19,6 @@ export interface IPersonaClass extends Document {
     description: string,
     HPDice: string,
     salvations: personaStadistics[],
-    launchSpell: personaStadistics[], 
     levels: IClassLevel[],
     resourceType?: string | string[],
 }
@@ -29,7 +28,6 @@ const ClassSchema = new Schema({
     description: {type: String, required: true},
     HPDice: {type: String, required: true},
     salvations: {type: [String], required: true},
-    launchSpell: {type: [String], required: true},
     levels: {type: [Object], required: true},
     resourceType: {type: [String]},
 });

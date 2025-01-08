@@ -11,7 +11,8 @@ export interface IInspiration {
 export interface ISpells {
     list: (ISpell | Types.ObjectId)[],
     freeList: (ISpell | Types.ObjectId)[],
-    additionalList: (ISpell | Types.ObjectId)[]
+    additionalList: (ISpell | Types.ObjectId)[],
+    preparedList: (ISpell | Types.ObjectId)[],
 }
 
 export interface ICharacterStatus {
@@ -20,7 +21,7 @@ export interface ICharacterStatus {
     spells: ISpells
 }
 
-export interface IPersonaCharacterStatus extends Document {}
+export interface IPersonaCharacterStatus extends ICharacterStatus, Document {}
 
 const CharacterStatusSchema = new Schema({
     characterId: {type: Schema.Types.ObjectId, required: true},

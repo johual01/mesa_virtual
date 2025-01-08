@@ -136,7 +136,6 @@ export const openCampaign = async (req: Request, res: Response) => {
     const campaign = await Campaign.findById(new Types.ObjectId(req.params.campaignId))
                         .populate<{ owner: IUser }>('owner', '-password -email')
                         .populate<{ players: IUser }>('players', '-password -email -joinDate')
-                        .populate('characters')
                         .populate('publicEntries')
                         .populate('notes')
     if (!campaign) return res.send({success: false, error: 'No se encontró la campaña'});

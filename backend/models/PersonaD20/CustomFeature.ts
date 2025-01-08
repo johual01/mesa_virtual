@@ -27,4 +27,4 @@ const CustomFeatureSchema = new Schema<IPersonaCustomFeatureDoc>({
     subfeatures: { type: [Object] }
 });
 
-export const CustomFeature = model<ICustomFeature & IPersonaCustomFeatureDoc>('CustomFeature', CustomFeatureSchema);
+export default model<ICustomFeature & IPersonaCustomFeatureDoc>('CustomFeature', CustomFeatureSchema);

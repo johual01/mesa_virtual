@@ -3,6 +3,7 @@ import * as Minio from 'minio'
 import { BUCKET_KEY } from './constants'
 import config from './env'
 import { Types } from 'mongoose'
+import { IModifier } from './models/types'
 
 const GENERIC_BUCKET_NAME = config.GENERIC_BUCKET_NAME || ''
 
@@ -77,4 +78,11 @@ export function arraysEqual<T>(arr1: T[], arr2: T[]): boolean {
         }
     }
     return true;
+}
+
+export function reduceModifiers(array: IModifier[], data: any) {
+    return array.reduce((acc: number, mod: IModifier) => {
+        const value = typeof mod.value === 'number' ?  + mod.value : data[mod.value];
+        return acc + value;
+    }, 0)
 }
