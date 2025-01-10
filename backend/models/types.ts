@@ -109,12 +109,15 @@ export interface IDuration {
 }
 
 export interface IModifier {
-    // origin: string, // Esto debe agregarse al momento de recuperar los modificadores
     value: number | string,
     type: string,
     description: string,
+    origin?: string,
+    addTo?: string,
     target?: targetTypes,
     duration?: IDuration,
+    stadistic?: personaStadistics,
+    replaceStadistic?: personaStadistics,
 }
 
 export enum system {

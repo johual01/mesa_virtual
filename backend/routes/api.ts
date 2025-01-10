@@ -36,6 +36,7 @@ router.patch('/addCustomModifier/:characterId', validateToken, Character.addCust
 router.patch('/removeCustomModifier/:characterId', validateToken, Character.removeCustomModifier);
 router.patch('/levelUp/:characterId', validateToken, Character.levelUp);
 router.patch('/updateXP/:characterId', validateToken, Character.updateXP);
+router.patch('/updateMoney/:characterId', validateToken, Character.updateMoney);
 router.get('/getCharacterPDF/:characterId', validateToken, Character.getCharacterPDF);
 
 // rutas de rasgos del personaje
