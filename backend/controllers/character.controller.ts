@@ -524,7 +524,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                 total: reduceModifiers(characterData.combatData.magic.damageModifiers, stadisticBonifiers),
                 modifiers: characterData.combatData.magic.damageModifiers
             },
-            // TODO: Agregar calculo actions, critical, attack, damage
+            // TODO: Agregar calculo actions, critical, attack, damage, resources
         }
     });
 }

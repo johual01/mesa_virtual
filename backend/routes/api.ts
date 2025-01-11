@@ -34,10 +34,12 @@ router.patch('/editCharacter/:characterId', validateToken, Character.editCharact
 router.delete('/deleteCharacter/:characterId', validateToken, Character.deleteCharacter);
 router.patch('/addCustomModifier/:characterId', validateToken, Character.addCustomModifier);
 router.patch('/removeCustomModifier/:characterId/:modifierId', validateToken, Character.removeCustomModifier);
+router.get('/getLevelUpInfo/:characterId', validateToken, Character.getLevelUpInfo);
 router.patch('/levelUp/:characterId', validateToken, Character.levelUp);
 router.patch('/updateXP/:characterId', validateToken, Character.updateXP);
 router.patch('/updateMoney/:characterId', validateToken, Character.updateMoney);
 router.patch('/updateInspiration/:characterId', validateToken, Character.updateInspiration);
+router.get('/getSecondaryFeatures/:characterId', validateToken, Character.getSecondaryFeatures);
 router.patch('/updateSelectedSecondaryFeatures/:characterId', validateToken, Character.updateSelectedSecondaryFeatures);
 router.get('/getCharacterPDF/:characterId', validateToken, Character.getCharacterPDF);
 
