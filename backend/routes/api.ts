@@ -33,14 +33,15 @@ router.get('/getCharacter/:characterId', validateToken, Character.getCharacter);
 router.patch('/editCharacter/:characterId', validateToken, Character.editCharacter);
 router.delete('/deleteCharacter/:characterId', validateToken, Character.deleteCharacter);
 router.patch('/addCustomModifier/:characterId', validateToken, Character.addCustomModifier);
-router.patch('/removeCustomModifier/:characterId', validateToken, Character.removeCustomModifier);
+router.patch('/removeCustomModifier/:characterId/:modifierId', validateToken, Character.removeCustomModifier);
 router.patch('/levelUp/:characterId', validateToken, Character.levelUp);
 router.patch('/updateXP/:characterId', validateToken, Character.updateXP);
 router.patch('/updateMoney/:characterId', validateToken, Character.updateMoney);
+router.patch('/updateInspiration/:characterId', validateToken, Character.updateInspiration);
+router.patch('/updateSelectedSecondaryFeatures/:characterId', validateToken, Character.updateSelectedSecondaryFeatures);
 router.get('/getCharacterPDF/:characterId', validateToken, Character.getCharacterPDF);
 
 // rutas de rasgos del personaje
-router.get('/getCharacterFeatures/:characterId', validateToken, CharacterFeatures.getCharacterFeatures);
 router.post('/changeFeatureStatus/:characterId/:featureId', validateToken, CharacterFeatures.changeFeatureStatus);
 router.post('/addCustomFeature/:characterId', validateToken, CharacterFeatures.addFeature);
 router.patch('/editCustomFeature/:characterId/:featureId', validateToken, CharacterFeatures.editFeature);

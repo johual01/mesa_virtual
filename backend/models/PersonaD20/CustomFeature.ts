@@ -24,7 +24,8 @@ const CustomFeatureSchema = new Schema<IPersonaCustomFeatureDoc>({
     uses: { type: Number },
     triggerForRecover: { type: [String] },
     cd: { type: Schema.Types.Mixed }, // Can be number or string
-    subfeatures: { type: [Object] }
+    subfeatures: { type: [Object] },
+    origin: { type: String, default: 'custom' }
 });
 
 export default model<ICustomFeature & IPersonaCustomFeatureDoc>('CustomFeature', CustomFeatureSchema);

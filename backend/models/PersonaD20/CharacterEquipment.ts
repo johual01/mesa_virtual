@@ -63,7 +63,6 @@ export interface IWeaponProperties {
     loading: boolean,
     reach: boolean,
     thrown: boolean,
-    additionalProperties: IFeature[],
 }
 
 export interface IConsumibleProperties {

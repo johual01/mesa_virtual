@@ -112,12 +112,14 @@ export interface IModifier {
     value: number | string,
     type: string,
     description: string,
+    permanent?: boolean,
     origin?: string,
     addTo?: string,
     target?: targetTypes,
     duration?: IDuration,
     stadistic?: personaStadistics,
     replaceStadistic?: personaStadistics,
+    modifierId?: string
 }
 
 export enum system {
@@ -154,7 +156,7 @@ export interface IFeature {
     description: string,
     useType: useTypes,
     action?: actions,
-    modifier?: IModifier[],
+    modifiers?: IModifier[],
     trigger?: triggerTypes | triggerTypes[],
     cost?: costTypes,
     range?: IRange,
@@ -164,5 +166,6 @@ export interface IFeature {
     uses?: number,
     triggerForRecover?: triggerTypes | triggerTypes[],
     cd?: number | string, // Dificultad a superar
+    origin?: string,
     subfeatures?: IFeature[],
 }

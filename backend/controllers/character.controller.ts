@@ -1,19 +1,18 @@
 import {Request, Response} from 'express';
 import { Types } from 'mongoose';
 import User from '../models/User';
-import Character, { ICharacter, state as characterState } from '../models/Character';
-import CharacterDetail, { ICharacterPersonaDetail, personaSecondaryAbilities, ICharacterPersonaDetailDocument } from '../models/PersonaD20/CharacterDetail';
-import CharacterStatus, { ICharacterStatus } from '../models/PersonaD20/CharacterStatus';
-import Campaign, { ICampaign, campaignState } from '../models/Campaign';
+import Character, { state as characterState } from '../models/Character';
+import CharacterDetail, { ICharacterPersonaDetail, personaSecondaryAbilities } from '../models/PersonaD20/CharacterDetail';
+import CharacterStatus from '../models/PersonaD20/CharacterStatus';
+import Campaign, { campaignState } from '../models/Campaign';
 import Class, { IPersonaClass } from '../models/PersonaD20/Class';
 import Subclass, { IPersonaSubclass } from '../models/PersonaD20/Subclass';
-import { elements, system as systems, personaStadistics, IFeature, IModifier } from '../models/types';
+import { elements, system as systems, personaStadistics, IFeature, IModifier, useTypes } from '../models/types';
 import { enumToArray, saveImage, arraysEqual, reduceModifiers } from '../functions';
 import { calculateBonification, rollMaxDiceString } from '../../diceLogic';
 import CustomFeature from '../models/PersonaD20/CustomFeature';
 import CharacterEquipment from '../models/PersonaD20/CharacterEquipment';
 
-// getCreateCharacterInfo
 export const getCreateCharacterInfo = async (req: Request, res: Response) => {
     const userId = new Types.ObjectId(req.body.userId);
     const arrayElements = enumToArray(elements);
@@ -36,7 +35,6 @@ export const getCreateCharacterInfo = async (req: Request, res: Response) => {
     });
 }
 
-// createCharacter
 export const createCharacter = async (req: Request, res: Response) => {
     const {
         userId,
@@ -150,7 +148,7 @@ export const createCharacter = async (req: Request, res: Response) => {
                 isProficient: proficency.includes(personaSecondaryAbilities.Orientation)
             },
             quibble: {
-                statistic: personaStadistics.INSTINCTS,
+                statistic: personaStadistics.CHARISMA,
                 bonus: 0,
                 isProficient: proficency.includes(personaSecondaryAbilities.Quibble)
             },
@@ -178,6 +176,11 @@ export const createCharacter = async (req: Request, res: Response) => {
                 statistic: personaStadistics.KNOWLEDGE,
                 bonus: 0,
                 isProficient: proficency.includes(personaSecondaryAbilities.Technology)
+            },
+            streetwise: {
+                statistic: personaStadistics.INSTINCTS,
+                bonus: 0,
+                isProficient: false
             },
             willpower: {
                 statistic: personaStadistics.COURAGE,
@@ -211,6 +214,43 @@ export const createCharacter = async (req: Request, res: Response) => {
                 saveModifiers: [],
                 launchModifiers: [],
                 healingModifiers: [],
+                damageModifiers: [],
+            },
+            actions: {
+                actionModifiers: [],
+                bonusActionModifiers: [],
+                reactionModifiers: []
+            },
+            critical: {
+                criticalModifiers: [],
+                criticalFailModifiers: [],
+                criticalOnFisicalAttackModifiers: [],
+                criticalOnMagicAttackModifiers: [],
+                criticalOnAttackModifiers: []
+            },
+            attack: {
+                attackModifiers: [],
+                fisicalAttackModifiers: [],
+                rangeAttackModifiers: [],
+                meleeAttackModifiers: [],
+                areaAttackModifiers: [],
+                singleAttackModifiers: [],
+                multipleAttackModifiers: [],
+                attackOnFisicalAttackModifiers: [],
+                attackOnMagicAttackModifiers: [],
+                attackOnAttackModifiers: []
+            },
+            damage: {
+                damageModifiers: [],
+                fisicalDamageModifiers: [],
+                rangeDamageModifiers: [],
+                meleeDamageModifiers: [],
+                areaDamageModifiers: [],
+                singleDamageModifiers: [],
+                multipleDamageModifiers: [],
+                damageOnFisicalAttackModifiers: [],
+                damageOnMagicAttackModifiers: [],
+                damageOnAttackModifiers: []
             }
         }
     }
@@ -230,7 +270,6 @@ export const createCharacter = async (req: Request, res: Response) => {
     res.send({ success: true, _id: newCharacter._id });
 }
 
-// getCharacters
 export const getCharacters = async (req: Request, res: Response) => {
     const origin = req.body.origin;
     if (!origin) return res.status(400).send({ message: 'Falta el origen' });
@@ -259,7 +298,6 @@ export const getCharacters = async (req: Request, res: Response) => {
     }
 }
 
-// getCharacter
 export const getCharacter = async (req: Request, res: Response) => {
     const characterId = new Types.ObjectId(req.params.characterId);
     const character = await Character.findById(characterId).populate({ path: 'characterData', populate: ['class.type', 'class.subclass'] });
@@ -271,10 +309,17 @@ export const getCharacter = async (req: Request, res: Response) => {
     const characterInventory = await CharacterEquipment.find({ character: characterId });
     const characterStatus = await CharacterStatus.findOne({ characterId });
     const characterActualLevels = characterClass.levels.filter((e) => e.level < characterData.level);
+    const stadisticBonifiers = {
+        courage: calculateBonification(characterData.stadistics.courage),
+        dexterity: calculateBonification(characterData.stadistics.dexterity),
+        instincts: calculateBonification(characterData.stadistics.instincts),
+        knowledge: calculateBonification(characterData.stadistics.knowledge),
+        charisma: calculateBonification(characterData.stadistics.charisma),
+    }
     const baseModifiers: { [name: string]: IModifier[] } = {}
     baseModifiers.HPModifiers = [
         { 
-            value: calculateBonification(characterData.stadistics.courage) * characterData.level, 
+            value: stadisticBonifiers.courage * characterData.level, 
             type: 'stadistic', 
             stadistic: personaStadistics.COURAGE, 
             description: 'Bonificación de coraje' 
@@ -283,7 +328,7 @@ export const getCharacter = async (req: Request, res: Response) => {
     baseModifiers.defenseModifiers = [
         { value: 10, type: 'base', description: 'Defensa base' },
         { 
-            value: calculateBonification(characterData.stadistics.dexterity), 
+            value: stadisticBonifiers.dexterity, 
             type: 'stadistic', 
             stadistic: personaStadistics.DEXTERITY, 
             description: 'Bonificación de destreza'
@@ -292,7 +337,7 @@ export const getCharacter = async (req: Request, res: Response) => {
     baseModifiers.magicDefenseModifiers = [
         { value: 10, type: 'base', description: 'Defensa mágica base' },
         { 
-            value: calculateBonification(characterData.stadistics.instincts), 
+            value: stadisticBonifiers.instincts, 
             type: 'stadistic', 
             stadistic: personaStadistics.INSTINCTS, 
             description: 'Bonificación de instintos' 
@@ -303,7 +348,7 @@ export const getCharacter = async (req: Request, res: Response) => {
     ]
     baseModifiers.initiativeModifiers = [
         { 
-            value: calculateBonification(characterData.stadistics.instincts), 
+            value: stadisticBonifiers.instincts, 
             type: 'stadistic', 
             stadistic: personaStadistics.INSTINCTS,
             description: 'Bonificación de instintos' 
@@ -314,7 +359,7 @@ export const getCharacter = async (req: Request, res: Response) => {
         { value: Math.floor(characterData.level / 4), type: 'level', description: 'Bonificación de nivel general' },
         { value: characterActualLevels.reduce((total, level) => total + level.APGained, 0), type: 'level', description: 'Bonificación de nivel de clase' },
         { 
-            value: calculateBonification(characterData.stadistics.knowledge), 
+            value: stadisticBonifiers.knowledge, 
             type: 'stadistic', 
             stadistic: personaStadistics.KNOWLEDGE,
             description: 'Bonificación de conocimiento' 
@@ -323,7 +368,7 @@ export const getCharacter = async (req: Request, res: Response) => {
     baseModifiers.magicSaveModifiers = [
         { value: 10, type: 'base', description: 'Salvación mágica base' },
         { 
-            value: calculateBonification(characterData.stadistics.charisma), 
+            value: stadisticBonifiers.charisma, 
             type: 'stadistic', 
             stadistic: personaStadistics.CHARISMA,
             description: 'Bonificación de carisma' 
@@ -331,7 +376,7 @@ export const getCharacter = async (req: Request, res: Response) => {
     ]
     baseModifiers.magicLaunchModifiers = [
         { 
-            value: calculateBonification(characterData.stadistics.knowledge), 
+            value: stadisticBonifiers.knowledge, 
             type: 'stadistic', 
             stadistic: personaStadistics.KNOWLEDGE,
             description: 'Bonificación de conocimiento'
@@ -339,13 +384,13 @@ export const getCharacter = async (req: Request, res: Response) => {
     ]
     baseModifiers.magicHealingModifiers = [
         { 
-            value: calculateBonification(characterData.stadistics.charisma), 
+            value: stadisticBonifiers.charisma, 
             type: 'stadistic',
             stadistic: personaStadistics.CHARISMA,
             description: 'Bonificación de carisma' 
         }
     ]
-    characterInventory.forEach((e) => {
+    characterInventory?.forEach((e) => {
         if (e.equipped && e.modifiers) {
             e.modifiers.forEach((m) => {
                 if (m.addTo && baseModifiers.hasOwnProperty(m.addTo)) {
@@ -354,6 +399,11 @@ export const getCharacter = async (req: Request, res: Response) => {
             });
         }
     })
+    characterStatus?.customModifiers?.forEach(m => {
+        if (m.addTo && baseModifiers.hasOwnProperty(m.addTo)) {
+            baseModifiers[m.addTo].push(m);
+        }
+    });
     res.send({
         name: character.name,
         state: character.state,
@@ -369,66 +419,29 @@ export const getCharacter = async (req: Request, res: Response) => {
         stats: {
             courage: {
                 value: characterData.stadistics.courage,
-                bonus: calculateBonification(characterData.stadistics.courage),
+                bonus: stadisticBonifiers.courage,
                 isProficient: characterClass.salvations.includes(personaStadistics.COURAGE)
             },
             dexterity: {
                 value: characterData.stadistics.dexterity,
-                bonus: calculateBonification(characterData.stadistics.dexterity),
+                bonus: stadisticBonifiers.dexterity,
                 isProficient: characterClass.salvations.includes(personaStadistics.DEXTERITY)
             },
             instincts: {
                 value: characterData.stadistics.instincts,
-                bonus: calculateBonification(characterData.stadistics.instincts),
+                bonus: stadisticBonifiers.instincts,
                 isProficient: characterClass.salvations.includes(personaStadistics.INSTINCTS)
             },
             knowledge: {
                 value: characterData.stadistics.knowledge,
-                bonus: calculateBonification(characterData.stadistics.knowledge),
+                bonus: stadisticBonifiers.knowledge,
                 isProficient: characterClass.salvations.includes(personaStadistics.KNOWLEDGE)
             },
             charisma: {
                 value: characterData.stadistics.charisma,
-                bonus: calculateBonification(characterData.stadistics.charisma),
+                bonus: stadisticBonifiers.charisma,
                 isProficient: characterClass.salvations.includes(personaStadistics.CHARISMA)
             }
-        },
-        HP: {
-            total: reduceModifiers([...baseModifiers.HPModifiers, ...characterData.combatData.HP.modifiers], {}),
-            modifiers: [...baseModifiers.HPModifiers, ...characterData.combatData.HP.modifiers]
-        },
-        defense: {
-            total: reduceModifiers([...baseModifiers.defenseModifiers, ...characterData.combatData.defense.defenseModifiers], {}),
-            modifiers: [...baseModifiers.defenseModifiers, ...characterData.combatData.defense.defenseModifiers]
-        },
-        magicDefense: {
-            total:reduceModifiers([...baseModifiers.magicDefenseModifiers, ...characterData.combatData.defense.magicDefenseModifiers], {}),
-            modifiers: [...baseModifiers.magicDefenseModifiers, ...characterData.combatData.defense.magicDefenseModifiers]
-        },
-        speed: {
-            total: reduceModifiers([...baseModifiers.speedModifiers, ...characterData.combatData.speed.speedModifiers], {}),
-            modifiers: [...baseModifiers.speedModifiers, ...characterData.combatData.speed.speedModifiers]
-        },
-        initiative: {
-            total: reduceModifiers([...baseModifiers.initiativeModifiers, ...characterData.combatData.speed.initiativeModifiers], {}),
-            modifiers: [...baseModifiers.initiativeModifiers, ...characterData.combatData.speed.initiativeModifiers]
-        },
-        elements: characterData.combatData.elements,
-        AP: {
-            total: reduceModifiers([...baseModifiers.APModifiers, ...characterData.combatData.magic.APModifiers], {}),
-            modifiers: [...baseModifiers.APModifiers, ...characterData.combatData.magic.APModifiers]
-        },
-        magicSave: {
-            total: reduceModifiers([...baseModifiers.magicSaveModifiers, ...characterData.combatData.magic.saveModifiers], {}),
-            modifiers: [...baseModifiers.magicSaveModifiers, ...characterData.combatData.magic.saveModifiers]
-        },
-        magicLaunch: {
-            total: reduceModifiers([...baseModifiers.magicLaunchModifiers, ...characterData.combatData.magic.launchModifiers], {}),
-            modifiers: [...baseModifiers.magicLaunchModifiers, ...characterData.combatData.magic.launchModifiers]
-        },
-        magicHealing: {
-            total: reduceModifiers([...baseModifiers.magicHealingModifiers, ...characterData.combatData.magic.healingModifiers], {}),
-            modifiers: [...baseModifiers.magicHealingModifiers, ...characterData.combatData.magic.healingModifiers]
         },
         secondaryAbilities: characterData.secondaryAbilities,
         background: character.backstory,
@@ -436,11 +449,24 @@ export const getCharacter = async (req: Request, res: Response) => {
             classFeatures: characterActualLevels.reduce((features, level) => {
                 features.push(...level.features);
                 return features;
-            }, [] as IFeature[]),
-            subclassFeatures: subclass?.levels?.filter((e) => e.level < characterData.level).reduce((features, level) => {
+            }, [] as IFeature[]).map((e) => {
+                e.origin = 'class';
+                return e;
+            }),
+            subclassFeatures: subclass?.levels?.filter((e) => e.level < characterData.level)?.reduce((features, level) => {
                 features.push(...level.features);
                 return features;
-            }, [] as IFeature[]) || [],
+            }, [] as IFeature[])?.map((e) => {
+                e.origin = 'subclass';
+                return e;
+            }) || [],
+            itemFeatures: characterInventory?.reduce((features, item) => {
+                if (item.additionalProperties) features.push(...item.additionalProperties);
+                return features;
+            }, [] as IFeature[])?.map((e) => {
+                e.origin = 'items';
+                return e;
+            }) || [],
             customFeatures: customFeatures || []
         },
         characterInventory: characterInventory || [],
@@ -455,11 +481,54 @@ export const getCharacter = async (req: Request, res: Response) => {
             freeList: [],
             additionalList: [],
             preparedList: []
+        },
+        combatData: {
+            HP: {
+                total: reduceModifiers([...baseModifiers.HPModifiers, ...characterData.combatData.HP.modifiers], stadisticBonifiers),
+                modifiers: [...baseModifiers.HPModifiers, ...characterData.combatData.HP.modifiers]
+            },
+            defense: {
+                total: reduceModifiers([...baseModifiers.defenseModifiers, ...characterData.combatData.defense.defenseModifiers], stadisticBonifiers),
+                modifiers: [...baseModifiers.defenseModifiers, ...characterData.combatData.defense.defenseModifiers]
+            },
+            magicDefense: {
+                total:reduceModifiers([...baseModifiers.magicDefenseModifiers, ...characterData.combatData.defense.magicDefenseModifiers], stadisticBonifiers),
+                modifiers: [...baseModifiers.magicDefenseModifiers, ...characterData.combatData.defense.magicDefenseModifiers]
+            },
+            speed: {
+                total: reduceModifiers([...baseModifiers.speedModifiers, ...characterData.combatData.speed.speedModifiers], stadisticBonifiers),
+                modifiers: [...baseModifiers.speedModifiers, ...characterData.combatData.speed.speedModifiers]
+            },
+            initiative: {
+                total: reduceModifiers([...baseModifiers.initiativeModifiers, ...characterData.combatData.speed.initiativeModifiers], stadisticBonifiers),
+                modifiers: [...baseModifiers.initiativeModifiers, ...characterData.combatData.speed.initiativeModifiers]
+            },
+            elements: characterData.combatData.elements,
+            AP: {
+                total: reduceModifiers([...baseModifiers.APModifiers, ...characterData.combatData.magic.APModifiers], stadisticBonifiers),
+                modifiers: [...baseModifiers.APModifiers, ...characterData.combatData.magic.APModifiers]
+            },
+            magicSave: {
+                total: reduceModifiers([...baseModifiers.magicSaveModifiers, ...characterData.combatData.magic.saveModifiers], stadisticBonifiers),
+                modifiers: [...baseModifiers.magicSaveModifiers, ...characterData.combatData.magic.saveModifiers]
+            },
+            magicLaunch: {
+                total: reduceModifiers([...baseModifiers.magicLaunchModifiers, ...characterData.combatData.magic.launchModifiers], stadisticBonifiers),
+                modifiers: [...baseModifiers.magicLaunchModifiers, ...characterData.combatData.magic.launchModifiers]
+            },
+            magicHealing: {
+                total: reduceModifiers([...baseModifiers.magicHealingModifiers, ...characterData.combatData.magic.healingModifiers], stadisticBonifiers),
+                modifiers: [...baseModifiers.magicHealingModifiers, ...characterData.combatData.magic.healingModifiers]
+            },
+            magicDamage: {
+                total: reduceModifiers(characterData.combatData.magic.damageModifiers, stadisticBonifiers),
+                modifiers: characterData.combatData.magic.damageModifiers
+            },
+            // TODO: Agregar calculo actions, critical, attack, damage
         }
     });
 }
 
-// editCharacter
 export const editCharacter = async (req: Request, res: Response) => {
     const characterId = new Types.ObjectId(req.params.characterId);
     const character = await Character.findById(characterId);
@@ -524,15 +593,15 @@ export const editCharacter = async (req: Request, res: Response) => {
     characterDetail.secondaryAbilities.stealth.isProficient = proficency.includes(personaSecondaryAbilities.Stealth);
     characterDetail.secondaryAbilities.strength.isProficient = proficency.includes(personaSecondaryAbilities.Strength);
     characterDetail.secondaryAbilities.technology.isProficient = proficency.includes(personaSecondaryAbilities.Technology);
+    characterDetail.secondaryAbilities.streetwise.isProficient = proficency.includes(personaSecondaryAbilities.Streetwise);
     characterDetail.secondaryAbilities.willpower.isProficient = proficency.includes(personaSecondaryAbilities.Willpower);
     characterDetail.markModified('secondaryAbilities');
     characterDetail.combatData.elements.affinity = element;
     characterDetail.combatData.elements.weakness = [ weakness ];
-    characterDetail.markModified('combatData.elements');
+    characterDetail.markModified('combatData');
     await character.save();
 }
 
-// deleteCharacter
 export const deleteCharacter = async (req: Request, res: Response) => {
     const characterId = new Types.ObjectId(req.params.characterId);
     const character = await Character.findById(characterId);
@@ -544,32 +613,416 @@ export const deleteCharacter = async (req: Request, res: Response) => {
     res.send({ success: true });
 }
 
-// addCustomModifier
 export const addCustomModifier = async (req: Request, res: Response) => {
-    
+    const {
+        value,
+        type,
+        description,
+        addTo,
+        target,
+        duration,
+        stadistic,
+        replaceStadistic,
+    } = req.body;
+    if (!value || !type || !description) return res.status(400).send({ message: 'Faltan campos obligatorios' });
+    if (type == 'stadistic' && !stadistic) return res.status(400).send({ message: 'Falta la estadística' });
+    const characterId = new Types.ObjectId(req.params.characterId);
+    const character = await Character.findById(characterId);
+    if (!character) return res.status(406).json({ message: 'No se encontró el personaje' });
+    if (character.state == characterState.DELETED) return res.status(406).json({ message: 'El personaje ya está eliminado' });
+    if (character.player != req.body.userId) return res.status(406).json({ message: 'No tienes permisos para editar este personaje' });
+    await CharacterStatus.updateOne(
+        {
+            characterId: characterId,
+        },
+        {
+            $push: {
+                customModifiers: {
+                    value,
+                    type,
+                    description,
+                    addTo,
+                    target,
+                    duration,
+                    stadistic,
+                    replaceStadistic,
+                    modifierId: new Types.ObjectId().toString()
+                }
+            },
+            $setOnInsert: {
+                characterId: characterId
+            }
+        },
+        {
+            upsert: true
+        }
+    )
+    res.send({ success: true });
 }
 
-// removeCustomModifier
 export const removeCustomModifier = async (req: Request, res: Response) => {
-
+    const modifierId = req.params.modifierId;
+    const characterId = new Types.ObjectId(req.params.characterId);
+    const character = await Character.findById(characterId);
+    if (!character) return res.status(406).json({ message: 'No se encontró el personaje' });
+    if (character.state == characterState.DELETED) return res.status(406).json({ message: 'El personaje ya está eliminado' });
+    if (character.player != req.body.userId) return res.status(406).json({ message: 'No tienes permisos para editar este personaje' });
+    const characterStatus = await CharacterStatus.findOne({ characterId });
+    if (!characterStatus) return res.status(406).json({ message: 'No se encontró el estado del personaje' });
+    const modifier = characterStatus.customModifiers?.filter((e) => e.modifierId == modifierId);
+    if (modifier?.length == 0) return res.status(406).json({ message: 'No se encontró el modificador' });
+    characterStatus.customModifiers = characterStatus.customModifiers?.filter((e) => e.modifierId != modifierId);
+    await characterStatus.save();
+    res.send({ success: true });
 }
 
-// levelUp
+export const getLevelUpInfo = async (req: Request, res: Response) => {
+    const characterId = new Types.ObjectId(req.params.characterId);
+    const character = await Character.findById(characterId);
+    if (!character) return res.status(406).json({ message: 'No se encontró el personaje' });
+    if (character.state == characterState.DELETED) return res.status(406).json({ message: 'El personaje ya está eliminado' });
+    if (character.player != req.body.userId) return res.status(406).json({ message: 'No tienes permisos para editar este personaje' });
+    const characterDetail = await CharacterDetail
+        .findById(character.characterData)
+        .populate([{ path: 'class.type', populate: 'levels.features' }, { path: 'class.subclass', populate: 'levels.features' }]);
+    if (!characterDetail) return res.status(406).json({ message: 'No se encontró el detalle del personaje' });
+    const characterClass = characterDetail.class.type as IPersonaClass;
+    const actualLevel = characterDetail.level;
+    const nextLevel = actualLevel + 1;
+    const nextLevelData = characterClass.levels.find((e) => e.level == nextLevel);
+    if (!nextLevelData) return res.status(406).json({ message: 'No se encontró el siguiente nivel' });
+    const response: any = {
+        level: characterDetail.level + 1,
+        HPDice: characterClass.HPDice,
+        features: nextLevelData.features,
+        spells: nextLevelData.spells,
+        shouldChooseSubclass: nextLevelData.selectSubclass,
+        shouldChooseSecondaryFeatures: (nextLevelData.knownSecondaryFeatures && nextLevelData.knownSecondaryFeatures > 0),
+    }
+    if (nextLevelData.selectSubclass) {
+        response.subclasses = await Subclass.find({ class: characterClass._id });
+    }
+    if (response.shouldChooseSecondaryFeatures) {
+        if (!nextLevelData.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la habilidad que otorga las habilidades secundarias' });
+        const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, nextLevel, nextLevelData.featureIdThatGrantsSecondaryFeatures)
+        if (!secondaryFeatures) return res.status(406).json({ message: 'No se encontraron las habilidades secundarias' });
+        response.secondaryFeatures =secondaryFeatures.map((f) => {
+                return {
+                    featureId: f.featureId,
+                    name: f.name,
+                    description: f.description,
+                }
+            })
+    }
+    res.send(response)
+}
+
 export const levelUp = async (req: Request, res: Response) => {
-
+    const characterId = new Types.ObjectId(req.params.characterId);
+    const character = await Character.findById(characterId);
+    if (!character) return res.status(406).json({ message: 'No se encontró el personaje' });
+    if (character.state == characterState.DELETED) return res.status(406).json({ message: 'El personaje ya está eliminado' });
+    if (character.player != req.body.userId) return res.status(406).json({ message: 'No tienes permisos para editar este personaje' });
+    const characterDetail = await CharacterDetail.findById(character.characterData);
+    if (!characterDetail) return res.status(406).json({ message: 'No se encontró el detalle del personaje' });
+    const characterClass = await Class.findById(characterDetail.class.type);
+    if (!characterClass) return res.status(406).json({ message: 'No se encontró la clase' });
+    const { newHP, selectedSecondaryFeatures, selectedSubclass } = req.body;
+    if (!newHP) return res.status(400).send({ message: 'Falta la vida' });
+    const actualLevel = characterDetail.level;
+    const nextLevel = actualLevel + 1;
+    const nextLevelData = characterClass.levels.find((e) => e.level == nextLevel);
+    if (!nextLevelData) return res.status(406).json({ message: 'No se encontró el siguiente nivel' });
+    if (newHP <= 0) return res.status(406).json({ message: 'La vida debe ser mayor a 0' });
+    if (nextLevelData.selectSubclass && !selectedSubclass) return res.status(406).json({ message: 'Falta la subclase' });
+    const validateSecondaryFeatures = (!selectedSecondaryFeatures || selectedSecondaryFeatures.length == 0);
+    if (nextLevelData.knownSecondaryFeatures && nextLevelData.knownSecondaryFeatures > 0 && validateSecondaryFeatures) {
+        return res.status(406).json({ message: 'Faltan habilidades secundarias' });
+    }
+    characterDetail.combatData.HP.modifiers.push({ value: newHP, type: 'level', description: 'Vida de nivel ' + nextLevel });
+    const modifiers = [];
+    if (nextLevelData.features) {
+        const classFeatures = nextLevelData.features;
+        const permanentModifiers = classFeatures.reduce((modifiers, feature) => {
+            if (feature.modifiers && feature.useType == useTypes.PASSIVE) {
+                const permanentModifiers = feature.modifiers.filter((m) => m.permanent);
+                modifiers.push(...permanentModifiers);
+            }
+            return modifiers;
+        }, [] as IModifier[]);
+        if (modifiers.length > 0) modifiers.push(...permanentModifiers);
+    }
+    if (characterDetail.class.subclass) {
+        const subclass = await Subclass.findById(characterDetail.class.subclass);
+        if (!subclass) return res.status(406).json({ message: 'No se encontró la subclase' });
+        const subclassLevel = subclass.levels.find((e) => e.level == nextLevel);
+        if (subclassLevel) {
+            const subclassFeatures = subclassLevel.features;
+            const permanentModifiers = subclassFeatures.reduce((modifiers, feature) => {
+                if (feature.modifiers && feature.useType == useTypes.PASSIVE) {
+                    const permanentModifiers = feature.modifiers.filter((m) => m.permanent);
+                    modifiers.push(...permanentModifiers);
+                }
+                return modifiers;
+            }, [] as IModifier[]);
+            if (modifiers.length > 0) modifiers.push(...permanentModifiers);
+        }
+    }
+    for (let i = 0; i < modifiers.length; i++) {
+        const modifier = modifiers[i];
+        if (modifier.addTo) {
+            switch (modifier.addTo) {
+                case 'HPModifiers':
+                    characterDetail.combatData.HP.modifiers.push(modifier);
+                    break;
+                case 'defenseModifiers':
+                    characterDetail.combatData.defense.defenseModifiers.push(modifier);
+                    break;
+                case 'magicDefenseModifiers':
+                    characterDetail.combatData.defense.magicDefenseModifiers.push(modifier);
+                    break;
+                case 'speedModifiers':
+                    characterDetail.combatData.speed.speedModifiers.push(modifier);
+                    break;
+                case 'initiativeModifiers':
+                    characterDetail.combatData.speed.initiativeModifiers.push(modifier);
+                    break;
+                case 'APModifiers':
+                    characterDetail.combatData.magic.APModifiers.push(modifier);
+                    break;
+                case 'saveModifiers':
+                    characterDetail.combatData.magic.saveModifiers.push(modifier);
+                    break;
+                case 'launchModifiers':
+                    characterDetail.combatData.magic.launchModifiers.push(modifier);
+                    break;
+                case 'healingModifiers':
+                    characterDetail.combatData.magic.healingModifiers.push(modifier);
+                    break;
+                case 'actionModifiers':
+                    characterDetail.combatData.actions.actionModifiers.push(modifier);
+                    break;
+                case 'bonusActionModifiers':
+                    characterDetail.combatData.actions.bonusActionModifiers.push(modifier);
+                    break;
+                case 'reactionModifiers':
+                    characterDetail.combatData.actions.reactionModifiers.push(modifier);
+                    break;
+                case 'criticalModifiers':
+                    characterDetail.combatData.critical.criticalModifiers.push(modifier);
+                    break;
+                case 'criticalFailModifiers':
+                    characterDetail.combatData.critical.criticalFailModifiers.push(modifier);
+                    break;
+                case 'criticalOnFisicalAttackModifiers':
+                    characterDetail.combatData.critical.criticalOnFisicalAttackModifiers.push(modifier);
+                    break;
+                case 'criticalOnMagicAttackModifiers':
+                    characterDetail.combatData.critical.criticalOnMagicAttackModifiers.push(modifier);
+                    break;
+                case 'criticalOnAttackModifiers':
+                    characterDetail.combatData.critical.criticalOnAttackModifiers.push(modifier);
+                    break;
+                case 'attackModifiers':
+                    characterDetail.combatData.attack.attackModifiers.push(modifier);
+                    break;
+                case 'fisicalAttackModifiers':
+                    characterDetail.combatData.attack.fisicalAttackModifiers.push(modifier);
+                    break;
+                case 'rangeAttackModifiers':
+                    characterDetail.combatData.attack.rangeAttackModifiers.push(modifier);
+                    break;
+                case 'meleeAttackModifiers':
+                    characterDetail.combatData.attack.meleeAttackModifiers.push(modifier);
+                    break;
+                case 'areaAttackModifiers':
+                    characterDetail.combatData.attack.areaAttackModifiers.push(modifier);
+                    break;
+                case 'singleAttackModifiers':
+                    characterDetail.combatData.attack.singleAttackModifiers.push(modifier);
+                    break;
+                case 'multipleAttackModifiers':
+                    characterDetail.combatData.attack.multipleAttackModifiers.push(modifier);
+                    break;
+                case 'attackOnFisicalAttackModifiers':
+                    characterDetail.combatData.attack.attackOnFisicalAttackModifiers.push(modifier);
+                    break;
+                case 'attackOnMagicAttackModifiers':
+                    characterDetail.combatData.attack.attackOnMagicAttackModifiers.push(modifier);
+                    break;
+                case 'attackOnAttackModifiers':
+                    characterDetail.combatData.attack.attackOnAttackModifiers.push(modifier);
+                    break;
+                case 'damageModifiers':
+                    characterDetail.combatData.damage.damageModifiers.push(modifier);
+                    break;
+                case 'fisicalDamageModifiers':
+                    characterDetail.combatData.damage.fisicalDamageModifiers.push(modifier);
+                    break;
+                case 'rangeDamageModifiers':
+                    characterDetail.combatData.damage.rangeDamageModifiers.push(modifier);
+                    break;
+                case 'meleeDamageModifiers':
+                    characterDetail.combatData.damage.meleeDamageModifiers.push(modifier);
+                    break;
+                case 'areaDamageModifiers':
+                    characterDetail.combatData.damage.areaDamageModifiers.push(modifier);
+                    break;
+                case 'singleDamageModifiers':
+                    characterDetail.combatData.damage.singleDamageModifiers.push(modifier);
+                    break;
+                case 'multipleDamageModifiers':
+                    characterDetail.combatData.damage.multipleDamageModifiers.push(modifier);
+                    break;
+                case 'damageOnFisicalAttackModifiers':
+                    characterDetail.combatData.damage.damageOnFisicalAttackModifiers.push(modifier);
+                    break;
+                case 'damageOnMagicAttackModifiers':
+                    characterDetail.combatData.damage.damageOnMagicAttackModifiers.push(modifier);
+                    break;
+                case 'damageOnAttackModifiers':
+                    characterDetail.combatData.damage.damageOnAttackModifiers.push(modifier);
+                    break;
+                default:
+                    console.error('No se encontró el tipo de modificador');
+                    break;
+            }
+            characterDetail.markModified('combatData')
+        }
+    }
+    if (nextLevelData.selectSubclass) {
+        const subclass = Subclass.findById(selectedSubclass);
+        if (!subclass) return res.status(406).json({ message: 'No se encontró la subclase' });
+        characterDetail.class.subclass = selectedSubclass;
+    }
+    characterDetail.level = nextLevel;
+    characterDetail.proficency = nextLevelData.proficency;
+    characterDetail.markModified('proficency');
+    await characterDetail.save();
+    if (nextLevelData.knownSecondaryFeatures) {
+        const characterStatus = await CharacterStatus.findById(character.characterData);
+        if (!characterStatus) return res.status(406).json({ message: 'No se encontró el estado del personaje' });
+        if (!nextLevelData.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la habilidad que otorga las habilidades secundarias' });
+        const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, nextLevel, nextLevelData.featureIdThatGrantsSecondaryFeatures);
+        if (!secondaryFeatures) return res.status(406).json({ message: 'No se encontraron las habilidades secundarias' });
+        const selectedFeatures = secondaryFeatures.filter((f) => selectedSecondaryFeatures.includes(f.featureId));
+        if (selectedFeatures.length != nextLevelData.knownSecondaryFeatures) return res.status(406).json({ message: 'Faltan habilidades secundarias' });
+        characterStatus.selectedSecondaryFeatures = selectedFeatures;
+        await characterStatus.save();
+    }
+    res.send({ success: true });
 }
 
-// updateXP
 export const updateXP = async (req: Request, res: Response) => {
-
+    const characterId = new Types.ObjectId(req.params.characterId);
+    const character = await Character.findById(characterId);
+    const { xp } = req.body;
+    if (!xp) return res.status(400).send({ message: 'Falta la experiencia' });
+    if (typeof(xp) != 'number') return res.status(406).json({ message: 'La experiencia debe ser un número' });
+    if (!character) return res.status(406).json({ message: 'No se encontró el personaje' });
+    if (character.state == characterState.DELETED) return res.status(406).json({ message: 'El personaje ya está eliminado' });
+    if (character.player != req.body.userId) return res.status(406).json({ message: 'No tienes permisos para editar este personaje' });
+    const characterDetail = await CharacterDetail.findOne( { _id: character.characterData });
+    if (!characterDetail) return res.status(406).json({ message: 'No se encontró el detalle del personaje' });
+    characterDetail.experience = xp;
+    await characterDetail.save();
+    res.send({ success: true });
 }
 
-// updateMoney
 export const updateMoney = async (req: Request, res: Response) => {
-
+    const characterId = new Types.ObjectId(req.params.characterId);
+    const character = await Character.findById(characterId);
+    const { money } = req.body;
+    if (!money) return res.status(400).send({ message: 'Falta el dinero' });
+    if (typeof(money) != 'number') return res.status(406).json({ message: 'El dinero debe ser un número' });
+    if (!character) return res.status(406).json({ message: 'No se encontró el personaje' });
+    if (character.state == characterState.DELETED) return res.status(406).json({ message: 'El personaje ya está eliminado' });
+    if (character.player != req.body.userId) return res.status(406).json({ message: 'No tienes permisos para editar este personaje' });
+    const characterDetail = await CharacterDetail.findOne( { _id: character.characterData });
+    if (!characterDetail) return res.status(406).json({ message: 'No se encontró el detalle del personaje' });
+    characterDetail.money = money;
+    await characterDetail.save();
+    res.send({ success: true });
 }
 
-// getCharacterPDF
-export const getCharacterPDF = async (req: Request, res: Response) => {
+export const updateInspiration = async (req: Request, res: Response) => {
+    const characterId = new Types.ObjectId(req.params.characterId);
+    const character = await Character.findById(characterId);
+    const { inspiration } = req.body;
+    if (!inspiration) return res.status(400).send({ message: 'Falta la inspiración' });
+    if (!character) return res.status(406).json({ message: 'No se encontró el personaje' });
+    if (character.state == characterState.DELETED) return res.status(406).json({ message: 'El personaje ya está eliminado' });
+    if (character.player != req.body.userId) return res.status(406).json({ message: 'No tienes permisos para editar este personaje' });
+    const characterStatus = await CharacterStatus.findById(characterId);
+    if (!characterStatus) return res.status(406).json({ message: 'No se encontró el estado del personaje' });
+    characterStatus.inspiration = inspiration;
+    await characterStatus.save();
+    res.send({ success: true });
+}
 
+export const getSecondaryFeatures = async (req: Request, res: Response) => {
+    const characterId = new Types.ObjectId(req.params.characterId);
+    const character = await Character.findById(characterId);
+    if (!character) return res.status(406).json({ message: 'No se encontró el personaje' });
+    if (character.state == characterState.DELETED) return res.status(406).json({ message: 'El personaje ya está eliminado' });
+    if (character.player != req.body.userId) return res.status(406).json({ message: 'No tienes permisos para editar este personaje' });
+    const characterDetail = await CharacterDetail.findById(character.characterData);
+    if (!characterDetail) return res.status(406).json({ message: 'No se encontró el detalle del personaje' });
+    const characterClass = await Class.findById(characterDetail.class.type);
+    if (!characterClass) return res.status(406).json({ message: 'No se encontró la clase' });
+    const actualLevel = characterDetail.level;
+    const actualLevelData = characterClass.levels.find((e) => e.level == actualLevel);
+    if (!actualLevelData) return res.status(406).json({ message: 'No se encontró el nivel actual' });
+    if (!actualLevelData.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la característica que otorga las habilidades secundarias' });
+    const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, actualLevel, actualLevelData.featureIdThatGrantsSecondaryFeatures)
+    if (!secondaryFeatures) return res.status(406).json({ message: 'No se encontraron las habilidades secundarias' });
+    res.send({ 
+        secondaryFeatures: secondaryFeatures.map((f: IFeature) => {
+            return {
+                featureId: f.featureId,
+                name: f.name,
+                description: f.description,
+            }
+        }), 
+        success: true 
+    });
+}
+export const updateSelectedSecondaryFeatures = async (req: Request, res: Response) => {
+    const characterId = new Types.ObjectId(req.params.characterId);
+    const character = await Character.findById(characterId);
+    if (!character) return res.status(406).json({ message: 'No se encontró el personaje' });
+    if (character.state == characterState.DELETED) return res.status(406).json({ message: 'El personaje ya está eliminado' });
+    if (character.player != req.body.userId) return res.status(406).json({ message: 'No tienes permisos para editar este personaje' });
+    const characterStatus = await CharacterStatus.findById(character.characterData);
+    if (!characterStatus) return res.status(406).json({ message: 'No se encontró el estado del personaje' });
+    const { selectedSecondaryFeatures } = req.body;
+    if (!selectedSecondaryFeatures) return res.status(400).send({ message: 'Faltan las habilidades secundarias' });
+    const characterDetail = await CharacterDetail.findById(character.characterData);
+    if (!characterDetail) return res.status(406).json({ message: 'No se encontró el detalle del personaje' });
+    const characterClass = await Class.findById(characterDetail.class.type);
+    if (!characterClass) return res.status(406).json({ message: 'No se encontró la clase' });
+    const actualLevel = characterDetail.level;
+    const actualLevelData = characterClass.levels.find((e) => e.level == actualLevel);
+    if (!actualLevelData) return res.status(406).json({ message: 'No se encontró el nivel actual' });
+    if (!actualLevelData.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la característica que otorga las habilidades secundarias' });
+    const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, actualLevel, actualLevelData.featureIdThatGrantsSecondaryFeatures);
+    if (!secondaryFeatures) return res.status(406).json({ message: 'No se encontraron las habilidades secundarias' });
+    characterStatus.selectedSecondaryFeatures = secondaryFeatures?.filter((f) => selectedSecondaryFeatures.includes(f.featureId));
+    await characterStatus.save();
+    res.send({ success: true });
+}
+
+export const getCharacterPDF = async (req: Request, res: Response) => {
+    // TODO: implementar
+    res.send({ message: 'Esta función todavía no se encuentra implementada', success: false });
+}
+
+
+const obtainSecondaryFeatures = (characterDetail: ICharacterPersonaDetail, characterClass: IPersonaClass, level: number, featureId: string) => {
+    const subclassFeatures = (characterDetail.class.subclass as IPersonaSubclass)?.levels?.find((e) => e.level < level)?.features;
+    return characterClass.levels
+        .flatMap((el) => el.features)
+        .concat(subclassFeatures || [])
+        .find((f) => f.featureId == featureId)
+        ?.subfeatures
 }

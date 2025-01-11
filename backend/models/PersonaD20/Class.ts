@@ -9,9 +9,12 @@ export interface IClassLevel {
     features: IFeature[],
     APGained: number,
     knownSpells: number,
-    knownSecondaryAbilities?: number,
+    knownSecondaryFeatures?: number,
+    featureIdThatGrantsSecondaryFeatures?: string,
     resourceUses?: number | number[],
-    damageDie?: string
+    damageDie?: string,
+    selectSubclass?: boolean,
+    gainSubclassFeature?: boolean,
 }
 
 export interface IPersonaClass extends Document {

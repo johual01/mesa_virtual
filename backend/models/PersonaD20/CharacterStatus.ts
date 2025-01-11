@@ -1,5 +1,6 @@
 import {Schema, model, Document, Types } from 'mongoose';
 import { ISpell } from '../Spell';
+import { IFeature, IModifier } from '../types';
 
 export interface IInspiration {
     reroll: boolean,
@@ -18,7 +19,9 @@ export interface ISpells {
 export interface ICharacterStatus {
     characterId: Types.ObjectId,
     inspiration: IInspiration,
-    spells: ISpells
+    spells: ISpells,
+    customModifiers?: IModifier[]
+    selectedSecondaryFeatures?: IFeature[]
 }
 
 export interface IPersonaCharacterStatus extends ICharacterStatus, Document {}
@@ -26,7 +29,9 @@ export interface IPersonaCharacterStatus extends ICharacterStatus, Document {}
 const CharacterStatusSchema = new Schema({
     characterId: {type: Schema.Types.ObjectId, required: true},
     inspiration: {type: Object, required: true},
-    spells: {type: Object, required: true}
+    spells: {type: Object, required: true},
+    customModifiers: {type: [Object]},
+    selectedSecondaryFeatures: {type: [Object]}
 });
 
 export default model<IPersonaCharacterStatus>('PersonaCharacterStatus', CharacterStatusSchema);

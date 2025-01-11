@@ -23,6 +23,7 @@ export enum personaSecondaryAbilities {
     Stealth = 'stealth',
     Strength = 'strength',
     Technology = 'technology',
+    Streetwise = 'streetwise',
     Willpower = 'willpower',
     // una habilidad para tener calle para carisma
 }
@@ -71,6 +72,7 @@ export interface ICharacterPersonaDetail {
         stealth: StatisticDetail;
         strength: StatisticDetail;
         technology: StatisticDetail;
+        streetwise: StatisticDetail;
         willpower: StatisticDetail;
     },
     combatData: {
@@ -98,6 +100,43 @@ export interface ICharacterPersonaDetail {
             saveModifiers: IModifier[], // suma carisma
             launchModifiers: IModifier[] // suma conocimiento
             healingModifiers: IModifier[] // suma carisma
+            damageModifiers: IModifier[]
+        },
+        actions: {
+            actionModifiers: IModifier[], 
+            bonusActionModifiers: IModifier[],
+            reactionModifiers: IModifier[],
+        },
+        critical: {
+            criticalModifiers: IModifier[],
+            criticalFailModifiers: IModifier[],
+            criticalOnFisicalAttackModifiers: IModifier[],
+            criticalOnMagicAttackModifiers: IModifier[],
+            criticalOnAttackModifiers: IModifier[]
+        },
+        attack: {
+            attackModifiers: IModifier[],
+            fisicalAttackModifiers: IModifier[],
+            rangeAttackModifiers: IModifier[],
+            meleeAttackModifiers: IModifier[],
+            areaAttackModifiers: IModifier[],
+            singleAttackModifiers: IModifier[],
+            multipleAttackModifiers: IModifier[],
+            attackOnFisicalAttackModifiers: IModifier[],
+            attackOnMagicAttackModifiers: IModifier[],
+            attackOnAttackModifiers: IModifier[]
+        },
+        damage: {
+            damageModifiers: IModifier[],
+            fisicalDamageModifiers: IModifier[],
+            rangeDamageModifiers: IModifier[],
+            meleeDamageModifiers: IModifier[],
+            areaDamageModifiers: IModifier[],
+            singleDamageModifiers: IModifier[],
+            multipleDamageModifiers: IModifier[],
+            damageOnFisicalAttackModifiers: IModifier[],
+            damageOnMagicAttackModifiers: IModifier[],
+            damageOnAttackModifiers: IModifier[]
         }
     }
 }
@@ -164,6 +203,10 @@ const characterPersonaDetailSchema = new Schema({
             type: Object,
             required: true
         },
+        athletics: {
+            type: Object,
+            required: true
+        },
         consciousness: {
             type: Object,
             required: true
@@ -184,10 +227,6 @@ const characterPersonaDetailSchema = new Schema({
             type: Object,
             required: true
         },
-        insight: {
-            type: Object,
-            required: true
-        },
         investigation: {
             type: Object,
             required: true
@@ -204,11 +243,11 @@ const characterPersonaDetailSchema = new Schema({
             type: Object,
             required: true
         },
-        reflexes: {
+        quibble: {
             type: Object,
             required: true
         },
-        resistance: {
+        reflexes: {
             type: Object,
             required: true
         },
@@ -224,11 +263,11 @@ const characterPersonaDetailSchema = new Schema({
             type: Object,
             required: true
         },
-        style: {
+        technology: {
             type: Object,
             required: true
         },
-        technology: {
+        streetwise: {
             type: Object,
             required: true
         },
