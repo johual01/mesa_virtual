@@ -14,14 +14,16 @@ export interface ISpells {
     freeList: (ISpell | Types.ObjectId)[],
     additionalList: (ISpell | Types.ObjectId)[],
     preparedList: (ISpell | Types.ObjectId)[],
+    maxPrepared: number
 }
 
 export interface ICharacterStatus {
     characterId: Types.ObjectId,
     inspiration: IInspiration,
     spells: ISpells,
-    customModifiers?: IModifier[]
-    selectedSecondaryFeatures?: IFeature[]
+    customModifiers?: IModifier[],
+    selectedSecondaryFeatures?: IFeature[],
+    inactiveFeatures?: string[],
 }
 
 export interface IPersonaCharacterStatus extends ICharacterStatus, Document {}
@@ -29,9 +31,18 @@ export interface IPersonaCharacterStatus extends ICharacterStatus, Document {}
 const CharacterStatusSchema = new Schema({
     characterId: {type: Schema.Types.ObjectId, required: true},
     inspiration: {type: Object, required: true},
-    spells: {type: Object, required: true},
+    spells: {
+        type: {
+            list: [ { type: Schema.Types.ObjectId, ref: 'Spell' } ],
+            freeList: [ { type: Schema.Types.ObjectId, ref: 'Spell' } ],
+            additionalList: [ { type: Schema.Types.ObjectId, ref: 'Spell' } ],
+            preparedList: [ { type: Schema.Types.ObjectId, ref: 'Spell' } ],
+        }, 
+        required: true
+    },
     customModifiers: {type: [Object]},
-    selectedSecondaryFeatures: {type: [Object]}
+    selectedSecondaryFeatures: {type: [Object]},
+    inactiveFeatures: {type: [String]},
 });
 
 export default model<IPersonaCharacterStatus>('PersonaCharacterStatus', CharacterStatusSchema);

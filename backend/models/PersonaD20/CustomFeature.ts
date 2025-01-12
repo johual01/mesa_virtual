@@ -9,12 +9,12 @@ export interface IPersonaCustomFeatureDoc extends ICustomFeature, Document {}
 
 const CustomFeatureSchema = new Schema<IPersonaCustomFeatureDoc>({
     character: { type: Schema.Types.ObjectId, required: true },
-    id: { type: String, required: true },
+    featureId: { type: String, required: true },
     name: { type: String, required: true },
     description: { type: String, required: true },
     useType: { type: String, required: true },
     action: { type: String },
-    modifier: { type: [Object] },
+    modifiers: { type: [Object] },
     trigger: { type: [String] },
     cost: { type: String },
     range: { type: Object },
@@ -25,7 +25,8 @@ const CustomFeatureSchema = new Schema<IPersonaCustomFeatureDoc>({
     triggerForRecover: { type: [String] },
     cd: { type: Schema.Types.Mixed }, // Can be number or string
     subfeatures: { type: [Object] },
-    origin: { type: String, default: 'custom' }
+    origin: { type: String, default: 'custom' },
+    state: { type: String, required: true, enum: ['ACTIVE', 'INACTIVE', 'DELETED'] },
 });
 
 export default model<ICustomFeature & IPersonaCustomFeatureDoc>('CustomFeature', CustomFeatureSchema);

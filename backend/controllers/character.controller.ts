@@ -12,6 +12,7 @@ import { enumToArray, saveImage, arraysEqual, reduceModifiers } from '../functio
 import { calculateBonification, rollMaxDiceString } from '../../diceLogic';
 import CustomFeature from '../models/PersonaD20/CustomFeature';
 import CharacterEquipment from '../models/PersonaD20/CharacterEquipment';
+import Spell from '../models/Spell';
 
 export const getCreateCharacterInfo = async (req: Request, res: Response) => {
     const userId = new Types.ObjectId(req.body.userId);
@@ -191,7 +192,7 @@ export const createCharacter = async (req: Request, res: Response) => {
         combatData: {
             HP: {
                 modifiers: [
-                    { value: baseHP, type: 'base', description: 'Vida base' }
+                    { value: baseHP, type: 'base', description: 'Vida base', state: 'ACTIVE' },
                 ]
             },
             defense: {
@@ -232,25 +233,13 @@ export const createCharacter = async (req: Request, res: Response) => {
                 attackModifiers: [],
                 fisicalAttackModifiers: [],
                 rangeAttackModifiers: [],
-                meleeAttackModifiers: [],
-                areaAttackModifiers: [],
-                singleAttackModifiers: [],
-                multipleAttackModifiers: [],
-                attackOnFisicalAttackModifiers: [],
-                attackOnMagicAttackModifiers: [],
-                attackOnAttackModifiers: []
+                meleeAttackModifiers: []
             },
             damage: {
                 damageModifiers: [],
                 fisicalDamageModifiers: [],
                 rangeDamageModifiers: [],
-                meleeDamageModifiers: [],
-                areaDamageModifiers: [],
-                singleDamageModifiers: [],
-                multipleDamageModifiers: [],
-                damageOnFisicalAttackModifiers: [],
-                damageOnMagicAttackModifiers: [],
-                damageOnAttackModifiers: []
+                meleeDamageModifiers: []
             }
         }
     }
@@ -267,6 +256,25 @@ export const createCharacter = async (req: Request, res: Response) => {
     character.characterData = characterDetailDoc._id;
     const newCharacter = new Character(character);
     await newCharacter.save();
+    const characterStatus = new CharacterStatus({
+        characterId: newCharacter._id,
+        inspiration: {
+            reroll: false,
+            bonus: 0,
+            critic: false,
+            automaticSuccess: false
+        },
+        spells: {
+            list: [
+                ...characterClassObj.levels[0].spells
+            ],
+            freeList: [],
+            additionalList: [],
+            preparedList: [],
+            maxPrepared: characterClassObj.levels[0].maxPreparedSpells
+        },
+    })
+    await characterStatus.save();
     res.send({ success: true, _id: newCharacter._id });
 }
 
@@ -305,10 +313,22 @@ export const getCharacter = async (req: Request, res: Response) => {
     const characterData = character.characterData as ICharacterPersonaDetail;
     const characterClass = characterData?.class?.type as IPersonaClass;
     const subclass = characterData?.class?.subclass as IPersonaSubclass;
-    const customFeatures = await CustomFeature.find({ character: characterId });
+    const customFeatures = await CustomFeature.find({ character: characterId, state: { $ne: 'DELETED' } });
     const characterInventory = await CharacterEquipment.find({ character: characterId });
-    const characterStatus = await CharacterStatus.findOne({ characterId });
+    const characterStatus = await CharacterStatus.findOne({ characterId }).populate(['spells.list', 'spells.freeList', 'spells.additionalList', 'spells.preparedList']);
+    if (!characterData) return res.status(406).json({ message: 'No se encontró la información del personaje' });
+    if (!characterStatus) return res.status(406).json({ message: 'No se encontró el estado del personaje' });
+    const customSpells = await Spell.find({ character: characterId, state: 'ACTIVE' });
+    if (customSpells && customSpells.length > 0) {
+        const list = customSpells.filter((e) => e.toList == 'list');
+        const freeList = customSpells.filter((e) => e.toList == 'free');
+        const additionalList = customSpells.filter((e) => e.toList == 'additional');
+        characterStatus.spells.list.push(...list);
+        characterStatus.spells.freeList.push(...freeList);
+        characterStatus.spells.additionalList.push(...additionalList);
+    }
     const characterActualLevels = characterClass.levels.filter((e) => e.level < characterData.level);
+    const characterActualLevel = characterClass.levels.find((e) => e.level == characterData.level);
     const stadisticBonifiers = {
         courage: calculateBonification(characterData.stadistics.courage),
         dexterity: calculateBonification(characterData.stadistics.dexterity),
@@ -316,62 +336,199 @@ export const getCharacter = async (req: Request, res: Response) => {
         knowledge: calculateBonification(characterData.stadistics.knowledge),
         charisma: calculateBonification(characterData.stadistics.charisma),
     }
+    characterData.combatData.HP.modifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.defense.defenseModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.defense.magicDefenseModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.speed.initiativeModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.speed.speedModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.magic.APModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.magic.saveModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.magic.launchModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.magic.healingModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.magic.damageModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.actions.actionModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.actions.bonusActionModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.actions.reactionModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.critical.criticalModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.critical.criticalFailModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.critical.criticalOnFisicalAttackModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.critical.criticalOnMagicAttackModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.critical.criticalOnAttackModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })    
+    characterData.combatData.attack.attackModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.attack.fisicalAttackModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.attack.rangeAttackModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.attack.meleeAttackModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.damage.damageModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.damage.fisicalDamageModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.damage.rangeDamageModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+    characterData.combatData.damage.meleeDamageModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
+
     const baseModifiers: { [name: string]: IModifier[] } = {}
     baseModifiers.HPModifiers = [
         { 
             value: stadisticBonifiers.courage * characterData.level, 
             type: 'stadistic', 
             stadistic: personaStadistics.COURAGE, 
-            description: 'Bonificación de coraje' 
+            description: 'Bonificación de coraje',
+            state: 'ACTIVE'
         }
     ]
     baseModifiers.defenseModifiers = [
-        { value: 10, type: 'base', description: 'Defensa base' },
+        { value: 10, type: 'base', description: 'Defensa base', state: 'ACTIVE' },
         { 
             value: stadisticBonifiers.dexterity, 
             type: 'stadistic', 
             stadistic: personaStadistics.DEXTERITY, 
-            description: 'Bonificación de destreza'
+            description: 'Bonificación de destreza',
+            state: 'ACTIVE'
         }
     ]
     baseModifiers.magicDefenseModifiers = [
-        { value: 10, type: 'base', description: 'Defensa mágica base' },
+        { value: 10, type: 'base', description: 'Defensa mágica base', state: 'ACTIVE' },
         { 
             value: stadisticBonifiers.instincts, 
             type: 'stadistic', 
             stadistic: personaStadistics.INSTINCTS, 
-            description: 'Bonificación de instintos' 
+            description: 'Bonificación de instintos',
+            state: 'ACTIVE' 
         }
     ]
     baseModifiers.speedModifiers = [
-        { value: 6, type: 'base', description: 'Velocidad base' }
+        { value: 6, type: 'base', description: 'Velocidad base', state: 'ACTIVE' }
     ]
     baseModifiers.initiativeModifiers = [
         { 
             value: stadisticBonifiers.instincts, 
             type: 'stadistic', 
             stadistic: personaStadistics.INSTINCTS,
-            description: 'Bonificación de instintos' 
+            description: 'Bonificación de instintos',
+            state: 'ACTIVE' 
         }
     ]
     baseModifiers.APModifiers = [
-        { value: 5, type: 'base', description: 'Puntos de acción base' },
-        { value: Math.floor(characterData.level / 4), type: 'level', description: 'Bonificación de nivel general' },
-        { value: characterActualLevels.reduce((total, level) => total + level.APGained, 0), type: 'level', description: 'Bonificación de nivel de clase' },
+        { value: 5, type: 'base', description: 'Puntos de acción base', state: 'ACTIVE' },
+        { value: Math.floor(characterData.level / 4), type: 'level', description: 'Bonificación de nivel general', state: 'ACTIVE' },
+        { value: characterActualLevels.reduce((total, level) => total + level.APGained, 0), type: 'level', description: 'Bonificación de nivel de clase', state: 'ACTIVE' },
         { 
             value: stadisticBonifiers.knowledge, 
             type: 'stadistic', 
             stadistic: personaStadistics.KNOWLEDGE,
-            description: 'Bonificación de conocimiento' 
+            description: 'Bonificación de conocimiento',
+            state: 'ACTIVE'
         }
     ]
     baseModifiers.magicSaveModifiers = [
-        { value: 10, type: 'base', description: 'Salvación mágica base' },
+        { value: 10, type: 'base', description: 'Salvación mágica base', state: 'ACTIVE' },
         { 
             value: stadisticBonifiers.charisma, 
             type: 'stadistic', 
             stadistic: personaStadistics.CHARISMA,
-            description: 'Bonificación de carisma' 
+            description: 'Bonificación de carisma',
+            state: 'ACTIVE' 
         }
     ]
     baseModifiers.magicLaunchModifiers = [
@@ -379,29 +536,110 @@ export const getCharacter = async (req: Request, res: Response) => {
             value: stadisticBonifiers.knowledge, 
             type: 'stadistic', 
             stadistic: personaStadistics.KNOWLEDGE,
-            description: 'Bonificación de conocimiento'
-        }
+            description: 'Bonificación de conocimiento',
+            state: 'ACTIVE'
+        },
+        ...characterData.combatData.attack.attackModifiers
     ]
     baseModifiers.magicHealingModifiers = [
         { 
             value: stadisticBonifiers.charisma, 
             type: 'stadistic',
             stadistic: personaStadistics.CHARISMA,
-            description: 'Bonificación de carisma' 
+            description: 'Bonificación de carisma',
+            state: 'ACTIVE' 
         }
+    ]
+    baseModifiers.magicDamageModifiers = [
+        ...characterData.combatData.damage.damageModifiers
+    ]
+    baseModifiers.actionModifiers = [
+        {
+            value: 1,
+            type: 'base',
+            description: 'Acciones base',
+            state: 'ACTIVE'
+        },
+        ...characterData.combatData.actions.actionModifiers
+    ]
+    baseModifiers.bonusActionModifiers = [
+        {
+            value: 1,
+            type: 'base',
+            description: 'Acciones adicionales base',
+            state: 'ACTIVE'
+        },
+        ...characterData.combatData.actions.bonusActionModifiers
+    ]
+    baseModifiers.reactionModifiers = [
+        {
+            value: 1,
+            type: 'base',
+            description: 'Reacciones base',
+            state: 'ACTIVE'
+        },
+        ...characterData.combatData.actions.reactionModifiers
+    ]
+    baseModifiers.criticalModifiers = [
+        {
+            value: 0.05,
+            type: 'base',
+            description: 'Crítico base',
+            state: 'ACTIVE'
+        }
+    ]
+    baseModifiers.criticalFailModifiers = [
+        {
+            value: 0.05,
+            type: 'base',
+            description: 'Fallo crítico base',
+            state: 'ACTIVE'
+        }
+    ]
+    baseModifiers.criticalAttackModifiers = [
+        ...baseModifiers.criticalModifiers,
+        ...characterData.combatData.critical.criticalModifiers
+    ]
+    baseModifiers.criticalAttackModifiers = [
+        ...baseModifiers.criticalModifiers,
+        ...characterData.combatData.critical.criticalModifiers
+    ]
+    baseModifiers.fisicalAttackModifiers = [
+        ...characterData.combatData.attack.attackModifiers,
+        ...characterData.combatData.attack.fisicalAttackModifiers,
+    ]
+    baseModifiers.fisicalDamageModifiers = [
+        ...characterData.combatData.damage.damageModifiers,
+        ...characterData.combatData.damage.fisicalDamageModifiers,
     ]
     characterInventory?.forEach((e) => {
         if (e.equipped && e.modifiers) {
             e.modifiers.forEach((m) => {
-                if (m.addTo && baseModifiers.hasOwnProperty(m.addTo)) {
-                    baseModifiers[m.addTo].push(m);
+                if (m.addTo && m.state == 'ACTIVE') {
+                    if (typeof m.addTo == 'string') {
+                        baseModifiers[m.addTo].push(m);
+                    } else {
+                        for (let i = 0; i < m.addTo.length; i++) {
+                            if (baseModifiers.hasOwnProperty(m.addTo[i])) {
+                                baseModifiers[m.addTo[i]].push(m);
+                            }
+                        }
+                    }
                 }
             });
         }
     })
-    characterStatus?.customModifiers?.forEach(m => {
-        if (m.addTo && baseModifiers.hasOwnProperty(m.addTo)) {
-            baseModifiers[m.addTo].push(m);
+    characterStatus.customModifiers?.forEach(m => {
+        if (m.addTo && m.state == 'ACTIVE') {
+            if (typeof m.addTo == 'string') {
+                baseModifiers[m.addTo].push(m);
+            } else {
+                for (let i = 0; i < m.addTo.length; i++) {
+                    if (baseModifiers.hasOwnProperty(m.addTo[i])) {
+                        baseModifiers[m.addTo[i]].push(m);
+                    }
+                }
+            }
         }
     });
     res.send({
@@ -451,6 +689,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                 return features;
             }, [] as IFeature[]).map((e) => {
                 e.origin = 'class';
+                if (characterStatus?.inactiveFeatures?.includes(e.featureId)) e.state = 'INACTIVE';
                 return e;
             }),
             subclassFeatures: subclass?.levels?.filter((e) => e.level < characterData.level)?.reduce((features, level) => {
@@ -458,6 +697,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                 return features;
             }, [] as IFeature[])?.map((e) => {
                 e.origin = 'subclass';
+                if (characterStatus?.inactiveFeatures?.includes(e.featureId)) e.state = 'INACTIVE';
                 return e;
             }) || [],
             itemFeatures: characterInventory?.reduce((features, item) => {
@@ -465,67 +705,115 @@ export const getCharacter = async (req: Request, res: Response) => {
                 return features;
             }, [] as IFeature[])?.map((e) => {
                 e.origin = 'items';
+                if (characterStatus?.inactiveFeatures?.includes(e.featureId)) e.state = 'INACTIVE';
                 return e;
             }) || [],
             customFeatures: customFeatures || []
         },
         characterInventory: characterInventory || [],
-        inspiration: characterStatus?.inspiration || {
-            reroll: false,
-            bonus: 0,
-            critic: false,
-            automaticSuccess: false
-        },
-        spells: characterStatus?.spells || {
-            list: [],
-            freeList: [],
-            additionalList: [],
-            preparedList: []
-        },
+        inspiration: characterStatus.inspiration,
         combatData: {
-            HP: {
-                total: reduceModifiers([...baseModifiers.HPModifiers, ...characterData.combatData.HP.modifiers], stadisticBonifiers),
-                modifiers: [...baseModifiers.HPModifiers, ...characterData.combatData.HP.modifiers]
+            defensiveStats: {
+                HP: {
+                    total: reduceModifiers([...baseModifiers.HPModifiers, ...characterData.combatData.HP.modifiers], stadisticBonifiers),
+                    modifiers: [...baseModifiers.HPModifiers, ...characterData.combatData.HP.modifiers]
+                },
+                defense: {
+                    total: reduceModifiers([...baseModifiers.defenseModifiers, ...characterData.combatData.defense.defenseModifiers], stadisticBonifiers),
+                    modifiers: [...baseModifiers.defenseModifiers, ...characterData.combatData.defense.defenseModifiers]
+                },
+                magicDefense: {
+                    total:reduceModifiers([...baseModifiers.magicDefenseModifiers, ...characterData.combatData.defense.magicDefenseModifiers], stadisticBonifiers),
+                    modifiers: [...baseModifiers.magicDefenseModifiers, ...characterData.combatData.defense.magicDefenseModifiers]
+                },
             },
-            defense: {
-                total: reduceModifiers([...baseModifiers.defenseModifiers, ...characterData.combatData.defense.defenseModifiers], stadisticBonifiers),
-                modifiers: [...baseModifiers.defenseModifiers, ...characterData.combatData.defense.defenseModifiers]
+            fisicalStats: {
+                speed: {
+                    total: reduceModifiers([...baseModifiers.speedModifiers, ...characterData.combatData.speed.speedModifiers], stadisticBonifiers),
+                    modifiers: [...baseModifiers.speedModifiers, ...characterData.combatData.speed.speedModifiers]
+                },
+                initiative: {
+                    total: reduceModifiers([...baseModifiers.initiativeModifiers, ...characterData.combatData.speed.initiativeModifiers], stadisticBonifiers),
+                    modifiers: [...baseModifiers.initiativeModifiers, ...characterData.combatData.speed.initiativeModifiers]
+                },
+                rangeAttackModifiers: {
+                    total: reduceModifiers([...baseModifiers.fisicalAttackModifiers, ...characterData.combatData.attack.rangeAttackModifiers], {}),
+                    modifiers: [...baseModifiers.rangeAttackModifiers, ...characterData.combatData.attack.rangeAttackModifiers]
+                },
+                meleeAttackModifiers: {
+                    total: reduceModifiers([...baseModifiers.fisicalAttackModifiers, ...characterData.combatData.attack.meleeAttackModifiers], {}),
+                    modifiers: [...baseModifiers.meleeAttackModifiers, ...characterData.combatData.attack.meleeAttackModifiers]
+                },
+                rangeDamageModifiers: {
+                    total: reduceModifiers([...baseModifiers.fisicalDamageModifiers, ...characterData.combatData.damage.rangeDamageModifiers], {}),
+                    modifiers: [...baseModifiers.rangeDamageModifiers, ...characterData.combatData.damage.rangeDamageModifiers]
+                },
+                meleeDamageModifiers: {
+                    total: reduceModifiers([...baseModifiers.fisicalDamageModifiers, ...characterData.combatData.damage.meleeDamageModifiers], {}),
+                    modifiers: [...baseModifiers.meleeDamageModifiers, ...characterData.combatData.damage.meleeDamageModifiers]
+                },
             },
-            magicDefense: {
-                total:reduceModifiers([...baseModifiers.magicDefenseModifiers, ...characterData.combatData.defense.magicDefenseModifiers], stadisticBonifiers),
-                modifiers: [...baseModifiers.magicDefenseModifiers, ...characterData.combatData.defense.magicDefenseModifiers]
+            magicalStats: {
+                elements: characterData.combatData.elements,
+                AP: {
+                    total: reduceModifiers([...baseModifiers.APModifiers, ...characterData.combatData.magic.APModifiers], stadisticBonifiers),
+                    modifiers: [...baseModifiers.APModifiers, ...characterData.combatData.magic.APModifiers]
+                },
+                magicSave: {
+                    total: reduceModifiers([...baseModifiers.magicSaveModifiers, ...characterData.combatData.magic.saveModifiers], stadisticBonifiers),
+                    modifiers: [...baseModifiers.magicSaveModifiers, ...characterData.combatData.magic.saveModifiers]
+                },
+                magicLaunch: {
+                    total: reduceModifiers([...baseModifiers.magicLaunchModifiers, ...characterData.combatData.magic.launchModifiers], stadisticBonifiers),
+                    modifiers: [...baseModifiers.magicLaunchModifiers, ...characterData.combatData.magic.launchModifiers]
+                },
+                magicHealing: {
+                    total: reduceModifiers([...baseModifiers.magicHealingModifiers, ...characterData.combatData.magic.healingModifiers], stadisticBonifiers),
+                    modifiers: [...baseModifiers.magicHealingModifiers, ...characterData.combatData.magic.healingModifiers]
+                },
+                magicDamage: {
+                    total: reduceModifiers([...baseModifiers.magicDamageModifiers, ...characterData.combatData.magic.damageModifiers], stadisticBonifiers),
+                    modifiers: [...baseModifiers.magicDamageModifiers, ...characterData.combatData.magic.damageModifiers]
+                },
+                spells: characterStatus.spells,
             },
-            speed: {
-                total: reduceModifiers([...baseModifiers.speedModifiers, ...characterData.combatData.speed.speedModifiers], stadisticBonifiers),
-                modifiers: [...baseModifiers.speedModifiers, ...characterData.combatData.speed.speedModifiers]
+            actions: {
+                actions: {
+                    total: reduceModifiers([...baseModifiers.actionModifiers, ...characterData.combatData.actions.actionModifiers], {}),
+                    modifiers: [...baseModifiers.actionModifiers, ...characterData.combatData.actions.actionModifiers]
+                },
+                bonusActions: {
+                    total: reduceModifiers([...baseModifiers.bonusActionModifiers, ...characterData.combatData.actions.bonusActionModifiers], {}),
+                    modifiers: [...baseModifiers.bonusActionModifiers, ...characterData.combatData.actions.bonusActionModifiers]
+                },
+                reactions: {
+                    total: reduceModifiers([...baseModifiers.reactionModifiers, ...characterData.combatData.actions.reactionModifiers], {}),
+                    modifiers: [...baseModifiers.reactionModifiers, ...characterData.combatData.actions.reactionModifiers]
+                },
             },
-            initiative: {
-                total: reduceModifiers([...baseModifiers.initiativeModifiers, ...characterData.combatData.speed.initiativeModifiers], stadisticBonifiers),
-                modifiers: [...baseModifiers.initiativeModifiers, ...characterData.combatData.speed.initiativeModifiers]
+            critical: {
+                critical: {
+                    total: reduceModifiers([...baseModifiers.criticalModifiers, ...characterData.combatData.critical.criticalModifiers], {}),
+                    modifiers: [...baseModifiers.criticalModifiers, ...characterData.combatData.critical.criticalModifiers]
+                },
+                criticalFail: {
+                    total: reduceModifiers([...baseModifiers.criticalFailModifiers, ...characterData.combatData.critical.criticalFailModifiers], {}),
+                    modifiers: [...baseModifiers.criticalFailModifiers, ...characterData.combatData.critical.criticalFailModifiers]
+                },
+                criticalOnFisical: {
+                    total: reduceModifiers([...baseModifiers.criticalAttackModifiers, ...characterData.combatData.critical.criticalOnFisicalAttackModifiers], {}),
+                    modifiers: [...baseModifiers.criticalAttackModifiers, ...characterData.combatData.critical.criticalOnFisicalAttackModifiers]
+                },
+                criticalOnMagic: {
+                    total: reduceModifiers([...baseModifiers.criticalAttackModifiers, ...characterData.combatData.critical.criticalOnMagicAttackModifiers], {}),
+                    modifiers: [...baseModifiers.criticalAttackModifiers, ...characterData.combatData.critical.criticalOnMagicAttackModifiers]
+                },
             },
-            elements: characterData.combatData.elements,
-            AP: {
-                total: reduceModifiers([...baseModifiers.APModifiers, ...characterData.combatData.magic.APModifiers], stadisticBonifiers),
-                modifiers: [...baseModifiers.APModifiers, ...characterData.combatData.magic.APModifiers]
-            },
-            magicSave: {
-                total: reduceModifiers([...baseModifiers.magicSaveModifiers, ...characterData.combatData.magic.saveModifiers], stadisticBonifiers),
-                modifiers: [...baseModifiers.magicSaveModifiers, ...characterData.combatData.magic.saveModifiers]
-            },
-            magicLaunch: {
-                total: reduceModifiers([...baseModifiers.magicLaunchModifiers, ...characterData.combatData.magic.launchModifiers], stadisticBonifiers),
-                modifiers: [...baseModifiers.magicLaunchModifiers, ...characterData.combatData.magic.launchModifiers]
-            },
-            magicHealing: {
-                total: reduceModifiers([...baseModifiers.magicHealingModifiers, ...characterData.combatData.magic.healingModifiers], stadisticBonifiers),
-                modifiers: [...baseModifiers.magicHealingModifiers, ...characterData.combatData.magic.healingModifiers]
-            },
-            magicDamage: {
-                total: reduceModifiers(characterData.combatData.magic.damageModifiers, stadisticBonifiers),
-                modifiers: characterData.combatData.magic.damageModifiers
-            },
-            // TODO: Agregar calculo actions, critical, attack, damage, resources
-        }
+            resource: {
+                name: characterClass.resourceType,
+                uses: characterActualLevel?.resourceUses || 0,
+            }
+        },
     });
 }
 
@@ -727,6 +1015,8 @@ export const levelUp = async (req: Request, res: Response) => {
     if (!characterDetail) return res.status(406).json({ message: 'No se encontró el detalle del personaje' });
     const characterClass = await Class.findById(characterDetail.class.type);
     if (!characterClass) return res.status(406).json({ message: 'No se encontró la clase' });
+    const characterStatus = await CharacterStatus.findOne({ characterId });
+    if (!characterStatus) return res.status(406).json({ message: 'No se encontró el estado del personaje' });
     const { newHP, selectedSecondaryFeatures, selectedSubclass } = req.body;
     if (!newHP) return res.status(400).send({ message: 'Falta la vida' });
     const actualLevel = characterDetail.level;
@@ -739,7 +1029,7 @@ export const levelUp = async (req: Request, res: Response) => {
     if (nextLevelData.knownSecondaryFeatures && nextLevelData.knownSecondaryFeatures > 0 && validateSecondaryFeatures) {
         return res.status(406).json({ message: 'Faltan habilidades secundarias' });
     }
-    characterDetail.combatData.HP.modifiers.push({ value: newHP, type: 'level', description: 'Vida de nivel ' + nextLevel });
+    characterDetail.combatData.HP.modifiers.push({ value: newHP, type: 'level', description: 'Vida de nivel ' + nextLevel, state: 'ACTIVE' });
     const modifiers = [];
     if (nextLevelData.features) {
         const classFeatures = nextLevelData.features;
@@ -766,6 +1056,20 @@ export const levelUp = async (req: Request, res: Response) => {
                 return modifiers;
             }, [] as IModifier[]);
             if (modifiers.length > 0) modifiers.push(...permanentModifiers);
+            if (subclassLevel.additionalMaxPreparedSpells) {
+                nextLevelData.maxPreparedSpells += subclassLevel.additionalMaxPreparedSpells;
+            }
+            if (subclassLevel.spells) {
+                nextLevelData.spells.push(...subclassLevel.spells);
+            }
+            if (subclassLevel.additionalSpells) {
+                if (!nextLevelData.additionalSpells) nextLevelData.additionalSpells = [];
+                nextLevelData.additionalSpells.push(...subclassLevel.additionalSpells);
+            }
+            if (subclassLevel.freeSpells) {
+                if (!nextLevelData.freeSpells) nextLevelData.freeSpells = [];
+                nextLevelData.freeSpells.push(...subclassLevel.freeSpells);
+            }
         }
     }
     for (let i = 0; i < modifiers.length; i++) {
@@ -835,24 +1139,6 @@ export const levelUp = async (req: Request, res: Response) => {
                 case 'meleeAttackModifiers':
                     characterDetail.combatData.attack.meleeAttackModifiers.push(modifier);
                     break;
-                case 'areaAttackModifiers':
-                    characterDetail.combatData.attack.areaAttackModifiers.push(modifier);
-                    break;
-                case 'singleAttackModifiers':
-                    characterDetail.combatData.attack.singleAttackModifiers.push(modifier);
-                    break;
-                case 'multipleAttackModifiers':
-                    characterDetail.combatData.attack.multipleAttackModifiers.push(modifier);
-                    break;
-                case 'attackOnFisicalAttackModifiers':
-                    characterDetail.combatData.attack.attackOnFisicalAttackModifiers.push(modifier);
-                    break;
-                case 'attackOnMagicAttackModifiers':
-                    characterDetail.combatData.attack.attackOnMagicAttackModifiers.push(modifier);
-                    break;
-                case 'attackOnAttackModifiers':
-                    characterDetail.combatData.attack.attackOnAttackModifiers.push(modifier);
-                    break;
                 case 'damageModifiers':
                     characterDetail.combatData.damage.damageModifiers.push(modifier);
                     break;
@@ -864,24 +1150,6 @@ export const levelUp = async (req: Request, res: Response) => {
                     break;
                 case 'meleeDamageModifiers':
                     characterDetail.combatData.damage.meleeDamageModifiers.push(modifier);
-                    break;
-                case 'areaDamageModifiers':
-                    characterDetail.combatData.damage.areaDamageModifiers.push(modifier);
-                    break;
-                case 'singleDamageModifiers':
-                    characterDetail.combatData.damage.singleDamageModifiers.push(modifier);
-                    break;
-                case 'multipleDamageModifiers':
-                    characterDetail.combatData.damage.multipleDamageModifiers.push(modifier);
-                    break;
-                case 'damageOnFisicalAttackModifiers':
-                    characterDetail.combatData.damage.damageOnFisicalAttackModifiers.push(modifier);
-                    break;
-                case 'damageOnMagicAttackModifiers':
-                    characterDetail.combatData.damage.damageOnMagicAttackModifiers.push(modifier);
-                    break;
-                case 'damageOnAttackModifiers':
-                    characterDetail.combatData.damage.damageOnAttackModifiers.push(modifier);
                     break;
                 default:
                     console.error('No se encontró el tipo de modificador');
@@ -910,6 +1178,11 @@ export const levelUp = async (req: Request, res: Response) => {
         characterStatus.selectedSecondaryFeatures = selectedFeatures;
         await characterStatus.save();
     }
+    characterStatus.spells.list.push(...nextLevelData.spells);
+    characterStatus.spells.freeList.push(...nextLevelData.freeSpells || []);
+    characterStatus.spells.additionalList.push(...nextLevelData.additionalSpells || []);
+    characterStatus.spells.maxPrepared = nextLevelData.maxPreparedSpells;
+    await characterStatus.save();
     res.send({ success: true });
 }
 

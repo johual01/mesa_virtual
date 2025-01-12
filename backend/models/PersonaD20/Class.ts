@@ -1,17 +1,18 @@
-import {Schema, model, Document} from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 import { IFeature, personaStadistics } from '../types';
-import { ISpell } from '../Spell';
 
 export interface IClassLevel {
     level: number,
     proficency: number,
-    spells: ISpell[],
+    spells: Types.ObjectId[],
+    additionalSpells?: Types.ObjectId[],
+    freeSpells?: Types.ObjectId[],
     features: IFeature[],
     APGained: number,
-    knownSpells: number,
+    maxPreparedSpells: number,
     knownSecondaryFeatures?: number,
     featureIdThatGrantsSecondaryFeatures?: string,
-    resourceUses?: number | number[],
+    resourceUses?: number,
     damageDie?: string,
     selectSubclass?: boolean,
     gainSubclassFeature?: boolean,

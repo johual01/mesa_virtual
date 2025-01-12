@@ -28,8 +28,8 @@ export interface ISpell extends Document {
     system: system,
     custom?: boolean,
     owner?: Types.ObjectId,
-    cost?: string,
-    AP?: number,
+    cost: string,
+    AP: number,
     costHP?: string,
     costType?: costTypes,
     useType: useTypes,
@@ -39,13 +39,16 @@ export interface ISpell extends Document {
     concentration: boolean,
     effects?: ISpellEffect[],
     modifiers?: IModifier[],
+    toList?: 'list' | 'free' | 'additional',
+    state: 'ACTIVE' | 'INACTIVE' | 'DELETED'
 }
 
 const SpellSchema = new Schema({
     name: {type: String, required: true},
     system: {type: String, required: true},
-    cost: {type: String},
+    custom: { type: Boolean },
     owner: {type: Schema.Types.ObjectId, ref: 'Character'},
+    cost: {type: String},
     AP: {type: Number},
     costHP: {type: String},
     costType: {type: String},
@@ -56,6 +59,8 @@ const SpellSchema = new Schema({
     concentration: {type: Boolean, required: true},
     effects: {type: [ Object ]},
     modifiers: {type: [ Object ] },
+    toList: { type: String, enum: ['list', 'free', 'additional']},
+    state: { type: String, enum: ['ACTIVE', 'INACTIVE', 'DELETED'], default: 'ACTIVE'}
 });
 
 export default model<ISpell>('Spell', SpellSchema);

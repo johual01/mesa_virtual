@@ -47,10 +47,8 @@ router.get('/getCharacterPDF/:characterId', validateToken, Character.getCharacte
 router.post('/changeFeatureStatus/:characterId/:featureId', validateToken, CharacterFeatures.changeFeatureStatus);
 router.post('/addCustomFeature/:characterId', validateToken, CharacterFeatures.addFeature);
 router.patch('/editCustomFeature/:characterId/:featureId', validateToken, CharacterFeatures.editFeature);
-router.delete('/deleteCustomFeature/:characterId/:featureId', validateToken, CharacterFeatures.deleteFeature);
 
 // rutas de hechizos del personaje
-router.get('/getCharacterSpells/:characterId', validateToken, CharacterSpells.getCharacterSpells);
 router.post('/prepareSpell/:characterId/:spellId', validateToken, CharacterSpells.prepareSpell);
 router.post('/clearPreparedSpells/:characterId', validateToken, CharacterSpells.clearPreparedSpells);
 router.post('/addCustomSpell/:characterId', validateToken, CharacterSpells.addSpell);

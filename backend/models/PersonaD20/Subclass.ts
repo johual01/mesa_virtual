@@ -1,10 +1,11 @@
-import {Schema, model, Document, Types } from 'mongoose';
-import { IFeature, personaStadistics } from '../types';
+import { Schema, model, Document, Types } from 'mongoose';
 import { IClassLevel, IPersonaClass } from './Class';
-import { ISpell } from '../Spell';
 
-export interface ISubclassLevel extends Omit<IClassLevel, "proficency" | "spells" | "APGained" | "knownSpells"> {
-    spells?: ISpell[]
+export interface ISubclassLevel extends Omit<IClassLevel, "proficency" | "spells" | "APGained" | "maxPreparedSpells"> {
+    spells?: Types.ObjectId[],
+    additionalSpells?: Types.ObjectId[],
+    freeSpells?: Types.ObjectId[],
+    additionalMaxPreparedSpells?: number,
 }
 
 export interface IPersonaSubclass extends Document {

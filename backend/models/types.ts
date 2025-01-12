@@ -114,11 +114,13 @@ export interface IModifier {
     description: string,
     permanent?: boolean,
     origin?: string,
-    addTo?: string,
+    featureId?: string,
+    addTo?: string | string[],
     target?: targetTypes,
     duration?: IDuration,
     stadistic?: personaStadistics,
     replaceStadistic?: personaStadistics,
+    state: 'ACTIVE' | 'INACTIVE',
     modifierId?: string
 }
 
@@ -167,5 +169,6 @@ export interface IFeature {
     triggerForRecover?: triggerTypes | triggerTypes[],
     cd?: number | string, // Dificultad a superar
     origin?: string,
+    state?: 'ACTIVE' | 'INACTIVE',
     subfeatures?: IFeature[],
 }

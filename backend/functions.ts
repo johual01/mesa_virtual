@@ -82,6 +82,7 @@ export function arraysEqual<T>(arr1: T[], arr2: T[]): boolean {
 
 export function reduceModifiers(array: IModifier[], data: any) {
     return array.reduce((acc: number, mod: IModifier) => {
+        if (mod.state === 'INACTIVE') return acc;
         const value = typeof mod.value === 'number' ?  + mod.value : data[mod.value];
         return acc + value;
     }, 0)

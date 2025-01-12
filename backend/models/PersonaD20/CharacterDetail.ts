@@ -119,24 +119,12 @@ export interface ICharacterPersonaDetail {
             fisicalAttackModifiers: IModifier[],
             rangeAttackModifiers: IModifier[],
             meleeAttackModifiers: IModifier[],
-            areaAttackModifiers: IModifier[],
-            singleAttackModifiers: IModifier[],
-            multipleAttackModifiers: IModifier[],
-            attackOnFisicalAttackModifiers: IModifier[],
-            attackOnMagicAttackModifiers: IModifier[],
-            attackOnAttackModifiers: IModifier[]
         },
         damage: {
             damageModifiers: IModifier[],
             fisicalDamageModifiers: IModifier[],
             rangeDamageModifiers: IModifier[],
             meleeDamageModifiers: IModifier[],
-            areaDamageModifiers: IModifier[],
-            singleDamageModifiers: IModifier[],
-            multipleDamageModifiers: IModifier[],
-            damageOnFisicalAttackModifiers: IModifier[],
-            damageOnMagicAttackModifiers: IModifier[],
-            damageOnAttackModifiers: IModifier[]
         }
     }
 }
