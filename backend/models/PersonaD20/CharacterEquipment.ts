@@ -86,6 +86,7 @@ export interface IConsumibleProperties {
 
 export interface ICharacterEquipment extends Document {
     character: Types.ObjectId | ICharacter,
+    state: string,
     equipmentName: string,
     description: string,
     type: equipmentType,
@@ -100,7 +101,7 @@ export interface ICharacterEquipment extends Document {
     additionalProperties?: IFeature[],
 }
 
-export interface IItem extends Omit<ICharacterEquipment, 'character'> {}
+export interface IItem extends Omit<ICharacterEquipment, 'character state'> {}
 
 const itemObject = {
     equipmentName: {
@@ -155,6 +156,11 @@ const CharacterEquipmentSchema = new Schema({
     character: {
         type: Schema.Types.ObjectId,
         required: true,
+    },
+    state: {
+        type: String,
+        required: true,
+        default: 'ACTIVE'
     },
     ...itemObject
 });

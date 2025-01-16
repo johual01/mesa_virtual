@@ -314,7 +314,7 @@ export const getCharacter = async (req: Request, res: Response) => {
     const characterClass = characterData?.class?.type as IPersonaClass;
     const subclass = characterData?.class?.subclass as IPersonaSubclass;
     const customFeatures = await CustomFeature.find({ character: characterId, state: { $ne: 'DELETED' } });
-    const characterInventory = await CharacterEquipment.find({ character: characterId });
+    const characterInventory = await CharacterEquipment.find({ character: characterId, state: { $ne: 'DELETED'} });
     const characterStatus = await CharacterStatus.findOne({ characterId }).populate(['spells.list', 'spells.freeList', 'spells.additionalList', 'spells.preparedList']);
     if (!characterData) return res.status(406).json({ message: 'No se encontró la información del personaje' });
     if (!characterStatus) return res.status(406).json({ message: 'No se encontró el estado del personaje' });

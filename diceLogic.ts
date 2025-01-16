@@ -45,12 +45,10 @@ export function parseDiceString(str: string): IDices {
 }
 
 export function rollDice(dices: IDices, randomizer?: Function): IDicesTotalizer {
-    if (!randomizer) {
-        randomizer = Math.random;
-    }
+    const fnRandomizer = randomizer || Math.random;
     let totalizer = 0;
     const diceResults = dices.dices.map((dice) => {
-        const result = Math.floor(randomizer() * dice) + (dice < 0 ? 0 : 1);
+        const result = Math.floor(fnRandomizer() * dice) + (dice < 0 ? 0 : 1);
         totalizer += result;
         return { value: result, dice: dice < 0 ? dice * -1 : dice };
     })

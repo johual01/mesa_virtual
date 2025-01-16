@@ -56,7 +56,7 @@ router.patch('/editCustomSpell/:characterId/:spellId', validateToken, CharacterS
 router.delete('/deleteCustomSpell/:characterId/:spellId', validateToken, CharacterSpells.deleteSpell);
 
 // rutas de objetos del personaje
-router.get('/getCharacterInventory/:characterId', validateToken, CharacterInventory.getCharacterInventory);
+router.get('/getDefaultItems/:characterId', validateToken, CharacterInventory.getDefaultItems);
 router.post('/addItem/:characterId', validateToken, CharacterInventory.addItem);
 router.patch('/editItem/:characterId/:itemId', validateToken, CharacterInventory.editItem);
 router.delete('/deleteItem/:characterId/:itemId', validateToken, CharacterInventory.deleteItem);
