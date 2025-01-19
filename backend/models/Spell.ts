@@ -5,10 +5,10 @@ import { IModifier, elements, healingTypes, barrierTypes, targetTypes, IRange, t
 export interface ISpellEffect {
     type: string, // Tipo de hechizo
     damage?: string, // Daño
-    typeDamage?: elements, // Tipo de daño
+    damageType?: elements, // Tipo de daño
     statusEffect?: IStatusEffect, // Efecto de estado
-    heal?: string, // Cantidad de curación - Puede tener dados o valores fijos (half_level) o combinaciones
-    typeHeal?: healingTypes, // Tipo de curación
+    heal?: string, // Cantidad de curación - Puede tener dados o valores fijos o valores dinámicos (por ejemplo, {half_level}) o combinaciones
+    healType?: healingTypes, // Tipo de curación
     shieldType?: barrierTypes, // Tipo de barrera
     target?: targetTypes, // Objetivo
     range?: IRange, // Rango

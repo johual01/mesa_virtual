@@ -11,11 +11,12 @@ export interface IClassLevel {
     APGained: number,
     maxPreparedSpells: number,
     knownSecondaryFeatures?: number,
-    featureIdThatGrantsSecondaryFeatures?: string,
     resourceUses?: number,
     damageDie?: string,
     selectSubclass?: boolean,
     gainSubclassFeature?: boolean,
+    gainSecondaryAffinity?: boolean,
+    gainStatIncrease?: boolean,
 }
 
 export interface IPersonaClass extends Document {
@@ -25,6 +26,7 @@ export interface IPersonaClass extends Document {
     salvations: personaStadistics[],
     levels: IClassLevel[],
     resourceType?: string | string[],
+    featureIdThatGrantsSecondaryFeatures?: string,
 }
 
 const ClassSchema = new Schema({

@@ -986,13 +986,16 @@ export const getLevelUpInfo = async (req: Request, res: Response) => {
         spells: nextLevelData.spells,
         shouldChooseSubclass: nextLevelData.selectSubclass,
         shouldChooseSecondaryFeatures: (nextLevelData.knownSecondaryFeatures && nextLevelData.knownSecondaryFeatures > 0),
+        shouldChooseSecondaryAffinities: nextLevelData.gainSecondaryAffinity,
+        shouldChooseStatImprovement: nextLevelData.gainStatIncrease,
+        // TODO: Agregar dotes
     }
     if (nextLevelData.selectSubclass) {
         response.subclasses = await Subclass.find({ class: characterClass._id });
     }
     if (response.shouldChooseSecondaryFeatures) {
-        if (!nextLevelData.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la habilidad que otorga las habilidades secundarias' });
-        const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, nextLevel, nextLevelData.featureIdThatGrantsSecondaryFeatures)
+        if (!characterClass.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la habilidad que otorga las habilidades secundarias' });
+        const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, nextLevel, characterClass.featureIdThatGrantsSecondaryFeatures)
         if (!secondaryFeatures) return res.status(406).json({ message: 'No se encontraron las habilidades secundarias' });
         response.secondaryFeatures =secondaryFeatures.map((f) => {
                 return {
@@ -1017,7 +1020,7 @@ export const levelUp = async (req: Request, res: Response) => {
     if (!characterClass) return res.status(406).json({ message: 'No se encontró la clase' });
     const characterStatus = await CharacterStatus.findOne({ characterId });
     if (!characterStatus) return res.status(406).json({ message: 'No se encontró el estado del personaje' });
-    const { newHP, selectedSecondaryFeatures, selectedSubclass } = req.body;
+    const { newHP, selectedSecondaryFeatures, selectedSubclass, selectedSecondaryAffinity, selectedStats } = req.body;
     if (!newHP) return res.status(400).send({ message: 'Falta la vida' });
     const actualLevel = characterDetail.level;
     const nextLevel = actualLevel + 1;
@@ -1163,6 +1166,30 @@ export const levelUp = async (req: Request, res: Response) => {
         if (!subclass) return res.status(406).json({ message: 'No se encontró la subclase' });
         characterDetail.class.subclass = selectedSubclass;
     }
+    if (nextLevelData.gainSecondaryAffinity) {
+        characterDetail.combatData.elements.secondaryAffinity = selectedSecondaryAffinity;
+        characterDetail.markModified('combatData');
+    }
+    if (nextLevelData.gainStatIncrease) {
+        const stats = characterDetail.stadistics;
+        if (selectedStats.courage) {
+            stats.courage += selectedStats.courage;
+        }
+        if (selectedStats.dexterity) {
+            stats.dexterity += selectedStats.dexterity;
+        }
+        if (selectedStats.instincts) {
+            stats.instincts += selectedStats.instincts;
+        }
+        if (selectedStats.knowledge) {
+            stats.knowledge += selectedStats.knowledge;
+        }
+        if (selectedStats.charisma) {
+            stats.charisma += selectedStats.charisma;
+        }
+        characterDetail.stadistics = stats;
+        characterDetail.markModified('stadistics');
+    }
     characterDetail.level = nextLevel;
     characterDetail.proficency = nextLevelData.proficency;
     characterDetail.markModified('proficency');
@@ -1170,8 +1197,8 @@ export const levelUp = async (req: Request, res: Response) => {
     if (nextLevelData.knownSecondaryFeatures) {
         const characterStatus = await CharacterStatus.findById(character.characterData);
         if (!characterStatus) return res.status(406).json({ message: 'No se encontró el estado del personaje' });
-        if (!nextLevelData.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la habilidad que otorga las habilidades secundarias' });
-        const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, nextLevel, nextLevelData.featureIdThatGrantsSecondaryFeatures);
+        if (!characterClass.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la habilidad que otorga las habilidades secundarias' });
+        const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, nextLevel, characterClass.featureIdThatGrantsSecondaryFeatures);
         if (!secondaryFeatures) return res.status(406).json({ message: 'No se encontraron las habilidades secundarias' });
         const selectedFeatures = secondaryFeatures.filter((f) => selectedSecondaryFeatures.includes(f.featureId));
         if (selectedFeatures.length != nextLevelData.knownSecondaryFeatures) return res.status(406).json({ message: 'Faltan habilidades secundarias' });
@@ -1246,8 +1273,8 @@ export const getSecondaryFeatures = async (req: Request, res: Response) => {
     const actualLevel = characterDetail.level;
     const actualLevelData = characterClass.levels.find((e) => e.level == actualLevel);
     if (!actualLevelData) return res.status(406).json({ message: 'No se encontró el nivel actual' });
-    if (!actualLevelData.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la característica que otorga las habilidades secundarias' });
-    const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, actualLevel, actualLevelData.featureIdThatGrantsSecondaryFeatures)
+    if (!characterClass.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la característica que otorga las habilidades secundarias' });
+    const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, actualLevel, characterClass.featureIdThatGrantsSecondaryFeatures)
     if (!secondaryFeatures) return res.status(406).json({ message: 'No se encontraron las habilidades secundarias' });
     res.send({ 
         secondaryFeatures: secondaryFeatures.map((f: IFeature) => {
@@ -1277,8 +1304,8 @@ export const updateSelectedSecondaryFeatures = async (req: Request, res: Respons
     const actualLevel = characterDetail.level;
     const actualLevelData = characterClass.levels.find((e) => e.level == actualLevel);
     if (!actualLevelData) return res.status(406).json({ message: 'No se encontró el nivel actual' });
-    if (!actualLevelData.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la característica que otorga las habilidades secundarias' });
-    const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, actualLevel, actualLevelData.featureIdThatGrantsSecondaryFeatures);
+    if (!characterClass.featureIdThatGrantsSecondaryFeatures) return res.status(406).json({ message: 'No se encontró la característica que otorga las habilidades secundarias' });
+    const secondaryFeatures = obtainSecondaryFeatures(characterDetail, characterClass, actualLevel, characterClass.featureIdThatGrantsSecondaryFeatures);
     if (!secondaryFeatures) return res.status(406).json({ message: 'No se encontraron las habilidades secundarias' });
     characterStatus.selectedSecondaryFeatures = secondaryFeatures?.filter((f) => selectedSecondaryFeatures.includes(f.featureId));
     await characterStatus.save();
@@ -1297,5 +1324,5 @@ const obtainSecondaryFeatures = (characterDetail: ICharacterPersonaDetail, chara
         .flatMap((el) => el.features)
         .concat(subclassFeatures || [])
         .find((f) => f.featureId == featureId)
-        ?.subfeatures
+        ?.subFeatures
 }

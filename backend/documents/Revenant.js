@@ -1,12 +1,4 @@
-const characterClass = await db.class.insertOne({
-    name: 'Revenant',
-    description: 'Pum te pego',
-    HPDice: '2d4',
-    salvations: ['courage', 'dexterity'],
-    launchSpell: ['courage', 'dexterity'], 
-    levels: [],
-    resourceType: 'Inner Rage',
-})
+
 
 const spells = await db.spells.insertMany([
     {
@@ -30,7 +22,9 @@ const spells = await db.spells.insertMany([
                 target: 'enemy',
                 bonus: 0
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Potenciación Básica (F)',
@@ -41,17 +35,22 @@ const spells = await db.spells.insertMany([
         category: 'buff',
         description: 'Aumenta en +2 a todo daño infligido por 3 turnos a ti o a un aliado.',
         concentration: false,
-        modifiers: [{
-            value: 2,
-            type: 'damage',
-            description: 'Aumenta en +2 a todo daño infligido',
-            target: 'ally',
-            duration: {
-                type: 'temporal',
-                duration: 3,
-                medition: 'rounds'
+        modifiers: [
+            {
+                value: 2,
+                type: 'damage',
+                description: 'Aumenta en +2 a todo daño infligido',
+                target: 'ally',
+                duration: {
+                    type: 'temporal',
+                    duration: 3,
+                    medition: 'rounds'
+                },
+                etiquette: 'empowerment_damage'
             }
-        }]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Potenciación Básica (P)',
@@ -62,17 +61,22 @@ const spells = await db.spells.insertMany([
         category: 'buff',
         description: 'Aumenta en +2 el ataque por 3 turnos a ti o a un aliado.',
         concentration: false,
-        modifiers: [{
-            value: 2,
-            type: 'attack',
-            description: 'Aumenta en +2 el ataque',
-            target: 'ally',
-            duration: {
-                type: 'temporal',
-                duration: 3,
-                medition: 'rounds'
+        modifiers: [
+            {
+                value: 2,
+                type: 'attack',
+                description: 'Aumenta en +2 el ataque',
+                target: 'ally',
+                duration: {
+                    type: 'temporal',
+                    duration: 3,
+                    medition: 'rounds'
+                },
+                etiquette: 'empowerment_attack'
             }
-        }]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Potenciación Básica (D)',
@@ -93,20 +97,24 @@ const spells = await db.spells.insertMany([
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_defense'
             },
             {
                 value: 1,
-                type: 'magic resistance',
+                type: 'magic_defense',
                 description: 'Aumenta en +1 la resistencia mágica',
                 target: 'ally',
                 duration: {
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_defense'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Curación Básica',
@@ -120,11 +128,13 @@ const spells = await db.spells.insertMany([
         effects: [
             {
                 type: 'heal',
-                typeHeal: 'HP',
-                heal: '(half_level)d6',
+                healType: 'HP',
+                heal: '{half_level}d6',
                 target: 'self',
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico I (A)',
@@ -147,7 +157,9 @@ const spells = await db.spells.insertMany([
                 },
                 target: 'enemies_at_range',
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico II (I)',
@@ -170,7 +182,9 @@ const spells = await db.spells.insertMany([
                 target: 'enemy',
                 bonus: 0
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico I (E)',
@@ -217,7 +231,9 @@ const spells = await db.spells.insertMany([
                     medition: 'none',
                 }
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico I (M)',
@@ -240,7 +256,9 @@ const spells = await db.spells.insertMany([
                 target: 'enemy',
                 bonus: 0
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Barrera Física',
@@ -263,7 +281,9 @@ const spells = await db.spells.insertMany([
                 },
                 trigger: 'before_receive_attack'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Regenerar I',
@@ -275,7 +295,7 @@ const spells = await db.spells.insertMany([
         effects: [
             {
                 type: 'heal',
-                typeHeal: 'HP',
+                healType: 'HP',
                 heal: '1d8',
                 target: 'self',
                 trigger: 'end_of_turn',
@@ -284,7 +304,7 @@ const spells = await db.spells.insertMany([
             },
             {
                 type: 'heal',
-                typeHeal: 'HP',
+                healType: 'HP',
                 heal: '2d4',
                 target: 'self',
                 trigger: 'end_of_turn',
@@ -293,14 +313,16 @@ const spells = await db.spells.insertMany([
             },
             {
                 type: 'heal',
-                typeHeal: 'HP',
+                healType: 'HP',
                 heal: '2d6',
                 target: 'self',
                 trigger: 'end_of_turn',
                 levelCondition: 17,
                 etiquette: 'regeneration'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico II (A)',
@@ -323,7 +345,9 @@ const spells = await db.spells.insertMany([
                 },
                 target: 'enemies_at_range',
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico II (E)',
@@ -370,7 +394,9 @@ const spells = await db.spells.insertMany([
                     medition: 'none',
                 }
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico II (M)',
@@ -393,7 +419,9 @@ const spells = await db.spells.insertMany([
                 target: 'enemy',
                 bonus: 0
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico III (I)',
@@ -416,7 +444,9 @@ const spells = await db.spells.insertMany([
                 target: 'enemy',
                 bonus: 0
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Rebelión',
@@ -437,7 +467,9 @@ const spells = await db.spells.insertMany([
                 duration: 3,
                 medition: 'rounds'
             }
-        }]
+        }],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Potenciación Compleja (F)',
@@ -457,8 +489,11 @@ const spells = await db.spells.insertMany([
                 type: 'temporal',
                 duration: 3,
                 medition: 'rounds'
-            }
-        }]
+            },
+            etiquette: 'empowerment_damage'
+        }],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Potenciación Compleja (P)',
@@ -478,8 +513,11 @@ const spells = await db.spells.insertMany([
                 type: 'temporal',
                 duration: 3,
                 medition: 'rounds'
-            }
-        }]
+            },
+            etiquette: 'empowerment_attack'
+        }],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Potenciación Compleja (D)',
@@ -500,20 +538,24 @@ const spells = await db.spells.insertMany([
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_defense'
             },
             {
                 value: 2,
-                type: 'magic resistance',
+                type: 'magic_defense',
                 description: 'Aumenta en +2 la resistencia mágica',
                 target: 'ally',
                 duration: {
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_defense'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Bebedor de Sombras',
@@ -525,12 +567,14 @@ const spells = await db.spells.insertMany([
         effects: [
             {
                 type: 'heal',
-                typeHeal: 'HP',
-                heal: 'half_level',
+                healType: 'HP',
+                heal: '{half_level}',
                 target: 'self',
                 trigger: 'at_damage',
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Devolución',
@@ -546,7 +590,9 @@ const spells = await db.spells.insertMany([
                 trigger: 'before_receive_attack',
                 condition: 'attack is between 1 and 5',
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico III (A)',
@@ -569,7 +615,9 @@ const spells = await db.spells.insertMany([
                 },
                 target: 'enemies_at_range',
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico III (E)',
@@ -616,7 +664,9 @@ const spells = await db.spells.insertMany([
                     medition: 'none',
                 }
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Regenerar II',
@@ -628,7 +678,7 @@ const spells = await db.spells.insertMany([
         effects: [
             {
                 type: 'heal',
-                typeHeal: 'HP',
+                healType: 'HP',
                 heal: '4d4',
                 target: 'self',
                 trigger: 'end_of_turn',
@@ -637,14 +687,16 @@ const spells = await db.spells.insertMany([
             },
             {
                 type: 'heal',
-                typeHeal: 'HP',
+                healType: 'HP',
                 heal: '4d6',
                 target: 'self',
                 trigger: 'end_of_turn',
                 levelCondition: 17,
                 etiquette: 'regeneration'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico III (M)',
@@ -667,7 +719,9 @@ const spells = await db.spells.insertMany([
                 target: 'enemy',
                 bonus: 0
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Potenciación Completa',
@@ -688,7 +742,8 @@ const spells = await db.spells.insertMany([
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_attack'
             },
             {
                 value: 5,
@@ -699,7 +754,8 @@ const spells = await db.spells.insertMany([
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_damage'
             },
             {
                 value: 3,
@@ -710,20 +766,24 @@ const spells = await db.spells.insertMany([
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_defense'
             },
             {
                 value: 2,
-                type: 'magic resistance',
+                type: 'magic_defense',
                 description: 'Aumenta +2 a la Resistencia Mágica',
                 target: 'self',
                 duration: {
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_defense'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico IV (I)',
@@ -746,7 +806,9 @@ const spells = await db.spells.insertMany([
                 target: 'enemy',
                 bonus: 0
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Avance Valiente',
@@ -766,8 +828,11 @@ const spells = await db.spells.insertMany([
                 type: 'temporal',
                 duration: 3,
                 medition: 'rounds'
-            }
-        }]
+            },
+            etiquette: 'empowerment_critical'
+        }],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Grito de Guerra',
@@ -784,26 +849,32 @@ const spells = await db.spells.insertMany([
                 type: 'damage',
                 description: 'Otorgas a tus aliados +5 al daño infligido',
                 target: 'all_allies',
+                etiquette: 'empowerment_damage'
             },
             {
                 type: 'critical',
                 value: 0.05,
                 description: 'Aumentas en 5% su porcentaje de crítico en ataques',
                 target: 'all_allies',
+                etiquette: 'empowerment_critical'
             },
             {
                 value: -3,
                 type: 'defense',
                 description: 'Reduces en -3 la Defensa',
                 target: 'all_enemies',
+                etiquette: 'debilitation_defense'
             },
             {
                 value: -2,
-                type: 'magic resistance',
+                type: 'magic_defense',
                 description: 'Reduces en -2 a la Resistencia Mágica',
                 target: 'all_enemies',
+                etiquette: 'debilitation_defense'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Carga',
@@ -820,16 +891,20 @@ const spells = await db.spells.insertMany([
                 target: 'enemy',
                 trigger: 'next_physical_attack',
                 condition: 'attack is successful',
-                modification: 'critical'
+                modification: 'critical',
+                etiquette: 'charge'
             },
             {
                 type: 'attack',
                 target: 'enemy',
                 trigger: 'next_physical_attack',
                 condition: 'attack is failed',
-                modification: 'hit'
+                modification: 'hit',
+                etiquette: 'charge'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico IV (A)',
@@ -852,7 +927,9 @@ const spells = await db.spells.insertMany([
                 },
                 target: 'enemies_at_range',
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico IV (E)',
@@ -899,7 +976,9 @@ const spells = await db.spells.insertMany([
                     medition: 'none',
                 }
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Ataque Físico IV (M)',
@@ -922,7 +1001,9 @@ const spells = await db.spells.insertMany([
                 target: 'enemy',
                 bonus: 0
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Regenerar III',
@@ -934,13 +1015,15 @@ const spells = await db.spells.insertMany([
         effects: [
             {
                 type: 'heal',
-                typeHeal: 'HP',
+                healType: 'HP',
                 heal: '6d6',
                 target: 'self',
                 trigger: 'end_of_turn',
                 etiquette: 'regeneration'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Desenfreno Violento',
@@ -962,7 +1045,8 @@ const spells = await db.spells.insertMany([
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_attack'
             },
             {
                 value: 6,
@@ -973,7 +1057,8 @@ const spells = await db.spells.insertMany([
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_damage'
             },
             {
                 type: 'critical',
@@ -984,9 +1069,12 @@ const spells = await db.spells.insertMany([
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
-                }
+                },
+                etiquette: 'empowerment_critical'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     },
     {
         name: 'Maestro en Armas',
@@ -1012,36 +1100,73 @@ const spells = await db.spells.insertMany([
                 etiquette: 'weapon_master',
                 condition: 'selection'
             }
-        ]
+        ],
+        toList: 'list',
+        state: 'ACTIVE'
     }
 ])
 
-const levels = [
-    {
-        level: 1,
-        proficency: 2,
-        spells: [spells[0]],
-        features: [],
-        APGained: 5,
-        knownSpells: 2,
-    },
-    {
-        level: 2,
-        proficency: 2,
-        spells: [spells[1], spells[2], spells[3]],
-        features: [
-            {
-                name: 'Rabia Interior',
-                description: `Puedes otorgarle a tus habilidades de combate la ferocidad primitiva más brutal. En tu turno, puedes entrar en rabia como acción adicional una cantidad de veces igual a tu competencia.
+const characterClass = await db.class.insertOne({
+    name: 'Revenant',
+    description: 'Pum te pego',
+    HPDice: '2d4',
+    salvations: ['courage', 'dexterity'],
+    levels: [
+        {
+            level: 1,
+            proficency: 2,
+            spells: [spells[0]],
+            features: [],
+            APGained: 5,
+            knownSpells: 2,
+        },
+        {
+            level: 2,
+            proficency: 2,
+            spells: [spells[1], spells[2], spells[3]],
+            features: [
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
+                    name: 'Rabia Interior',
+                    description: `Puedes otorgarle a tus habilidades de combate la ferocidad primitiva más brutal. En tu turno, puedes entrar en rabia como acción adicional una cantidad de veces igual a tu competencia.
+    
+                    Cuando entras en rabia, ganas un numero de puntos de ira (PI) igual a tus Reservas de Ira. Por cada ataque que logres impactar que no hayas usado ningún rasgo violento, ganaras 1 PI. Nunca puedes tener más PI que tu nivel.
+                    
+                    Puedes gastar estos puntos para activar rasgos violentos de tu ser. Al llegar al nivel 2, aprendes dos rasgos violentos, y al nivel 3, 7, 11, 15 y 20 aprenderás un rasgo adicional en cada nivel. Cada vez que subes de nivel, puedes reemplazar un rasgo que conozcas por otro distinto de la lista.
+                    
+                    Algunos de los rasgos violentos pueden requerir una tirada de salvación. En dicho caso, la dificultad establecida será igual a la siguiente formula: 8 + tu competencia + tu bonificador de coraje.`,
+                    useType: 'passive',
+                    action: 'bonus_action',
+                    triggerForRecover: 'at_attack',
+                    resource: 'Rage Points',
+                    uses: 2,
+                    cd: '8 + {proficency} + {courage_bonifier}',
+                    state: 'ACTIVE',
+                    subFeatures: [
+                        {
+                            
+                        }
+                    ]
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 2,
+            knownSecondaryFeatures: 2
+        },
+        {
+            level: 3,
+            proficency: 2,
+            spells: [spells[4]],
+            features: [
+                {
 
-                Cuando entras en rabia, ganas un numero de puntos de ira (PI) igual a tus Reservas de Ira. Por cada ataque que logres impactar que no hayas usado ningún rasgo violento, ganaras 1 PI. Nunca puedes tener más PI que tu nivel.
-                
-                Puedes gastar estos puntos para activar rasgos violentos de tu ser. Al llegar al nivel 2, aprendes dos rasgos violentos, y al nivel 3, 7, 11, 15 y 20 aprenderás un rasgo adicional en cada nivel. Cada vez que subes de nivel, puedes reemplazar un rasgo que conozcas por otro distinto de la lista.
-                
-                Algunos de los rasgos violentos pueden requerir una tirada de salvación. En dicho caso, la dificultad establecida será igual a la siguiente formula: 8 + tu competencia + tu bonificador de coraje.`,
-                useType: 'passive',
-                action: 'none'
-            }
-        ],
-    }
-]
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 2,
+            knownSecondaryFeatures: 3
+        }
+    ],
+    resourceType: 'Inner Rage',
+    featureIdThatGrantsSecondaryFeatures: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
+})

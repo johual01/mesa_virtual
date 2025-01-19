@@ -121,7 +121,8 @@ export interface IModifier {
     stadistic?: personaStadistics,
     replaceStadistic?: personaStadistics,
     state: 'ACTIVE' | 'INACTIVE',
-    modifierId?: string
+    modifierId?: string,
+    etiquette?: string
 }
 
 export enum system {
@@ -170,5 +171,5 @@ export interface IFeature {
     cd?: number | string, // Dificultad a superar
     origin?: string,
     state?: 'ACTIVE' | 'INACTIVE',
-    subfeatures?: IFeature[],
+    subFeatures?: IFeature[],
 }
