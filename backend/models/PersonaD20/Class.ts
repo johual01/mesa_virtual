@@ -26,7 +26,7 @@ export interface IPersonaClass extends Document {
     salvations: personaStadistics[],
     levels: IClassLevel[],
     resourceType?: string | string[],
-    featureIdThatGrantsSecondaryFeatures?: string,
+    featureIdThatGrantsSecondaryFeatures?: Types.ObjectId,
 }
 
 const ClassSchema = new Schema({

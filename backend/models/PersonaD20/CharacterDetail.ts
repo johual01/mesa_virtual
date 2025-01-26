@@ -125,6 +125,7 @@ export interface ICharacterPersonaDetail {
             fisicalDamageModifiers: IModifier[],
             rangeDamageModifiers: IModifier[],
             meleeDamageModifiers: IModifier[],
+            criticalDamageModifiers: IModifier[],
         }
     }
 }

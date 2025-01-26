@@ -23,7 +23,7 @@ export interface ICharacterStatus {
     spells: ISpells,
     customModifiers?: IModifier[],
     selectedSecondaryFeatures?: IFeature[],
-    inactiveFeatures?: string[],
+    inactiveFeatures?: Types.ObjectId[],
 }
 
 export interface IPersonaCharacterStatus extends ICharacterStatus, Document {}

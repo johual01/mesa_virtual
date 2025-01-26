@@ -239,7 +239,8 @@ export const createCharacter = async (req: Request, res: Response) => {
                 damageModifiers: [],
                 fisicalDamageModifiers: [],
                 rangeDamageModifiers: [],
-                meleeDamageModifiers: []
+                meleeDamageModifiers: [],
+                criticalDamageModifiers: []
             }
         }
     }
@@ -466,6 +467,11 @@ export const getCharacter = async (req: Request, res: Response) => {
             m.state = 'INACTIVE';
         }
     })
+    characterData.combatData.damage.criticalDamageModifiers.forEach((m) => {
+        if (m.featureId && characterStatus?.inactiveFeatures?.includes(m.featureId)) {
+            m.state = 'INACTIVE';
+        }
+    })
 
     const baseModifiers: { [name: string]: IModifier[] } = {}
     baseModifiers.HPModifiers = [
@@ -603,6 +609,9 @@ export const getCharacter = async (req: Request, res: Response) => {
     baseModifiers.criticalAttackModifiers = [
         ...baseModifiers.criticalModifiers,
         ...characterData.combatData.critical.criticalModifiers
+    ]
+    baseModifiers.criticalDamageModifiers = [
+        ...characterData.combatData.damage.damageModifiers,
     ]
     baseModifiers.fisicalAttackModifiers = [
         ...characterData.combatData.attack.attackModifiers,
@@ -751,6 +760,10 @@ export const getCharacter = async (req: Request, res: Response) => {
                 meleeDamageModifiers: {
                     total: reduceModifiers([...baseModifiers.fisicalDamageModifiers, ...characterData.combatData.damage.meleeDamageModifiers], {}),
                     modifiers: [...baseModifiers.meleeDamageModifiers, ...characterData.combatData.damage.meleeDamageModifiers]
+                },
+                criticalDamageModifiers: {
+                    total: reduceModifiers([...baseModifiers.criticalDamageModifiers, ...characterData.combatData.damage.criticalDamageModifiers], {}),
+                    modifiers: [...baseModifiers.criticalDamageModifiers, ...characterData.combatData.damage.criticalDamageModifiers]
                 },
             },
             magicalStats: {
@@ -1154,6 +1167,9 @@ export const levelUp = async (req: Request, res: Response) => {
                 case 'meleeDamageModifiers':
                     characterDetail.combatData.damage.meleeDamageModifiers.push(modifier);
                     break;
+                case 'criticalDamageModifiers':
+                    characterDetail.combatData.damage.criticalDamageModifiers.push(modifier);
+                    break;
                 default:
                     console.error('No se encontró el tipo de modificador');
                     break;
@@ -1318,7 +1334,7 @@ export const getCharacterPDF = async (req: Request, res: Response) => {
 }
 
 
-const obtainSecondaryFeatures = (characterDetail: ICharacterPersonaDetail, characterClass: IPersonaClass, level: number, featureId: string) => {
+const obtainSecondaryFeatures = (characterDetail: ICharacterPersonaDetail, characterClass: IPersonaClass, level: number, featureId: Types.ObjectId) => {
     const subclassFeatures = (characterDetail.class.subclass as IPersonaSubclass)?.levels?.find((e) => e.level < level)?.features;
     return characterClass.levels
         .flatMap((el) => el.features)

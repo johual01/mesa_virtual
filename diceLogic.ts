@@ -11,6 +11,7 @@ interface IDicesTotalizer {
             dice: number
     }[];
     modifier: number;
+    valid?: boolean;
 }
 
 export function calculateBonification(value: number): number {
@@ -55,8 +56,8 @@ export function rollDice(dices: IDices, randomizer?: Function): IDicesTotalizer 
     return { total: totalizer + dices.modifier, dices: diceResults, modifier: dices.modifier };
 }
 
-export function rollDiceString(str: string, randomizer?: Function): IDicesTotalizer {
-    return rollDice(parseDiceString(str), randomizer);
+export function rollDiceString(str: string): IDicesTotalizer {
+    return rollDice(parseDiceString(str));
 }
 
 export function rollMaxDice(dices: IDices): IDicesTotalizer {
@@ -66,6 +67,42 @@ export function rollMaxDice(dices: IDices): IDicesTotalizer {
         return { value: dice, dice: dice };
     })
     return { total: totalizer + dices.modifier, dices: diceResults, modifier: dices.modifier };
+}
+
+export function rollAdvantage(dices: IDices, randomizer?: Function): IDicesTotalizer[] {
+    const fnRandomizer = randomizer || Math.random;
+    const roll1 = rollDice(dices, fnRandomizer);
+    const roll2 = rollDice(dices, fnRandomizer);
+    if (roll1.total > roll2.total) {
+        roll1.valid = true;
+        roll2.valid = false;
+    } else {
+        roll1.valid = false;
+        roll2.valid = true;
+    }
+    return [roll1, roll2];
+}
+
+export function rollDisadvantage(dices: IDices, randomizer?: Function): IDicesTotalizer[] {
+    const fnRandomizer = randomizer || Math.random;
+    const roll1 = rollDice(dices, fnRandomizer);
+    const roll2 = rollDice(dices, fnRandomizer);
+    if (roll1.total < roll2.total) {
+        roll1.valid = true;
+        roll2.valid = false;
+    } else {
+        roll1.valid = false;
+        roll2.valid = true;
+    }
+    return [roll1, roll2];
+}
+
+export function rollAdvantageDiceString(str: string): IDicesTotalizer[] {
+    return rollAdvantage(parseDiceString(str));
+}
+
+export function rollDisadvantageDiceString(str: string): IDicesTotalizer[] {
+    return rollDisadvantage(parseDiceString(str));
 }
 
 export function rollMaxDiceString(str: string): IDicesTotalizer {

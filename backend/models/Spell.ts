@@ -1,27 +1,5 @@
 import {Schema, model, Document, Types } from 'mongoose';
-import { IStatusEffect } from './StatusEffect';
-import { IModifier, elements, healingTypes, barrierTypes, targetTypes, IRange, triggerTypes, costTypes, system, useTypes } from './types';
-
-export interface ISpellEffect {
-    type: string, // Tipo de hechizo
-    damage?: string, // Daño
-    damageType?: elements, // Tipo de daño
-    statusEffect?: IStatusEffect, // Efecto de estado
-    heal?: string, // Cantidad de curación - Puede tener dados o valores fijos o valores dinámicos (por ejemplo, {half_level}) o combinaciones
-    healType?: healingTypes, // Tipo de curación
-    shieldType?: barrierTypes, // Tipo de barrera
-    target?: targetTypes, // Objetivo
-    range?: IRange, // Rango
-    trigger?: triggerTypes, // Disparador de evento
-    condition?: string, // Condición para activar el efecto como "si el objetivo está envenenado", se concatena con el de arriba
-    movement?: number, // Cantidad de movimiento generado
-    movementType?: string, // Tipo de movimiento generado
-    movementDirection?: string, // Dirección de movimiento generado
-    uses?: number, // Cantidad de usos del efecto
-    modification: string, // Ajuste de efecto
-    levelCondition?: number, // Condición de nivel para discriminar efectos
-    etiquette?: string, // Etiqueta para unificar efectos por condición
-}
+import { IModifier, triggerTypes, costTypes, system, useTypes, IEffect } from './types';
 
 export interface ISpell extends Document {
     name: string,
@@ -37,7 +15,7 @@ export interface ISpell extends Document {
     description: string,
     trigger?: triggerTypes,
     concentration: boolean,
-    effects?: ISpellEffect[],
+    effects?: IEffect[],
     modifiers?: IModifier[],
     toList?: 'list' | 'free' | 'additional',
     state: 'ACTIVE' | 'INACTIVE' | 'DELETED'

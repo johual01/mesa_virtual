@@ -1,6 +1,6 @@
 
 
-const spells = await db.spells.insertMany([
+const listSpells = await db.spells.insertMany([
     {
         name: 'Ataque Físico I (I)',
         cost: 'AP',
@@ -298,7 +298,7 @@ const spells = await db.spells.insertMany([
                 healType: 'HP',
                 heal: '1d8',
                 target: 'self',
-                trigger: 'end_of_turn',
+                trigger: 'at_turn_end',
                 levelCondition: 0,
                 etiquette: 'regeneration'
             },
@@ -307,7 +307,7 @@ const spells = await db.spells.insertMany([
                 healType: 'HP',
                 heal: '2d4',
                 target: 'self',
-                trigger: 'end_of_turn',
+                trigger: 'at_turn_end',
                 levelCondition: 13,
                 etiquette: 'regeneration'
             },
@@ -316,7 +316,7 @@ const spells = await db.spells.insertMany([
                 healType: 'HP',
                 heal: '2d6',
                 target: 'self',
-                trigger: 'end_of_turn',
+                trigger: 'at_turn_end',
                 levelCondition: 17,
                 etiquette: 'regeneration'
             }
@@ -681,7 +681,7 @@ const spells = await db.spells.insertMany([
                 healType: 'HP',
                 heal: '4d4',
                 target: 'self',
-                trigger: 'end_of_turn',
+                trigger: 'at_turn_end',
                 levelCondition: 0,
                 etiquette: 'regeneration'
             },
@@ -690,7 +690,7 @@ const spells = await db.spells.insertMany([
                 healType: 'HP',
                 heal: '4d6',
                 target: 'self',
-                trigger: 'end_of_turn',
+                trigger: 'at_turn_end',
                 levelCondition: 17,
                 etiquette: 'regeneration'
             }
@@ -1018,7 +1018,7 @@ const spells = await db.spells.insertMany([
                 healType: 'HP',
                 heal: '6d6',
                 target: 'self',
-                trigger: 'end_of_turn',
+                trigger: 'at_turn_end',
                 etiquette: 'regeneration'
             }
         ],
@@ -1106,6 +1106,8 @@ const spells = await db.spells.insertMany([
     }
 ])
 
+const spells = listSpells.insertedIds;
+
 const characterClass = await db.class.insertOne({
     name: 'Revenant',
     description: 'Pum te pego',
@@ -1139,12 +1141,318 @@ const characterClass = await db.class.insertOne({
                     action: 'bonus_action',
                     triggerForRecover: 'at_attack',
                     resource: 'Rage Points',
-                    uses: 2,
+                    uses: 'proficency',
                     cd: '8 + {proficency} + {courage_bonifier}',
                     state: 'ACTIVE',
+                    effects: [
+                        {
+                            type: 'resource',
+                            target: 'self',
+                            resource: 'Rage Points',
+                            value: '{ceil(level / 3) - 1 + 1}',
+                        }
+                    ],
                     subFeatures: [
                         {
-                            
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b3c'),
+                            name: 'Ira Berseker',
+                            description: 'Puedes gastar 3 PI y tu acción para acabar con todos los efectos negativos y debilitadores aplicados en ti. Duplicando su coste en PI, puedes hacerlo con acción adicional.',
+                            action: 'action',
+                            alternativeAction: 'bonus_action',
+                            costType: 'temporal',
+                            cost: 3,
+                            alternativeCostType: 'temporal',
+                            alternativeCost: 6,
+                            target: 'self',
+                            resource: 'Rage Points',
+                            effects: [
+                                {
+                                    type: 'healing',
+                                    target: 'self',
+                                    healType: 'status_effect',
+                                    heal: 'all',
+                                },
+                                {
+                                    type: 'healing',
+                                    target: 'self',
+                                    healType: 'debilitation',
+                                    heal: 'all',
+                                }
+                            ],
+                            state: 'ACTIVE',
+                        },
+                        {
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b3d'),
+                            name: 'Carga',
+                            description: 'Puedes gastar 2 PI y tu acción en Correr, si te mueves al menos 4 casillas hacia un objetivo, puedes realizar un ataque con arma contra él con ventaja. Si posees multiataque, el resto de los ataques no se realizarán con ventaja.',
+                            action: 'action',
+                            costType: 'temporal',
+                            cost: 2,
+                            target: 'self',
+                            resource: 'Rage Points',
+                            effects: [
+                                {
+                                    type: 'attack',
+                                    target: 'enemy',
+                                    trigger: 'next_physical_attack',
+                                    condition: 'move at least 4 squares',
+                                    modification: 'advantage',
+                                },
+                            ],
+                            state: 'ACTIVE',
+                        },
+                        {
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b3e'),
+                            name: 'Heridas Graves',
+                            description: 'Cuando impactas un ataque, puedes gastar 3 PI para infligir heridas graves. El objetivo deberá realizar una tirada de salvación de coraje, y en caso de fallar, toda su curación recibida será reducida a la mitad por 10 rondas, además de recibir 1d6 de daño al final de cada uno de sus turnos. El objetivo deberá repetir la tirada de salvación al final de cada una de sus rondas.',
+                            trigger: 'at_attack',
+                            costType: 'temporal',
+                            cost: 3,
+                            target: 'enemy',
+                            resource: 'Rage Points',
+                            requireSalvation: true,
+                            effects: [
+                                {
+                                    type: 'debuff',
+                                    target: 'enemy',
+                                    condition: 'failed courage save',
+                                    shouldSaveEachTurn: true,
+                                    duration: {
+                                        type: 'temporal',
+                                        duration: 10,
+                                        medition: 'rounds'
+                                    },
+                                    modifiers: [
+                                        {
+                                            type: 'healing_received',
+                                            value: -0.5,
+                                            description: 'Reduces healing received by half'
+                                        },
+                                        {
+                                            type: 'damage',
+                                            damageType: 'physical',
+                                            dice: '1d6',
+                                            trigger: 'at_turn_end'
+                                        }
+                                    ]
+                                }
+                            ],
+                            state: 'ACTIVE'
+                        },
+                        {
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b3f'),
+                            name: 'Aturdir',
+                            description: 'Puedes gastar 2 PI antes de realizar un ataque con la intención de aturdir al objetivo. Si impactas, el objetivo tendrá que realizar una salvación de coraje, en caso de fallarla tendrá desventaja en su siguiente acción.',
+                            trigger: 'before_attack',
+                            costType: 'temporal',
+                            cost: 2,
+                            target: 'enemy',
+                            resource: 'Rage Points',
+                            requireSalvation: true,
+                            effects: [
+                                {
+                                    type: 'debuff',
+                                    target: 'enemy',
+                                    condition: 'failed courage save',
+                                    modifiers: [
+                                        {
+                                            type: 'action',
+                                            value: 'disadvantage',
+                                            description: 'Desventaja en su siguiente acción',
+                                            target: 'enemy',
+                                            duration: {
+                                                type: 'temporal',
+                                                duration: 1,
+                                                medition: 'actions'
+                                            },
+                                        }
+                                    ]
+                                }
+                            ],
+                            state: 'ACTIVE'
+                        },
+                        {
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b40'),
+                            name: 'Ejecutar',
+                            description: 'Cuando impactas un ataque y el objetivo tiene el estado ensangrentado, puedes gastar 4 PI para infligir daño adicional igual al doble de tu nivel.',
+                            trigger: 'at_attack',
+                            costType: 'temporal',
+                            cost: 4,
+                            target: 'enemy',
+                            resource: 'Rage Points',
+                            effects: [
+                                {
+                                    type: 'damage',
+                                    damageType: 'physical',
+                                    dice: '{level} * 2',
+                                    condition: 'target has state bleeding',
+                                }
+                            ],
+                            state: 'ACTIVE'
+                        },
+                        {
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b41'),
+                            name: 'Golpe al Tendón',
+                            description: 'Puedes gastar 3 PI antes de realizar un ataque con la intención de mellar su movimiento. Si impactas, el objetivo tendrá que realizar una salvación de coraje, en caso de fallarla su velocidad será reducida a 0, o la mitad en caso de superarla, hasta el inicio de tu siguiente turno.',
+                            trigger: 'before_attack',
+                            costType: 'temporal',
+                            cost: 3,
+                            target: 'enemy',
+                            resource: 'Rage Points',
+                            requireSalvation: true,
+                            effects: [
+                                {
+                                    type: 'debuff',
+                                    target: 'enemy',
+                                    condition: 'courage save',
+                                    modifiers: [
+                                        {
+                                            type: 'speed',
+                                            value: 0,
+                                            description: 'Reduce speed to 0',
+                                            target: 'enemy',
+                                            condition: 'failed courage save',
+                                            duration: {
+                                                type: 'temporal',
+                                                duration: 1,
+                                                medition: 'turns'
+                                            }
+                                        },
+                                        {
+                                            type: 'speed',
+                                            value: 0.5,
+                                            description: 'Reduce speed to half',
+                                            target: 'enemy',
+                                            condition: 'successful courage save',
+                                            duration: {
+                                                type: 'temporal',
+                                                duration: 1,
+                                                medition: 'turns'
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            state: 'ACTIVE'
+                        },
+                        {
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b42'),
+                            name: 'Ignorar el dolor',
+                            description: 'Puedes gastar 5 PI como reacción al momento de ser impactado por un ataque, otorgándote resistencia al daño físico o mágico, a tu elección, hasta el inicio de tu siguiente turno.',
+                            trigger: 'at_receive_attack',
+                            action: 'reaction',
+                            costType: 'temporal',
+                            cost: 5,
+                            target: 'self',
+                            resource: 'Rage Points',
+                            effects: [
+                                {
+                                    type: 'resistance',
+                                    damageType: 'election',
+                                    duration: {
+                                        type: 'temporal',
+                                        duration: 1,
+                                        medition: 'round'
+                                    }
+                                }
+                            ],
+                            state: 'ACTIVE'
+                        },
+                        {
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b43'),
+                            name: 'Arremetida',
+                            description: 'Gastando 1 PI, puedes repetir tu tirada de daño luego de verla. Debes utilizar la nueva tirada de daño.',
+                            trigger: 'after_damage_roll',
+                            costType: 'temporal',
+                            cost: 1,
+                            target: 'self',
+                            resource: 'Rage Points',
+                            effects: [
+                                {
+                                    type: 'reroll_damage',
+                                    target: 'self',
+                                    condition: 'after_damage_roll',
+                                    description: 'Repite tu tirada de daño'
+                                }
+                            ],
+                            state: 'ACTIVE'
+                        },
+                        {
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b44'),
+                            name: 'Abanicar',
+                            description: 'Cuando impactas un ataque contra un enemigo con un arma cuerpo a cuerpo, gastando 1 PI, puedes realizar un ataque adicional a un enemigo distinto a una casilla de distancia del objetivo inicial que esté dentro de tu rango de ataque.',
+                            trigger: 'at_attack',
+                            costType: 'temporal',
+                            cost: 1,
+                            target: 'enemy',
+                            resource: 'Rage Points',
+                            effects: [
+                                {
+                                    type: 'attack_with_weapon',
+                                    target: 'enemy',
+                                    condition: 'different enemy within range',
+                                    range: {
+                                        type: 'melee',
+                                        range: 1,
+                                    },
+                                    description: 'Realiza un ataque adicional a un enemigo distinto a una casilla de distancia del objetivo inicial que esté dentro de tu rango de ataque.'
+                                }
+                            ],
+                            state: 'ACTIVE'
+                        },
+                        {
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b45'),
+                            name: 'Derribar',
+                            description: 'Gastando 1 PI al momento de impactar un ataque, puedes forzar al objetivo a realizar una salvación de coraje, en caso de fallarla, el enemigo caerá al suelo.',
+                            trigger: 'at_attack',
+                            costType: 'temporal',
+                            cost: 1,
+                            target: 'enemy',
+                            resource: 'Rage Points',
+                            requireSalvation: true,
+                            effects: [
+                                {
+                                    type: 'debuff',
+                                    target: 'enemy',
+                                    condition: 'failed courage save',
+                                    modifiers: [
+                                        {
+                                            type: 'prone',
+                                            description: 'El enemigo caerá al suelo',
+                                            target: 'enemy',
+                                            duration: {
+                                                type: 'temporal',
+                                                duration: 1,
+                                                medition: 'turns'
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            state: 'ACTIVE'
+                        },
+                        {
+                            featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b46'),
+                            name: 'Empuje',
+                            description: 'Cuando impactas un ataque, puedes escoger lanzar al enemigo impactado en un rango de 1 a 3 casillas hacia atrás por 1 PI sin realizar tirada de salvación.',
+                            trigger: 'at_attack',
+                            costType: 'temporal',
+                            cost: 1,
+                            target: 'enemy',
+                            resource: 'Rage Points',
+                            effects: [
+                                {
+                                    type: 'move',
+                                    target: 'enemy',
+                                    range: {
+                                        type: 'ranged',
+                                        range: 3
+                                    },
+                                    direction: 'backward',
+                                    description: 'Lanza al enemigo impactado en un rango de 1 a 3 casillas hacia atrás'
+                                }
+                            ],
+                            state: 'ACTIVE'
                         }
                     ]
                 }
@@ -1159,14 +1467,519 @@ const characterClass = await db.class.insertOne({
             spells: [spells[4]],
             features: [
                 {
-
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b47'),
+                    name: 'Inercia',
+                    description: 'Tu rango de crítico en ataques es aumentado un 5%. Además, cuando realizas un crítico, reinicias la duración de un potenciador aplicado a ti.',
+                    useType: 'passive',
+                    modifiers: [
+                        {
+                            type: 'critical',
+                            value: 0.05,
+                            description: 'Aumenta el rango de crítico en 5%',
+                            addTo: 'criticalOnAttackModifiers',
+                            target: 'self',
+                            duration: {
+                                type: 'temporal',
+                                duration: 0,
+                                medition: 'none'
+                            }
+                        }
+                    ],
+                    effects: [
+                        {
+                            type: 'reset_bonifier',
+                            target: 'self',
+                            value: 'one',
+                            condition: 'critical',
+                            trigger: 'at_attack',
+                            description: 'Reinicia la duración de un potenciador aplicado a ti.'
+                        }
+                    ],
+                    state: 'ACTIVE'
                 }
             ],
             APGained: 1,
             maxPreparedSpells: 2,
             knownSecondaryFeatures: 3
+        },
+        {
+            level: 4,
+            proficency: 2,
+            spells: [spells[5]],
+            features: [],
+            APGained: 1,
+            maxPreparedSpells: 3,
+            knownSecondaryFeatures: 3,
+            selectSubclass: true,
+            gainSubclassFeature: true
+        },
+        {
+            level: 5,
+            proficency: 3,
+            spells: [spells[6], spells[7]],
+            features: [],
+            APGained: 1,
+            maxPreparedSpells: 3,
+            knownSecondaryFeatures: 3,
+            gainStatIncrease: true
+        },
+        {
+            level: 6,
+            proficency: 3,
+            spells: [spells[8], spells[9]],
+            features: [
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b48'),
+                    name: 'Bocanada',
+                    description: 'Una vez por combate, puedes consumir 3 PI y tu acción adicional para restaurarte tres veces tu nivel en puntos de vida y el doble de tu competencia en PI.',
+                    useType: 'active',
+                    action: 'bonus_action',
+                    resource: 'Rage Points',
+                    cost: 3,
+                    effects: [
+                        {
+                            type: 'healing',
+                            target: 'self',
+                            healType: 'HP',
+                            heal: '{level * 3}',
+                        },
+                        {
+                            type: 'resource',
+                            target: 'self',
+                            resource: 'Rage Points',
+                            value: '{proficency * 2}',
+                        }
+                    ],
+                    state: 'ACTIVE'
+                },
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b49'),
+                    name: 'Recuperación Crítica',
+                    description: 'Cada vez que recibes o infliges un crítico, obtienes 1 PI.',
+                    trigger: 'critical',
+                    effects: [
+                        {
+                            type: 'recover resource',
+                            target: 'self',
+                            resource: 'Rage Points',
+                            value: 1,
+                        }
+                    ],
+                    state: 'ACTIVE'
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 3,
+            knownSecondaryFeatures: 3,
+            gainSecondaryAffinity: true
+        },
+        {
+            level: 7,
+            proficency: 3,
+            spells: [spells[10]],
+            features: [
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4a'),
+                    name: 'Multi Ataque I',
+                    description: 'Puedes realizar un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                    useType: 'passive',
+                    action: 'free_action',
+                    effects: [
+                        {
+                            type: 'attack_with_weapon',
+                            target: 'enemy',
+                            description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                            trigger: 'at_attack'
+                        }
+                    ],
+                    state: 'ACTIVE'
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 3,
+            knownSecondaryFeatures: 4
+        },
+        {
+            level: 8,
+            proficency: 3,
+            spells: [spells[11]],
+            features: [],
+            APGained: 1,
+            maxPreparedSpells: 5,
+            knownSecondaryFeatures: 4,
+            gainSubclassFeature: true
+        },
+        {
+            level: 9,
+            proficency: 4,
+            spells: [spells[12], spells[13]],
+            features: [],
+            APGained: 1,
+            maxPreparedSpells: 5,
+            knownSecondaryFeatures: 4,
+            gainStatIncrease: true
+        },
+        {
+            level: 10,
+            proficency: 4,
+            spells: [spells[14], spells[15]],
+            features: [
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4b'),
+                    name: 'Ansia de Batalla',
+                    description: 'Obtienes ventaja en la tirada de iniciativa.',
+                    useType: 'passive',
+                    modifiers: [
+                        {
+                            type: 'initiative',
+                            target: 'self',
+                            value: 'advantage',
+                            addTo: 'initiativeModifiers'
+                        }
+                    ],
+                    state: 'ACTIVE'
+                },
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4b'),
+                    name: 'Ansia de Batalla',
+                    description: 'Al inicio de cada combate obtienes una cantidad de PV temporales iguales a tu nivel.',
+                    useType: 'passive',
+                    effects: [
+                        {
+                            type: 'temporary_HP',
+                            target: 'self',
+                            heal: 'level',
+                        }
+                    ],
+                    trigger: 'at_combat_start',
+                    state: 'ACTIVE'
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 5,
+            knownSecondaryFeatures: 4
+        },
+        {
+            level: 11,
+            proficency: 4,
+            spells: [spells[16], spells[17], spells[18]],
+            features: [
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4c'),
+                    name: 'En el Fragor de la Batalla',
+                    description: 'Obtienes una reacción adicional.',
+                    useType: 'passive',
+                    modifiers: [
+                        {
+                            type: 'reaction',
+                            target: 'self',
+                            value: 1,
+                            addTo: 'reactionModifiers'
+                        }
+                    ]
+                },
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4c'),
+                    name: 'En el Fragor de la Batalla',
+                    description: 'Obtienes un ataque de oportunidad cuando un enemigo entra en tu rango de ataque.',
+                    useType: 'passive',
+                    effects: [
+                        {
+                            type: 'opportunity_attack',
+                            target: 'enemy',
+                            description: 'Realiza un ataque de oportunidad cuando un enemigo entra en tu rango de ataque.',
+                            trigger: 'enemy_enters_range'
+                        }
+                    ]
+                },
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4c'),
+                    name: 'En el Fragor de la Batalla',
+                    description: 'Cada vez que impactas un ataque de oportunidad, obtienes 1 PI.',
+                    trigger: 'opportunity_attack',
+                    effects: [
+                        {
+                            type: 'recover resource',
+                            target: 'self',
+                            resource: 'Rage Points',
+                            value: 1,
+                        }
+                    ]
+                },
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4c'),
+                    name: 'En el Fragor de la Batalla',
+                    description: 'Puedes gastar 3 PI cuando consumes tu reacción para recuperarla.',
+                    trigger: 'at_use_reaction',
+                    effects: [
+                        {
+                            type: 'recover resource',
+                            target: 'self',
+                            resource: 'reaction',
+                            value: 1,
+                        }
+                    ],
+                    cost: 3,
+                    resource: 'Rage Points'
+                },
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4c'),
+                    name: 'En el Fragor de la Batalla',
+                    description: 'Cuando impactas un ataque de oportunidad de forma crítica, recuperas una reacción y puedes realizar un ataque adicional como parte del ataque contra dicho objetivo.',
+                    trigger: 'at_opportunity_critical_attack',
+                    effects: [
+                        {
+                            type: 'recover resource',
+                            target: 'self',
+                            resource: 'reaction',
+                            value: 1,
+                        },
+                        {
+                            type: 'attack_with_weapon',
+                            target: 'enemy',
+                            description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                            trigger: 'at_attack'
+                        }
+                    ]
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 5,
+            knownSecondaryFeatures: 5
+        },
+        {
+            level: 12,
+            proficency: 4,
+            spells: [spells[19], spells[20]],
+            features: [
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4d'),
+                    name: 'Inquebrantable',
+                    description: 'Cada vez que fallas una tirada de salvación, ganas 1 PI.',
+                    trigger: 'at_failed_save',
+                    effects: [
+                        {
+                            type: 'recover resource',
+                            target: 'self',
+                            resource: 'Rage Points',
+                            value: 1,
+                        }
+                    ]
+                },
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4d'),
+                    name: 'Inquebrantable',
+                    description: 'cada vez que fallas un ataque, causas daño igual al bonificador de la tirada de ataque al enemigo de todos modos.',
+                    trigger: 'at_failed_attack',
+                    effects: [
+                        {
+                            type: 'damage',
+                            damageType: 'physical',
+                            dice: '{attack_bonifier}',
+                            target: 'enemy',
+                        }
+                    ]
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 6,
+            knownSecondaryFeatures: 5,
+        },
+        {
+            level: 13,
+            proficency: 5,
+            spells: [spells[21], spells[22]],
+            features: [],
+            APGained: 1,
+            maxPreparedSpells: 6,
+            knownSecondaryFeatures: 5,
+            gainSubclassFeature: true
+        },
+        {
+            level: 14,
+            proficency: 5,
+            spells: [spells[23], spells[24]],
+            features: [],
+            APGained: 1,
+            maxPreparedSpells: 6,
+            knownSecondaryFeatures: 5,
+            gainStatIncrease: true
+        },
+        {
+            level: 15,
+            proficency: 5,
+            spells: [spells[25], spells[26]],
+            features: [
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4e'),
+                    name: 'Multi Ataque II',
+                    description: 'Puedes realizar un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                    useType: 'passive',
+                    action: 'free_action',
+                    effects: [
+                        {
+                            type: 'attack_with_weapon',
+                            target: 'enemy',
+                            description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                            trigger: 'at_attack'
+                        }
+                    ]
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 6,
+            knownSecondaryFeatures: 6
+        },
+        {
+            level: 16,
+            proficency: 5,
+            spells: [spells[27], spells[28]],
+            features: [
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4f'),
+                    name: 'Segundo Round',
+                    description: 'Puedes esforzarte más allá de tus límites habituales durante breves instantes. Dos veces por combate puedes obtener un turno adicional al final de la ronda. Dicho turno no contará para la cantidad de turnos que dura un bonificador. Si utilizas este efecto, debes aguardar dos rondas para utilizar este rasgo nuevamente.',
+                    useType: 'active',
+                    action: 'bonus_action',
+                    uses: 2,
+                    cooldown: {
+                        type: 'temporal',
+                        duration: 2,
+                        medition: 'rounds'
+                    },
+                    effects: [
+                        {
+                            type: 'extra_turn_at_end_of_round',
+                            target: 'self',
+                            description: 'Obtienes un turno adicional al final de la ronda.'
+                        }
+                    ]
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 8,
+            knownSecondaryFeatures: 6
+        },
+        {
+            level: 17,
+            proficency: 6,
+            spells: [spells[29], spells[30]],
+            features: [
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b50'),
+                    name: 'Control de Ira',
+                    description: 'Cuando recibes daño que reducirá tus PV a 0 y no te matará inmediatamente, puedes utilizar tu reacción para consumir todos tus PI restantes, como mínimo 1, y al finalizar el turno actual, restaurar dicha cantidad de puntos en d8. Una vez por incursión.',
+                    useType: 'active',
+                    action: 'reaction',
+                    uses: 1,
+                    effects: [
+                        {
+                            type: 'healing',
+                            target: 'self',
+                            healType: 'HP',
+                            heal: '{all_resource}d8',
+                            trigger: 'at_turn_end',
+                            resource: 'Rage Points',
+                        }
+                    ],
+                },
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b50'),
+                    name: 'Golpe de Gracia',
+                    description: '“Bocanada” obtiene un uso adicional.',
+                    useType: 'passive',
+                    uses: 1,
+                    addUsesToParent: true,
+                    parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b48'),
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 8,
+            knownSecondaryFeatures: 6,
+        },
+        {
+            level: 18,
+            proficency: 6,
+            spells: [spells[31], spells[32]],
+            features: [],
+            APGained: 1,
+            maxPreparedSpells: 8,
+            knownSecondaryFeatures: 6,
+            gainSubclassFeature: true,
+        },
+        {
+            level: 19,
+            proficency: 6,
+            spells: [spells[33], spells[34]],
+            features: [],
+            APGained: 1,
+            maxPreparedSpells: 8,
+            knownSecondaryFeatures: 6,
+            gainStatIncrease: true
+        },
+        {
+            level: 20,
+            proficency: 6,
+            spells: [spells[35]],
+            features: [
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b51'),
+                    name: 'Maestro de Batalla',
+                    description: 'En combate, y en cada uno de los turnos, obtienes una reacción adicional que solo puede ser consumida en dicho turno y de único uso para un ataque de oportunidad.',
+                    useType: 'passive',
+                    action: 'reaction',
+                    effects: [
+                        {
+                            type: 'extra_reaction',
+                            target: 'self',
+                            description: 'Obtienes una reacción adicional que solo puede ser consumida en dicho turno y de único uso para un ataque de oportunidad.',
+                            trigger: 'at_any_turn_start',
+                            duration: {
+                                type: 'temporal',
+                                duration: 1,
+                                medition: 'turn'
+                            },
+                            uses: 1,
+                            condition: 'opportunity_attack'
+                        }
+                    ]
+                },
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b51'),
+                    name: 'Maestro de Batalla',
+                    description: 'Tu rango de crítico en ataques aumenta un 5%.',
+                    useType: 'passive',
+                    modifiers: [
+                        {
+                            type: 'critical',
+                            value: 0.05,
+                            description: 'Aumenta el rango de crítico en 5%',
+                            addTo: 'criticalOnAttackModifiers',
+                            target: 'self'
+                        }
+                    ],
+                },
+                {
+                    featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b51'),
+                    name: 'Maestro de Batalla',
+                    description: 'Obtienes +20 al daño a cualquier golpe crítico impactado.',
+                    useType: 'passive',
+                    modifiers: [
+                        {
+                            type: 'dices',
+                            value: 20,
+                            description: 'Obtienes +20 al daño a cualquier golpe crítico impactado.',
+                            addTo: 'criticalOnDamageModifiers',
+                            target: 'self'
+                        }
+                    ]
+                }
+            ],
+            APGained: 1,
+            maxPreparedSpells: 10,
+            knownSecondaryFeatures: 7
         }
     ],
-    resourceType: 'Inner Rage',
+    resourceType: 'Rage Points',
     featureIdThatGrantsSecondaryFeatures: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
 })

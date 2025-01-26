@@ -91,7 +91,7 @@ export function reduceModifiers(array: IModifier[], data: any) {
         ))
     ).reduce((acc: number, mod: IModifier) => {
         if (mod.state === 'INACTIVE') return acc;
-        const value = typeof mod.value === 'number' ?  + mod.value : data[mod.value];
+        const value = typeof mod.value === 'number' ?  + mod.value : mod.value === 'advantage' ? 0 : data[mod.value];
         return acc + value;
     }, 0)
 }

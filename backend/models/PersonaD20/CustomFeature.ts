@@ -16,7 +16,8 @@ const CustomFeatureSchema = new Schema<IPersonaCustomFeatureDoc>({
     action: { type: String },
     modifiers: { type: [Object] },
     trigger: { type: [String] },
-    cost: { type: String },
+    costType: { type: String },
+    cost: { type: Schema.Types.Mixed }, // Can be number or string
     range: { type: Object },
     target: { type: String },
     duration: { type: String },
