@@ -1226,13 +1226,15 @@ const characterClass = await db.class.insertOne({
                                         {
                                             type: 'healing_received',
                                             value: -0.5,
-                                            description: 'Reduces healing received by half'
+                                            description: 'Reduces healing received by half',
+                                            target: 'enemy',
                                         },
                                         {
                                             type: 'damage',
                                             damageType: 'physical',
                                             dice: '1d6',
-                                            trigger: 'at_turn_end'
+                                            trigger: 'at_turn_end',
+                                            target: 'enemy',
                                         }
                                     ]
                                 }
@@ -1478,11 +1480,7 @@ const characterClass = await db.class.insertOne({
                             description: 'Aumenta el rango de crítico en 5%',
                             addTo: 'criticalOnAttackModifiers',
                             target: 'self',
-                            duration: {
-                                type: 'temporal',
-                                duration: 0,
-                                medition: 'none'
-                            }
+                            permanent: true
                         }
                     ],
                     effects: [
@@ -1634,7 +1632,8 @@ const characterClass = await db.class.insertOne({
                             type: 'initiative',
                             target: 'self',
                             value: 'advantage',
-                            addTo: 'initiativeModifiers'
+                            addTo: 'initiativeModifiers',
+                            permanent: true
                         }
                     ],
                     state: 'ACTIVE'
@@ -1674,9 +1673,11 @@ const characterClass = await db.class.insertOne({
                             type: 'reaction',
                             target: 'self',
                             value: 1,
-                            addTo: 'reactionModifiers'
+                            addTo: 'reactionModifiers',
+                            permanent: true
                         }
-                    ]
+                    ],
+                    state: 'ACTIVE'
                 },
                 {
                     featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4c'),
@@ -1690,7 +1691,8 @@ const characterClass = await db.class.insertOne({
                             description: 'Realiza un ataque de oportunidad cuando un enemigo entra en tu rango de ataque.',
                             trigger: 'enemy_enters_range'
                         }
-                    ]
+                    ],
+                    state: 'ACTIVE'
                 },
                 {
                     featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4c'),
@@ -1704,7 +1706,8 @@ const characterClass = await db.class.insertOne({
                             resource: 'Rage Points',
                             value: 1,
                         }
-                    ]
+                    ],
+                    state: 'ACTIVE'
                 },
                 {
                     featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4c'),
@@ -1720,7 +1723,8 @@ const characterClass = await db.class.insertOne({
                         }
                     ],
                     cost: 3,
-                    resource: 'Rage Points'
+                    resource: 'Rage Points',
+                    state: 'ACTIVE'
                 },
                 {
                     featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4c'),
@@ -1740,7 +1744,8 @@ const characterClass = await db.class.insertOne({
                             description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
                             trigger: 'at_attack'
                         }
-                    ]
+                    ],
+                    state: 'ACTIVE'
                 }
             ],
             APGained: 1,
@@ -1764,7 +1769,8 @@ const characterClass = await db.class.insertOne({
                             resource: 'Rage Points',
                             value: 1,
                         }
-                    ]
+                    ],
+                    state: 'ACTIVE'
                 },
                 {
                     featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4d'),
@@ -1778,7 +1784,8 @@ const characterClass = await db.class.insertOne({
                             dice: '{attack_bonifier}',
                             target: 'enemy',
                         }
-                    ]
+                    ],
+                    state: 'ACTIVE'
                 }
             ],
             APGained: 1,
@@ -1823,7 +1830,8 @@ const characterClass = await db.class.insertOne({
                             description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
                             trigger: 'at_attack'
                         }
-                    ]
+                    ],
+                    state: 'ACTIVE'
                 }
             ],
             APGained: 1,
@@ -1853,7 +1861,8 @@ const characterClass = await db.class.insertOne({
                             target: 'self',
                             description: 'Obtienes un turno adicional al final de la ronda.'
                         }
-                    ]
+                    ],
+                    state: 'ACTIVE'
                 }
             ],
             APGained: 1,
@@ -1882,6 +1891,7 @@ const characterClass = await db.class.insertOne({
                             resource: 'Rage Points',
                         }
                     ],
+                    state: 'ACTIVE'
                 },
                 {
                     featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b50'),
@@ -1891,6 +1901,7 @@ const characterClass = await db.class.insertOne({
                     uses: 1,
                     addUsesToParent: true,
                     parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b48'),
+                    state: 'ACTIVE'
                 }
             ],
             APGained: 1,
@@ -1942,7 +1953,8 @@ const characterClass = await db.class.insertOne({
                             uses: 1,
                             condition: 'opportunity_attack'
                         }
-                    ]
+                    ],
+                    state: 'ACTIVE'
                 },
                 {
                     featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b51'),
@@ -1955,9 +1967,11 @@ const characterClass = await db.class.insertOne({
                             value: 0.05,
                             description: 'Aumenta el rango de crítico en 5%',
                             addTo: 'criticalOnAttackModifiers',
-                            target: 'self'
+                            target: 'self',
+                            permanent: true
                         }
                     ],
+                    state: 'ACTIVE'
                 },
                 {
                     featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b51'),
@@ -1970,9 +1984,11 @@ const characterClass = await db.class.insertOne({
                             value: 20,
                             description: 'Obtienes +20 al daño a cualquier golpe crítico impactado.',
                             addTo: 'criticalOnDamageModifiers',
-                            target: 'self'
+                            target: 'self',
+                            permanent: true
                         }
-                    ]
+                    ],
+                    state: 'ACTIVE'
                 }
             ],
             APGained: 1,
@@ -1983,3 +1999,433 @@ const characterClass = await db.class.insertOne({
     resourceType: 'Rage Points',
     featureIdThatGrantsSecondaryFeatures: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
 })
+
+
+const characterClassId = characterClass.insertedId;
+
+const subclass = await db.subclass.Many([
+    {
+        name: 'Berseker',
+        description: 'Pum te pego más fuerte',
+        class: characterClassId,
+        levels: [
+            {
+                level: 4,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b52'),
+                        name: 'Sobrecarga',
+                        description: 'A partir de nivel 4, tus golpes realizan ataques mucho más demoledores que el resto de las personas. Obtienes dados adicionales en tus tiradas de daño según tu nivel. A nivel 4 obtienes 1d4; a nivel 8 obtienes 1d6; a nivel 13 obtienes 2d4; y a nivel 18 obtienes 2d6. Estos dados se duplican al estar en estado {ensangrentado}.',
+                        useType: 'passive',
+                        modifiers: [
+                            {
+                                type: 'dices',
+                                value: '1d4',
+                                description: 'Obtienes 1d4 en tus tiradas de daño',
+                                addTo: 'damageRollModifiers',
+                                target: 'self',
+                                permanent: true,
+                                levelCondition: 4,
+                                etiquette: 'Sobrecarga'
+                            },
+                            {
+                                type: 'dices',
+                                value: '1d6',
+                                description: 'Obtienes 1d6 en tus tiradas de daño',
+                                addTo: 'damageRollModifiers',
+                                target: 'self',
+                                permanent: true,
+                                levelCondition: 8,
+                                etiquette: 'Sobrecarga'
+                            },
+                            {
+                                type: 'dices',
+                                value: '2d4',
+                                description: 'Obtienes 2d4 en tus tiradas de daño',
+                                addTo: 'damageRollModifiers',
+                                target: 'self',
+                                permanent: true,
+                                levelCondition: 13,
+                                etiquette: 'Sobrecarga'
+                            },
+                            {
+                                type: 'dices',
+                                value: '2d6',
+                                description: 'Obtienes 2d6 en tus tiradas de daño',
+                                addTo: 'damageRollModifiers',
+                                target: 'self',
+                                permanent: true,
+                                levelCondition: 18,
+                                etiquette: 'Sobrecarga'
+                            },
+                            {
+                                type: 'dices',
+                                value: '2d4',
+                                description: 'Duplica los dados de daño al estar ensangrentado',
+                                addTo: 'damageRollModifiers',
+                                target: 'self',
+                                condition: 'character is bleeding',
+                                levelCondition: 4,
+                                etiquette: 'Sobrecarga'
+                            },
+                            {
+                                type: 'dices',
+                                value: '2d6',
+                                description: 'Duplica los dados de daño al estar ensangrentado',
+                                addTo: 'damageRollModifiers',
+                                target: 'self',
+                                condition: 'character is bleeding',
+                                levelCondition: 8,
+                                etiquette: 'Sobrecarga'
+                            },
+                            {
+                                type: 'dices',
+                                value: '4d4',
+                                description: 'Duplica los dados de daño al estar ensangrentado',
+                                addTo: 'damageRollModifiers',
+                                target: 'self',
+                                condition: 'character is bleeding',
+                                levelCondition: 13,
+                                etiquette: 'Sobrecarga'
+                            },
+                            {
+                                type: 'dices',
+                                value: '4d6',
+                                description: 'Duplica los dados de daño al estar ensangrentado',
+                                addTo: 'damageRollModifiers',
+                                target: 'self',
+                                condition: 'character is bleeding',
+                                levelCondition: 18,
+                                etiquette: 'Sobrecarga'
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    }
+                ]
+            },
+            {
+                level: 8,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b53'),
+                        name: 'Frenesí Imbatible',
+                        description: 'A partir de nivel 8, cada vez que impactas un ataque, obtienes 5 PV temporales. Estos PV temporales se sumarán a tus PV temporales si los posees hasta un máximo igual al doble de tu nivel.',
+                        useType: 'passive',
+                        effects: [
+                            {
+                                type: 'accumulative_temp_hp',
+                                target: 'self',
+                                heal: 5,
+                                max: '{level * 2}',
+                                trigger: 'at_attack',
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    },
+                ]
+            },
+            {
+                level: 13,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b54'),
+                        name: 'Golpe Colosal',
+                        description: 'A partir de nivel 13, todos tus golpes causan mella en la armadura del rival. Gastas 3 PI para que si uno de tus ataques impacta durante este turno, todos los ataques físicos que realicen los aliados tendrán ventaja hasta el inicio de tu siguiente turno.',
+                        useType: 'active',
+                        action: 'free_action',
+                        cost: 3,
+                        target: 'self',
+                        resource: 'Rage Points',
+                        duration: {
+                            type: 'temporal',
+                            duration: 1,
+                            medition: 'turn'
+                        },
+                        condition: 'at_attack',
+                        modifiers: [
+                            {
+                                type: 'attack against this target',
+                                value: 'advantage',
+                                description: 'Otorga ventaja a los ataques físicos de los aliados contra el objetivo.',
+                                target: 'enemy',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'round'
+                                }
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    }
+                ]
+            },
+            {
+                level: 18,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b55'),
+                        name: 'Ira Incontenible',
+                        description: 'A partir de nivel 18, puedes gastar 1 PI antes de realizar tu tirada de ataque para duplicar el bonificador del daño de dicho ataque.',
+                        useType: 'active',
+                        cost: 1,
+                        target: 'self',
+                        resource: 'Rage Points',
+                        trigger: 'before_attack',
+                        effects: [
+                            {
+                                type: 'double_damage_bonus',
+                                target: 'self',
+                                description: 'Duplica el bonificador de daño del ataque',
+                                trigger: 'before_attack',
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b55'),
+                        name: 'Ira Incontenible',
+                        description: 'Aumentas tu porcentaje de crítico en un 5% en ataques.',
+                        useType: 'passive',
+                        modifiers: [
+                            {
+                                type: 'critical',
+                                value: 0.05,
+                                description: 'Aumenta el rango de crítico en 5%',
+                                addTo: 'criticalOnAttackModifiers',
+                                target: 'self',
+                                permanent: true
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b55'),
+                        name: 'Ira Incontenible',
+                        description: 'Cada vez que impactas un crítico, restauras tu nivel en puntos de vida.',
+                        trigger: 'at_critical_attack',
+                        effects: [
+                            {
+                                type: 'healing',
+                                target: 'self',
+                                healType: 'HP',
+                                heal: '{level}',
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        name: 'Squire',
+        description: 'Ponte detrás de Braum',
+        class: characterClassId,
+        levels: [
+            {
+                level: 4,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b56'),
+                        name: 'Provocar',
+                        description: 'A partir de nivel 4, obtienes la capacidad de atraer la atención de los enemigos contra ti de forma casi hipnótica. Seleccionas a cualquier cantidad de enemigos a seis casillas de ti. Los enemigos seleccionados deben superar una tirada de salvación de sabiduría con dificultad igual a 8 más tu bonificador de coraje y tu competencia, en caso de fallar tendrán desventaja en realizar cualquier acción ofensiva que no este dirigida contra ti. Cada enemigo tendrá la oportunidad de realizar dicha salvación nuevamente al finalizar su turno, con una duración máxima de 3 turnos. Puedes utilizar este rasgo una vez por combate. Aumenta a dos usos a partir de nivel 8, a tres usos a nivel 13, y finalmente a 4 usos a nivel 18.',
+                        useType: 'active',
+                        action: 'action',
+                        modifiers: [
+                            {
+                                type: 'offensive_action',
+                                value: 'disadvantage',
+                                description: 'Desventaja en realizar cualquier acción ofensiva que no este dirigida contra ti',
+                                target: 'enemies_at_range',
+                                condition: 'is attacking other than {character}',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 3,
+                                    medition: 'turns'
+                                },
+                                shouldSaveEachTurn: true,
+                            }
+                        ],
+                        uses: 1,
+                        requireSalvation: true,
+                        cd: '8 + {proficency} + {courage_bonifier}',
+                        state: 'ACTIVE'                       
+                    }
+                ]
+            },
+            {
+                level: 8,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b57'),
+                        name: 'Uso adicional de Provocar',
+                        description: 'Ganas un uso adicional de Provocar.',
+                        useType: 'passive',
+                        addUsesToParent: true,
+                        parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b56'),
+                        uses: 1,
+                        state: 'ACTIVE'
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b58'),
+                        name: 'Intercepción',
+                        description: 'A partir de nivel 8, cuando un aliado a una casilla de ti vaya a recibir un ataque, utilizando tu reacción, puedes lanzar 1d8 para aumentar en esa cantidad la defensa de tu aliado. Si el ataque impacta, se considerará al objetivo del ataque como resistente al daño de dicho ataque. Puedes utilizar este rasgo una cantidad de veces igual a tu bonificador de coraje por combate.',
+                        useType: 'active',
+                        action: 'reaction',
+                        modifiers: [
+                            {
+                                type: 'defend',
+                                value: '1d8',
+                                description: 'Aumenta en 1d8 la defensa de tu aliado',
+                                target: 'ally_at_range',
+                                addTo: 'defenseModifiers',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'attack'
+                                }
+                            },
+                            {
+                                type: 'resistant',
+                                description: 'Se considerará al objetivo del ataque como resistente al daño de dicho ataque',
+                                target: 'ally_at_range',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'attack'
+                                }
+                            }
+                        ],
+                        uses: '{courage_bonifier}',
+                    }
+                ]
+            },
+            {
+                level: 13,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b59'),
+                        name: 'Uso adicional de Provocar',
+                        description: 'Ganas un uso adicional de Provocar.',
+                        useType: 'passive',
+                        addUsesToParent: true,
+                        parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b56'),
+                        uses: 1,
+                        state: 'ACTIVE'
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b5a'),
+                        name: 'Vigilancia',
+                        description: 'A partir de nivel 13, obtienes una reacción adicional en cada una de las rondas. Cuando impactas un ataque de oportunidad contra un enemigo, su velocidad se reducirá a 0 durante el resto del turno y perderá sus reacciones hasta el final de su siguiente turno.',
+                        useType: 'passive',
+                        modifiers: [
+                            {
+                                type: 'reaction',
+                                value: 1,
+                                description: 'Obtienes una reacción adicional en cada una de las rondas',
+                                addTo: 'reactionModifiers',
+                                target: 'self',
+                                permanent: true
+                            }
+                        ],
+                        effects: [
+                            {
+                                type: 'reduce_speed',
+                                target: 'enemy',
+                                value: 0,
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'turn'
+                                },
+                                trigger: 'at_opportunity_attack'
+                            },
+                            {
+                                type: 'lose_reactions',
+                                target: 'enemy',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'round'
+                                }
+                            }
+                        ],
+                    }
+                ]
+            },
+            {
+                level: 18,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b59'),
+                        name: 'Uso adicional de Provocar',
+                        description: 'Ganas un uso adicional de Provocar.',
+                        useType: 'passive',
+                        addUsesToParent: true,
+                        parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b56'),
+                        uses: 1,
+                        state: 'ACTIVE'
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b5b'),
+                        name: 'Escudo inamovible',
+                        description: 'Los golpes críticos realizados contra ti son considerados ataques normales.',
+                        useType: 'passive',
+                        effects: [
+                            {
+                                type: 'critical_as_normal',
+                                target: 'self',
+                                preventCritical: true,
+                                description: 'Los golpes críticos realizados contra ti son considerados ataques normales.',
+                                trigger: 'at_critical_attack',
+                            }
+                        ],
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b5c'),
+                        name: 'Escudo inamovible',
+                        description: 'Puedes decidir tener éxito en tus tiradas de salvación que hayas fallado una cantidad de veces igual a tu competencia.',
+                        useType: 'passive',
+                        trigger: 'at_failed_save',
+                        uses: '{proficency}',
+                        effects: [
+                            {
+                                type: 'success_save',
+                                target: 'self',
+                                description: 'Puedes decidir tener éxito en tus tiradas de salvación que hayas fallado una cantidad de veces igual a tu competencia.',
+                            }
+                        ],
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b5d'),
+                        name: 'Golpe de escudo',
+                        description: 'Cuando impactas un ataque, puedes utilizar tu acción adicional y 3 PI para realizar daño con tu escudo. El objetivo recibirá tu nivel en daño contundente y tendrá que superar una salvación de coraje o perderá su acción en su siguiente turno. Debes utilizar un escudo para usar este rasgo.',
+                        useType: 'active',
+                        action: 'bonus_action',
+                        cost: 3,
+                        target: 'enemy',
+                        resource: 'Rage Points',
+                        trigger: 'at_attack',
+                        condition: 'self using object-type shield',
+                        effects: [
+                            {
+                                type: 'damage',
+                                target: 'enemy',
+                                damageType: 'strike',
+                                dice: '{level}',
+                            },
+                            {
+                                target: 'enemy',
+                                type: 'loose_action',
+                                condition: 'failed_save',
+                            }
+                        ],
+                        parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
+                        addAsSubfeatureToParent: true
+                    }
+                ]
+            }
+        ]
+    }
+]);
+

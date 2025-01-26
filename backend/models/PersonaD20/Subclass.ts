@@ -1,7 +1,7 @@
 import { Schema, model, Document, Types } from 'mongoose';
 import { IClassLevel, IPersonaClass } from './Class';
 
-export interface ISubclassLevel extends Omit<IClassLevel, "proficency" | "spells" | "APGained" | "maxPreparedSpells"> {
+export interface ISubclassLevel extends Omit<IClassLevel, "proficency" | "spells" | "APGained" | "maxPreparedSpells" | "selectSubclass" | "gainSubclassFeature" | "gainStatIncrease"> {
     spells?: Types.ObjectId[],
     additionalSpells?: Types.ObjectId[],
     freeSpells?: Types.ObjectId[],

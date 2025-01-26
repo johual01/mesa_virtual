@@ -997,11 +997,20 @@ export const getLevelUpInfo = async (req: Request, res: Response) => {
         HPDice: characterClass.HPDice,
         features: nextLevelData.features,
         spells: nextLevelData.spells,
+        subclassFeatures: [],
         shouldChooseSubclass: nextLevelData.selectSubclass,
         shouldChooseSecondaryFeatures: (nextLevelData.knownSecondaryFeatures && nextLevelData.knownSecondaryFeatures > 0),
         shouldChooseSecondaryAffinities: nextLevelData.gainSecondaryAffinity,
         shouldChooseStatImprovement: nextLevelData.gainStatIncrease,
         // TODO: Agregar dotes
+    }
+    if (characterDetail.class.subclass) {
+        const subclass = await Subclass.findById(characterDetail.class.subclass);
+        if (!subclass) return res.status(406).json({ message: 'No se encontró la subclase' });
+        const subclassLevel = subclass.levels.find((e) => e.level == nextLevel);
+        if (subclassLevel) {
+            response.subclassFeatures = subclassLevel.features;
+        }
     }
     if (nextLevelData.selectSubclass) {
         response.subclasses = await Subclass.find({ class: characterClass._id });

@@ -5,6 +5,7 @@ export enum healingTypes {
     HP = 'hp',
     SP = 'sp',
     TEMP_HP = 'temp_hp',
+    ACC_TEMP_HP = 'accumulative_temp_hp',
     STATUS_EFFECT = 'status_effect',
     DEBILITATION = 'debilitation',
     ENEMY_POTENTIATION = 'enemy_potentiation',
@@ -107,6 +108,7 @@ export enum triggerTypes {
     AT_CRITICAL_ATTACK = 'at_critical_attack', // Se activa al realizar un ataque crítico
     AT_RECEIVE_CRITICAL_ATTACK = 'at_receive_critical_attack', // Se activa al recibir un ataque crítico
     AT_OPPORTUNITY_CRITICAL_ATTACK = 'at_opportunity_critical_attack', // Se activa al realizar un ataque de oportunidad crítico
+    AT_OPPORTUNITY_ATTACK = 'at_opportunity_attack', // Se activa al realizar un ataque de oportunidad
     AT_FAILED_SAVE = 'at_failed_save', // Se activa al fallar una salvación
     AT_SUCCESS_SAVE = 'at_success_save', // Se activa al superar una salvación
 }
@@ -141,6 +143,7 @@ export interface IModifier {
     stadistic?: personaStadistics,
     replaceStadistic?: personaStadistics,
     trigger?: triggerTypes | triggerTypes[],
+    shouldSaveEachTurn?: boolean,
     state: 'ACTIVE' | 'INACTIVE',
     modifierId?: string,
     etiquette?: string
@@ -183,6 +186,7 @@ export interface IFeature {
     alternativeAction?: actions,
     modifiers?: IModifier[],
     trigger?: triggerTypes | triggerTypes[],
+    condition?: string, // Condición para activar el efecto como "si el objetivo está envenenado", se concatena con el de arriba
     costType?: costTypes,
     cost?: number | string,
     alternativeCostType?: costTypes,
@@ -198,6 +202,7 @@ export interface IFeature {
     cooldown?: IDuration, // Tiempo de reutilización
     origin?: string,
     addUsesToParent?: boolean,
+    addAsSubfeatureToParent?: boolean,
     state?: 'ACTIVE' | 'INACTIVE',
     effects: IEffect[],
     parent?: Types.ObjectId,
@@ -226,5 +231,5 @@ export interface IEffect {
     levelCondition?: number, // Condición de nivel para discriminar efectos
     shouldSaveEachTurn?: boolean, // Debe realizar la salvación cada turno - TODO: Esto debe incluir el cd de salvación cuando se aplica
     etiquette?: string, // Etiqueta para unificar efectos por condición
-    
+    preventCritical?: boolean, // Evita los críticos
 }

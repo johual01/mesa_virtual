@@ -330,7 +330,84 @@ const characterPersonaDetailSchema = new Schema({
                 type: [Object],
                 required: true
             }
+        },
+        actions: {
+            actionModifiers: {
+                type: [Object],
+                required: true
+            },
+            bonusActionModifiers: {
+                type: [Object],
+                required: true
+            },
+            reactionModifiers: {
+                type: [Object],
+                required: true
+            }
+        },
+        critical: {
+            criticalModifiers: {
+                type: [Object],
+                required: true
+            },
+            criticalFailModifiers: {
+                type: [Object],
+                required: true
+            },
+            criticalOnFisicalAttackModifiers: {
+                type: [Object],
+                required: true
+            },
+            criticalOnMagicAttackModifiers: {
+                type: [Object],
+                required: true
+            },
+            criticalOnAttackModifiers: {
+                type: [Object],
+                required: true
+            }
+        },
+        attack: {
+            attackModifiers: {
+                type: [Object],
+                required: true
+            },
+            fisicalAttackModifiers: {
+                type: [Object],
+                required: true
+            },
+            rangeAttackModifiers: {
+                type: [Object],
+                required: true
+            },
+            meleeAttackModifiers: {
+                type: [Object],
+                required: true
+            }
+        },
+        damage: {
+            damageModifiers: {
+                type: [Object],
+                required: true
+            },
+            fisicalDamageModifiers: {
+                type: [Object],
+                required: true
+            },
+            rangeDamageModifiers: {
+                type: [Object],
+                required: true
+            },
+            meleeDamageModifiers: {
+                type: [Object],
+                required: true
+            },
+            criticalDamageModifiers: {
+                type: [Object],
+                required: true
+            }
         }
+        
     }
 }, {
     timestamps: true
