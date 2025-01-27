@@ -88,9 +88,12 @@ export enum triggerTypes {
     AT_SELF_DEATH = 'at_self_death', // Se activa al morir
     AT_ENEMY_DEATH = 'at_enemy_death', // Se activa al morir un enemigo
     AT_ALLY_DEATH = 'at_ally_death', // Se activa al morir un aliado
-    BEFORE_RECEIVE_ATTACK = 'before_receive_attack', // Se activa antes de recibir un ataque
     AT_RECEIVE_ATTACK = 'at_receive_attack', // Se activa al recibir un ataque
+    AT_RECEIVE_MAGIC_ATTACK = 'at_receive_magic_attack', // Se activa al recibir un ataque mágico
+    AT_FAILED_RECEIVE_ATTACK = 'at_failed_receive_attack', // Se activa al ver el fallo de un ataque hacia ti
+    AT_ALLY_RECEIVE_ATTACK = 'at_ally_receive_attack', // Se activa al recibir un ataque un aliado
     BEFORE_ATTACK = 'before_attack', // Se activa antes de realizar un ataque
+    BEFORE_RECEIVE_ATTACK = 'before_receive_attack', // Se activa antes de recibir un ataque
     AT_ZONE = 'at_zone', // Se activa al entrar en una zona
     NEXT_ATTACK = 'next_attack', // Se activa al siguiente ataque
     NEXT_SPELL = 'next_spell', // Se activa al siguiente hechizo
@@ -109,6 +112,7 @@ export enum triggerTypes {
     AT_RECEIVE_CRITICAL_ATTACK = 'at_receive_critical_attack', // Se activa al recibir un ataque crítico
     AT_OPPORTUNITY_CRITICAL_ATTACK = 'at_opportunity_critical_attack', // Se activa al realizar un ataque de oportunidad crítico
     AT_OPPORTUNITY_ATTACK = 'at_opportunity_attack', // Se activa al realizar un ataque de oportunidad
+    BEFORE_SAVE = 'before_save', // Se activa antes de realizar una salvación
     AT_FAILED_SAVE = 'at_failed_save', // Se activa al fallar una salvación
     AT_SUCCESS_SAVE = 'at_success_save', // Se activa al superar una salvación
 }
@@ -219,6 +223,7 @@ export interface IEffect {
     heal?: string, // Cantidad de curación - Puede tener dados o valores fijos o valores dinámicos (por ejemplo, {half_level}) o combinaciones
     healType?: healingTypes, // Tipo de curación
     shieldType?: barrierTypes, // Tipo de barrera
+    damageReduction?: string, // Reducción de daño
     target?: targetTypes, // Objetivo
     range?: IRange, // Rango
     trigger?: triggerTypes, // Disparador de evento
@@ -232,4 +237,7 @@ export interface IEffect {
     shouldSaveEachTurn?: boolean, // Debe realizar la salvación cada turno - TODO: Esto debe incluir el cd de salvación cuando se aplica
     etiquette?: string, // Etiqueta para unificar efectos por condición
     preventCritical?: boolean, // Evita los críticos
+    canUseFeatures?: boolean, // Puede usar habilidades extras
+    canTriggerEffects?: boolean, // Puede activar efectos adicionales a partir de este
+    salvation?: personaStadistics
 }

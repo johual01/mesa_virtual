@@ -1317,7 +1317,7 @@ const characterClass = await db.class.insertOne({
                                             duration: {
                                                 type: 'temporal',
                                                 duration: 1,
-                                                medition: 'turns'
+                                                medition: 'round'
                                             }
                                         },
                                         {
@@ -1329,7 +1329,7 @@ const characterClass = await db.class.insertOne({
                                             duration: {
                                                 type: 'temporal',
                                                 duration: 1,
-                                                medition: 'turns'
+                                                medition: 'round'
                                             }
                                         }
                                     ]
@@ -2003,7 +2003,7 @@ const characterClass = await db.class.insertOne({
 
 const characterClassId = characterClass.insertedId;
 
-const subclass = await db.subclass.Many([
+const subclass = await db.subclass.insertMany([
     {
         name: 'Berseker',
         description: 'Pum te pego más fuerte',
@@ -2139,7 +2139,7 @@ const subclass = await db.subclass.Many([
                         duration: {
                             type: 'temporal',
                             duration: 1,
-                            medition: 'turn'
+                            medition: 'round'
                         },
                         condition: 'at_attack',
                         modifiers: [
@@ -2422,6 +2422,609 @@ const subclass = await db.subclass.Many([
                         ],
                         parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
                         addAsSubfeatureToParent: true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        name: 'Deadly Fist',
+        description: 'Pum te pego con los puños',
+        class: characterClassId,
+        levels: [
+            {
+                level: 4,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b5e'),
+                        name: 'Puño Marcial',
+                        description: `Tu práctica con artes marciales te permite dominar estilos de combate que usan el cuerpo como un arma. Obtienes lo siguientes beneficios mientras estés desarmado y no lleves armadura ni escudo:
+
+                        - Puedes usar destreza en lugar de coraje en los ataques y tiradas de daño en combate desarmado.
+                        - Puedes utilizar el dado de artes marciales al realizar ataques sin armas.
+                        - Cuanto en tu turno realizas un ataque, puedes realizar un ataque desarmado como acción adicional.`,
+                        useType: 'passive',
+                        condition: 'character unarmed and unarmored',
+                        modifiers: [
+                            {
+                                type: 'attack_without_weapon',
+                                value: 'dexterity',
+                                description: 'Puedes usar destreza en lugar de coraje en los ataques y tiradas de daño.',
+                                target: 'self'
+                            },
+                            {
+                                type: 'attack',
+                                value: 'martial_dice',
+                                description: 'Puedes utilizar el dado de artes marciales al realizar ataques sin armas como bonificador.',
+                                target: 'self'
+                            },
+                            {
+                                type: 'attack',
+                                value: 'extra_attack',
+                                description: 'Cuanto en tu turno realizas un ataque, puedes realizar un ataque desarmado como acción adicional.',
+                                target: 'self'
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b5f'),
+                        name: 'Dado de Artes Marciales',
+                        description: 'A partir de nivel 4, obtienes un dado de artes marciales de 1d4. Este dado aumenta a 1d6 a nivel 8, 1d8 a nivel 13, y finalmente a 2d4 a nivel 18.',
+                        useType: 'passive',
+                        condition: 'character unarmed and unarmored',
+                        effects: [
+                            {
+                                type: 'martial_dice',
+                                target: 'self',
+                                dice: '1d4',
+                                etiquette: 'Martial Dice',
+                                levelCondition: 4
+                            },
+                            {
+                                type: 'martial_dice',
+                                target: 'self',
+                                dice: '1d6',
+                                etiquette: 'Martial Dice',
+                                levelCondition: 8
+                            },
+                            {
+                                type: 'martial_dice',
+                                target: 'self',
+                                dice: '1d8',
+                                etiquette: 'Martial Dice',
+                                levelCondition: 13
+                            },
+                            {
+                                type: 'martial_dice',
+                                target: 'self',
+                                dice: '2d4',
+                                etiquette: 'Martial Dice',
+                                levelCondition: 18
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                level: 8,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b60'),
+                        parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
+                        addAsSubfeatureToParent: true,
+                        name: 'Paso Destellante',
+                        description: 'Consumes 2 PI y tu acción adicional para destrabarte o correr. Tu distancia de salto se duplica durante el turno.',
+                        useType: 'active',
+                        action: 'bonus_action',
+                        cost: 2,
+                        target: 'self',
+                        resource: 'Rage Points',
+                        modifiers: [
+                            {
+                                type: 'extra_movement',
+                                target: 'self',
+                                description: 'Tu distancia de salto se duplica durante el turno.',
+                                value: 'double',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'turn'
+                                },
+                                condition: 'character is jumping'
+                            }
+                        ],
+                        effects: [
+                            {
+                                type: 'election',
+                                target: 'self',
+                                movementType: 'disengage'
+                            },
+                            {
+                                type: 'election',
+                                target: 'self',
+                                movementType: 'dash'
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b61'),
+                        name: 'Ráfaga de Golpes',
+                        description: 'Consumes 2 PI y tu acción adicional después de realizar tu acción de ataque para realizar dos ataques desarmados que no pueden utilizar rasgos violentos. Estos ataques no generan PI.',
+                        parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
+                        addAsSubfeatureToParent: true,
+                        useType: 'active',
+                        action: 'bonus_action',
+                        cost: 2,
+                        target: 'self',
+                        resource: 'Rage Points',
+                        effects: [
+                            {
+                                type: 'attack_without_weapon',
+                                target: 'enemy',
+                                description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                                trigger: 'at_attack',
+                                condition: 'character is unarmed',
+                                canUseFeatures: false,
+                                canTriggerEffects: false
+                            },
+                            {
+                                type: 'attack_without_weapon',
+                                target: 'enemy',
+                                description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                                trigger: 'at_attack',
+                                condition: 'character is unarmed',
+                                canUseFeatures: false,
+                                canTriggerEffects: false
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b62'),
+                        name: 'Desviar Proyectiles',
+                        description: 'Puedes usar tu reacción para desviar o atrapar un proyectil tras ser impactado con un arma a distancia. El daño recibido se reduce en 1d10 + tu modificador de destreza + tu nivel. Si reduces el daño a 0, gastando 2 PI puedes realizar un ataque a distancia con dicho proyectil como si fuera un ataque desarmado.',
+                        parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
+                        addAsSubfeatureToParent: true,
+                        useType: 'active',
+                        action: 'reaction',
+                        target: 'enemy',
+                        resource: 'Rage Points',
+                        cost: 2,
+                        effects: [
+                            {
+                                type: 'reduce_damage',
+                                target: 'self',
+                                damageReduction: '1d10 + dexterity + level',
+                                trigger: 'at_attack',
+                                condition: 'is ranged weapon attack',
+                                canUseFeatures: false,
+                                canTriggerEffects: false
+                            },
+                            {
+                                type: 'attack_without_weapon',
+                                target: 'enemy',
+                                description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                                trigger: 'at_attack',
+                                condition: 'damage reduced to 0',
+
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b63'),
+                        name: 'Evasión',
+                        description: 'Gastando 3 PI cuando estés recibiendo un ataque mágico, aumentará tu Resistencia Mágica en 5. Si el ataque falla, no recibirás ningún daño.',
+                        parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
+                        addAsSubfeatureToParent: true,
+                        useType: 'active',
+                        action: 'reaction',
+                        target: 'self',
+                        resource: 'Rage Points',
+                        trigger: 'at_receive_magic_attack',
+                        cost: 3,
+                        effects: [
+                            {
+                                type: 'avoid_damage',
+                                target: 'self',
+                                trigger: 'at_attack',
+                                condition: 'attack fails',
+                                canUseFeatures: false,
+                                canTriggerEffects: false
+                            }
+                        ],
+                        modifiers: [
+                            {
+                                type: 'resistance',
+                                value: 5,
+                                addTo: 'magicResistanceModifiers',
+                                description: 'Aumenta tu Resistencia Mágica en 5.',
+                                target: 'self',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'attack'
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                level: 13,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b64'),
+                        name: 'Maestro de la Fluidez',
+                        description: 'Obtienes una reacción adicional.',
+                        useType: 'passive',
+                        modifiers: [
+                            {
+                                type: 'reaction',
+                                value: 1,
+                                description: 'Obtienes una reacción adicional.',
+                                addTo: 'reactionModifiers',
+                                target: 'self',
+                                permanent: true
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b65'),
+                        name: 'Maestro de la Fluidez',
+                        description: 'Cuando un enemigo falla un ataque contra ti, puedes gastar 1 PI como reacción para causar que dicho ataque impacte en otro enemigo de tu elección que puedas ver a 1 casilla de ti.',
+                        useType: 'active',
+                        action: 'reaction',
+                        target: 'enemy',
+                        resource: 'Rage Points',
+                        cost: 1,
+                        trigger: 'at_failed_receive_attack',
+                        effects: [
+                            {
+                                type: 'redirect_attack_against_other_enemy',
+                                target: 'enemy',
+                                description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                                trigger: 'at_attack',
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b66'),
+                        name: 'Maestro de la Fluidez',
+                        description: 'Obtienes pericia en todas las tiradas de salvación.',
+                        useType: 'passive',
+                        modifiers: [
+                            {
+                                type: 'all_saving_throws',
+                                value: 'proficency',
+                                addTo: 'savingThrowsModifiers',
+                                description: 'Obtienes pericia en todas las tiradas de salvación.',
+                                target: 'self',
+                                permanent: true
+                            }
+                        ],
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b67'),
+                        name: 'Maestro de la Fluidez',
+                        description: 'En caso de fallar una tirada de salvación, puedes gastar 2 PI para repetir dicha tirada, teniendo que usar la nueva tirada de forma obligatoria.',
+                        useType: 'active',
+                        action: 'reaction',
+                        target: 'self',
+                        resource: 'Rage Points',
+                        cost: 2,
+                        trigger: 'at_failed_save',
+                        effects: [
+                            {
+                                type: 'reroll_save',
+                                target: 'self',
+                                description: 'Repite la tirada de salvación.',
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                level: 18,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b68'),
+                        name: 'Puño Demoledor',
+                        description: 'Tu velocidad es duplicada, y sumas tu bonificador de sabiduría en tu defensa y tu bonificador de destreza en tu resistencia mágica.',
+                        useType: 'passive',
+                        modifiers: [
+                            {
+                                type: 'extra_movement',
+                                value: 'double',
+                                description: 'Tu velocidad es duplicada.',
+                                target: 'self',
+                                addTo: 'movementModifiers',
+                                permanent: true
+                            },
+                            {
+                                type: 'defense',
+                                value: 'instincts',
+                                description: 'Sumas tu bonificador de instintos en tu defensa.',
+                                target: 'self',
+                                addTo: 'defenseModifiers',
+                                permanent: true
+                            },
+                            {
+                                type: 'magic_resistance',
+                                value: 'dexterity',
+                                description: 'Sumas tu bonificador de destreza en tu resistencia mágica.',
+                                target: 'self',
+                                permanent: true
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b69'),
+                        name: 'Puño Demoledor',
+                        description: 'Obtienes una acción adicional extra.',
+                        useType: 'passive',
+                        modifiers: [
+                            {
+                                type: 'extra_action',
+                                value: 1,
+                                description: 'Obtienes una acción adicional extra.',
+                                target: 'self',
+                                addTo: 'bonusActionModifiers',
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b6a'),
+                        name: 'Puño Demoledor',
+                        description: 'Cuando impactas un golpe crítico, puedes lanzar “Ráfaga de Golpes” como parte de dicha acción sin consumir PI.',
+                        useType: 'passive',
+                        trigger: 'at_critical_attack',
+                        effects: [
+                            {
+                                type: 'activate_feature',
+                                target: 'self',
+                                description: 'Lanzas “Ráfaga de Golpes” como parte de dicha acción sin consumir PI.',
+                                featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b61'),
+                                cost: 0,
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b6b'),
+                        name: 'Puño Demoledor',
+                        description: 'Cuando tienes desventaja en cualquier tirada, puedes gastar 2 PI para cancelar la desventaja en dicha tirada.',
+                        useType: 'active',
+                        action: 'reaction',
+                        target: 'self',
+                        trigger: 'before_save',
+                        resource: 'Rage Points',
+                        cost: 2,
+                        effects: [
+                            {
+                                type: 'cancel_disadvantage',
+                                target: 'self',
+                                description: 'Cancela la desventaja en la tirada.',
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        name: 'Avenger',
+        description: 'Pum te vengo',
+        class: characterClassId,
+        levels: [
+            {
+                level: 4,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b6c'),
+                        name: 'Caza Superior',
+                        description: 'Durante las tres primeras rondas, aumentas tu velocidad en 2 casillas, obtienes una reacción adicional y podrás realizar ataques de oportunidad incluso cuando los enemigos realicen la acción de destrabarse. Adicionalmente, tu iniciativa recibe un bonificador igual a tu modificador de destreza.',
+                        useType: 'passive',
+                        trigger: 'at_combat_start',
+                        effects: [
+                            {
+                                type: 'extra_movement',
+                                value: 2,
+                                target: 'self',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 3,
+                                    medition: 'round'
+                                }
+                            },
+                            {
+                                type: 'reaction',
+                                value: 1,
+                                target: 'self',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 3,
+                                    medition: 'round'
+                                }
+                            },
+                            {
+                                type: 'opportunity_attack',
+                                value: 'ignore_disengage',
+                                target: 'self',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 3,
+                                    medition: 'round'
+                                }
+                            },
+                            {
+                                type: 'initiative',
+                                value: 'dexterity',
+                                target: 'self',
+                                addTo: 'initiativeModifiers',
+                                permanent: true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                level: 8,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b6d'),
+                        name: 'Indómito',
+                        description: 'Cuando tú o un aliado recibe un ataque, puedes utilizar tu reacción para realizar un ataque de oportunidad.',
+                        useType: 'active',
+                        action: 'reaction',
+                        target: 'enemy',
+                        trigger: ['at_receive_attack', 'at_ally_receive_attack'],
+                        effects: [
+                            {
+                                type: 'opportunity_attack',
+                                target: 'enemy',
+                                description: 'Realiza un ataque de oportunidad.',
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b6e'),
+                        name: 'Indómito',
+                        description: 'Cada vez que impactas un ataque de oportunidad, aumentas tu daño hasta el inicio de tu siguiente turno en +3; este valor es duplicado contra enemigos ensangrentados.',
+                        useType: 'passive',
+                        trigger: 'at_opportunity_attack',
+                        modifiers: [
+                            {
+                                type: 'damage',
+                                target: 'self',
+                                damageType: 'strike',
+                                value: 3,
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'round',
+                                }
+                            },
+                            {
+                                type: 'damage',
+                                target: 'self',
+                                damageType: 'strike',
+                                value: 6,
+                                condition: 'enemy is bleeding',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'round'
+                                }
+                            }
+                        ]
+                    }
+                ],
+            },
+            {
+                level: 13,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b6f'),
+                        name: 'Sin Escape',
+                        description: 'Cuando realizan un ataque contra ti, puedes utilizar tu reacción para aumentarte +3 a la Defensa por el turno. Si el ataque no impacta, puedes realizar un ataque en contra del enemigo que no aplicará multiataque. Obtienes una reacción adicional.',
+                        trigger: 'before_receive_attack',
+                        useType: 'active',
+                        action: 'reaction',
+                        target: 'self',
+                        modifiers: [
+                            {
+                                type: 'defense',
+                                value: 3,
+                                target: 'self',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'turn'
+                                }
+                            }
+                        ],
+                        effects: [
+                            {
+                                type: 'attack',
+                                target: 'enemy',
+                                description: 'Realiza un ataque en contra del enemigo que no aplicará multiataque.',
+                                condition: 'attack fails',
+                                canUseFeatures: false,
+                            }
+                        ]
+                    },
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b70'),
+                        name: 'Sin Escape',
+                        description: 'Tus ataques de oportunidad generan 1 PI al impactar.',
+                        useType: 'passive',
+                        trigger: 'at_opportunity_attack',
+                        effects: [
+                            {
+                                type: 'recover resource',
+                                target: 'self',
+                                resource: 'Rage Points',
+                                value: 1,
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                level: 18,
+                features: [
+                    {
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b71'),
+                        name: 'Caza Interminable',
+                        description: 'Si tus PV caen a 0, obtienes un turno adicional al final del turno actual. Al inicio de dicho turno, aplicas miedo a los enemigos con DC de rasgo violentos de coraje, reinicias la duración de Caza Superior, estableces tus PV a 1 y no podrán bajar a 0 hasta el inicio de tu siguiente turno. Este efecto solo se aplica una vez por combate.',
+                        useType: 'passive',
+                        trigger: 'at_self_death',
+                        uses: 1,
+                        triggerForRecover: 'at_combat_end',
+                        effects: [
+                            {
+                                type: 'extra_turn',
+                                target: 'self',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'round'
+                                }
+                            },
+                            {
+                                type: 'fear',
+                                target: 'enemies',
+                                salvation: 'courage',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'round'
+                                }
+                            },
+                            {
+                                type: 'reset_feature',
+                                target: 'self',
+                                featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b6c'),
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 3,
+                                    medition: 'round'
+                                }
+                            },
+                            {
+                                type: 'healing',
+                                target: 'self',
+                                healType: 'HP',
+                                heal: 1,
+                            },
+                            {
+                                type: 'cant_reach_zero_hp',
+                                target: 'self',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'round'
+                                }
+                            }
+                        ]
                     }
                 ]
             }

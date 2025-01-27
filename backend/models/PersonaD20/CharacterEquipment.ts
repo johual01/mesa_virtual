@@ -1,7 +1,6 @@
 import {Schema, model, Document, Types } from 'mongoose';
 import { ICharacter } from '../Character';
-import { personaStadistics, targetTypes, elements, healingTypes, barrierTypes, triggerTypes, IRange, IFeature, IModifier } from '../types';
-import { IStatusEffect } from '../StatusEffect';
+import { personaStadistics, targetTypes, elements, IEffect, IRange, IFeature, IModifier } from '../types';
 
 export enum noneType {
     NONE = 'none'
@@ -65,24 +64,7 @@ export interface IWeaponProperties {
     thrown: boolean,
 }
 
-export interface IConsumibleProperties {
-    modifiers?: IModifier[],
-    damage?: string, // Daño
-    typeDamage?: elements, // Tipo de daño
-    statusEffect?: IStatusEffect, // Efecto de estado
-    heal?: string, // Cantidad de curación - Puede tener dados o valores fijos (half_level) o combinaciones
-    typeHeal?: healingTypes, // Tipo de curación
-    shieldType?: barrierTypes, // Tipo de barrera
-    target?: targetTypes, // Objetivo
-    range?: IRange, // Rango
-    trigger?: triggerTypes, // Disparador de evento
-    condition?: string, // Condición para activar el efecto como "si el objetivo está envenenado", se concatena con el de arriba
-    movement?: number, // Cantidad de movimiento generado
-    movementType?: string, // Tipo de movimiento generado
-    movementDirection?: string, // Dirección de movimiento generado
-    uses?: number, // Cantidad de usos del efecto
-    etiquette?: string, // Etiqueta para unificar efectos por condición
-}
+
 
 export interface ICharacterEquipment extends Document {
     character: Types.ObjectId | ICharacter,
@@ -96,7 +78,7 @@ export interface ICharacterEquipment extends Document {
     canAttack: boolean,
     provideDefense: boolean,
     quantity: number,
-    properties?: IWeaponProperties | IConsumibleProperties,
+    properties?: IWeaponProperties | IEffect,
     modifiers?: IModifier[],
     additionalProperties?: IFeature[],
 }
