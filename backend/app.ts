@@ -9,7 +9,7 @@ import { requestFile } from "./functions";
 
 const app = express();
 
-app.use(cors({origin: ['http://localhost:8080'], credentials: true, exposedHeaders: ["set-cookie"]}));
+app.use(cors({origin: ['http://localhost:3000'], credentials: true, exposedHeaders: ["set-cookie"]}));
 app.use(morgan("dev"));
 app.use(express.urlencoded({extended: true, limit: '50mb'}));
 app.use(express.json({limit: '50mb'}));
