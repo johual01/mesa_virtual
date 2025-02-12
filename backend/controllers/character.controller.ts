@@ -9,7 +9,7 @@ import Class, { IPersonaClass } from '../models/PersonaD20/Class';
 import Subclass, { IPersonaSubclass } from '../models/PersonaD20/Subclass';
 import { elements, system as systems, personaStadistics, IFeature, IModifier, useTypes } from '../models/types';
 import { enumToArray, saveImage, arraysEqual, reduceModifiers } from '../functions';
-import { calculateBonification, rollMaxDiceString } from '../../diceLogic';
+import { calculateBonification, rollMaxDiceString } from 'diceLogic';
 import CustomFeature from '../models/PersonaD20/CustomFeature';
 import CharacterEquipment from '../models/PersonaD20/CharacterEquipment';
 import Spell from '../models/Spell';
