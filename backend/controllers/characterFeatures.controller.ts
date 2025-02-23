@@ -1,5 +1,6 @@
 import {Request, Response} from 'express';
 import { Types } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import Character from '../models/Character';
 import CharacterStatus from '../models/PersonaD20/CharacterStatus';
 import CustomFeature from '../models/PersonaD20/CustomFeature';
@@ -15,18 +16,18 @@ export const changeFeatureStatus = async (req: Request, res: Response) => {
     if (!character) return res.status(404).json({message: 'Personaje no encontrado'});
     const characterStatus = await CharacterStatus.findOne({characterId: characterObjectId});
     if (!characterStatus) return res.status(404).json({message: 'Estado del personaje no encontrado'});
-    const feature = characterStatus.inactiveFeatures?.find(feature => feature == featureId);
+    const feature = characterStatus.inactiveFeatures?.find(feature => feature == new ObjectId(featureId));
     switch (status) {
         case 'active':
             if (!characterStatus.inactiveFeatures) return res.status(400).json({message: 'No hay rasgos inactivos'});
             if (!feature) return res.status(404).json({message: 'Rasgo no encontrado'});
-            characterStatus.inactiveFeatures.filter((value) => value != featureId);
+            characterStatus.inactiveFeatures.filter((value) => value != new ObjectId(featureId));
             await characterStatus.save();
             break;
         case 'inactive':
             if (feature) return res.status(404).json({message: 'El rasgo ya está inactivo'});
             if (!characterStatus.inactiveFeatures) characterStatus.inactiveFeatures = [];
-            characterStatus.inactiveFeatures.push(featureId);
+            characterStatus.inactiveFeatures.push(new ObjectId(featureId));
             await characterStatus.save();
             break;
     }
