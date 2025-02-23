@@ -8,7 +8,7 @@ interface FooterProps {
 
 const Footer = ({
   tagline = "Simplificando tus juegos de rol de mesa favoritos",
-  title = "Digital Twenty",
+  title = "Arcana Codex",
   copyright = "© 2025 Copyright. All rights reserved.",
 }: FooterProps) => {
   return (

@@ -11,6 +11,10 @@ dotenv.config({ path: path.resolve("./.env") })
     PORT_MINIO: number;
     ENDPOINT_MINIO: string | undefined;
     GENERIC_BUCKET_NAME: string | undefined;
+    SMTP_HOSTNAME: string | undefined;
+    SMTP_PORT: number | undefined;
+    SMTP_USERNAME: string | undefined;
+    SMTP_PASSWORD: string | undefined;
   }
   
   interface Config {
@@ -22,6 +26,10 @@ dotenv.config({ path: path.resolve("./.env") })
     PORT_MINIO: number;
     ENDPOINT_MINIO: string;
     GENERIC_BUCKET_NAME: string;
+    SMTP_HOSTNAME: string;
+    SMTP_PORT: number;
+    SMTP_USERNAME: string;
+    SMTP_PASSWORD: string;
   }
   
   // Loading process.env as ENV interface
@@ -36,10 +44,14 @@ dotenv.config({ path: path.resolve("./.env") })
       ACCESS_KEY_MINIO: process.env.ACCESS_KEY_MINIO,
       SECRET_KEY_MINIO: process.env.SECRET_KEY_MINIO,
       GENERIC_BUCKET_NAME: process.env.GENERIC_BUCKET_NAME,
+      SMTP_HOSTNAME: process.env.SMTP_HOSTNAME,
+      SMTP_PORT: Number.parseInt(process.env.SMTP_PORT || '587'),
+      SMTP_USERNAME: process.env.SMTP_USERNAME,
+      SMTP_PASSWORD: process.env.SMTP_PASSWORD
     };
   };
   
-  const getSanitzedConfig = (config: ENV): Config => {
+  const getSanitizedConfig = (config: ENV): Config => {
     for (const [key, value] of Object.entries(config)) {
       if (value === undefined) {
         throw new Error(`Missing key ${key} in config.env`);
@@ -50,6 +62,6 @@ dotenv.config({ path: path.resolve("./.env") })
   
   const config = getConfig();
   
-  const sanitizedConfig = getSanitzedConfig(config);
+  const sanitizedConfig = getSanitizedConfig(config);
   
 export default sanitizedConfig;

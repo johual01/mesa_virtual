@@ -1,5 +1,6 @@
-import { generateAccessToken, generateRefreshToken } from "../jwt";
-import {Request, Response, CookieOptions} from 'express';
+import { generateAccessToken, generateRefreshToken, validateToken } from "../jwt";
+import { sendMail } from "../mail";
+import {Request, Response, CookieOptions } from 'express';
 import User, { IUser } from '../models/User';
 
 export const login = async (req: Request, res: Response) => {
@@ -55,4 +56,43 @@ export const signup = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   res.clearCookie('jwt', {sameSite: "strict", secure: true});
   res.send(200);
+}
+
+
+export const forgotPassword = async (req: Request, res: Response) => {
+    if (!req.body.email) return res.status(400).json({errMsg: 'Faltan datos'});
+    const user = await User.findOne({email: req.body.email});
+    if (!user) return res.status(406).json({errMsg: 'No User found'});
+    const token = generateAccessToken({ _id: user._id, user: user.username, email: user.email });
+    const resetLink = `https://yourfrontend.com/reset-password?token=${token}`;
+    await sendMail(
+        user.email,
+        'Arcana Codex - Actualizar contraseña',
+        `Ingresa en el siguiente link para crear una nueva contraseña: ${resetLink}`,
+        `<p>Ingresa en el siguiente link para crear una nueva contraseña: <a href="${resetLink}">Refrescar contraseña</a></p>`
+    );
+    res.status(200).json({message: 'Se ha enviado un correo para recuperar la contraseña'});
+}
+
+export const resetPassword = async (req: Request, res: Response) => {
+    if (!req.body.password || !req.body.token) return res.status(400).json({errMsg: 'Faltan datos'});
+    try {
+        await validateToken(req, res, () => {});
+        if (res.statusCode !== 200 && res.statusCode != undefined) return;
+    } catch (err) {
+        return res.status(401).json({ errMsg: 'Token inválido o expirado' });
+    }
+    
+    const user = await User.findById(req.body.userId);
+    if (!user) return res.status(406).json({errMsg: 'No User found'});
+    const pass = await user.encryptPassword(req.body.password);
+    const recievedUser = await User.findOneAndUpdate(
+        { _id: req.body.userId }, 
+        { $set: {password: pass} },
+        {
+            new: true
+        }
+    );
+    if (!recievedUser) return res.status(406).json({errMsg: 'Error en la actualización'});
+    res.status(200).json({message: 'Contraseña actualizada'});
 }
