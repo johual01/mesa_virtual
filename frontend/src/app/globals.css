@@ -98,3 +98,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+.pd-3em {
+  padding-left: 3em;
+  padding-bottom: 1.5em;
+}
