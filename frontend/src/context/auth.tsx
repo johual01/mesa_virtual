@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import Cookies from 'js-cookie';
 
 interface User {
   id: string;
@@ -6,50 +7,74 @@ interface User {
   email: string;
 }
 
-interface UserContextProps {
+interface AuthContextType {
   user: User | null;
-  login: (user: User, token: string) => void;
+  login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
   logout: () => void;
 }
 
-const UserContext = createContext<UserContextProps>(undefined!);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      // Opcional: Verificar el token con el servidor
+    const refreshToken = Cookies.get('jwt');
+    if (refreshToken) {
+      refreshAccessToken();
     }
   }, []);
 
-  const login = (user: User, token: string) => {
-    setUser(user);
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('token', token);
+  const refreshAccessToken = async () => {
+    const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/refresh', {
+      method: 'GET',
+      credentials: 'include', // Esto asegura que las cookies se envíen con la solicitud
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+    } else {
+      logout();
+    }
+  };
+
+  const login = async (email: string, password: string, rememberMe: boolean) => {
+    const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password, rememberMe }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Login failed');
+    }
+
+    const data = await response.json();
+    setUser(data.user);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    localStorage.setItem('token', data.token);
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    Cookies.remove('jwt');
   };
 
   return (
-    <UserContext.Provider
-      value={{ user, login, logout }}
-    >
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
-    </UserContext.Provider>
-  )
-
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
-  const context = useContext(UserContext);
+  const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
