@@ -29,7 +29,8 @@ const userSchema = new Schema({
     },
     joinDate: {
         type: Date,
-        required: true
+        required: true,
+        default: Date.now
     },
     pictureRoute: {
         type: String,

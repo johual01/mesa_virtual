@@ -20,9 +20,9 @@ export function generateRefreshToken (user: object) {
 }
 
 export async function validateToken(req: Request, res: Response, next: Function) {
-    const accessToken = req.header('auth-token');
+    const accessToken = req.header('Authorization')?.replace('Bearer ', '');
     if (!accessToken) {
-        return res.status(401).json('El token no fue adjuntado');
+        return res.status(401).json({ message: 'Acceso denegado, token no enviado' });
     }
     try {
         const user = jwt.verify(accessToken, config.SECRET) as IUser;

@@ -14,22 +14,17 @@ import {
       <NavigationMenuList className="gap-6 space-x-0 data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start">
         <NavigationMenuItem>
           <NavigationMenuLink asChild>
-            <Link href="#">Inicio</Link>
+            <Link href="/">Inicio</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild>
-            <Link href="#">Mis personajes</Link>
+            <Link href="/characters">Mis Personajes</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild>
-            <Link href="#">Campañas</Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuLink asChild>
-            <Link href="#">Sistemas</Link>
+            <Link href="/campaigns">Campañas</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>

@@ -64,12 +64,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const user = await User.findOne({email: req.body.email});
     if (!user) return res.status(406).json({errMsg: 'No User found'});
     const token = generateAccessToken({ _id: user._id, user: user.username, email: user.email });
-    const resetLink = `https://yourfrontend.com/reset-password?token=${token}`;
+    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
     await sendMail(
         user.email,
-        'Arcana Codex - Actualizar contraseña',
+        'Mesa Virtual - Actualizar contraseña',
         `Ingresa en el siguiente link para crear una nueva contraseña: ${resetLink}`,
-        `<p>Ingresa en el siguiente link para crear una nueva contraseña: <a href="${resetLink}">Refrescar contraseña</a></p>`
+        `<p>Ingresa en el siguiente link para crear una nueva contraseña: <a href="${resetLink}">Restablecer contraseña</a></p>`
     );
     res.status(200).json({message: 'Se ha enviado un correo para recuperar la contraseña'});
 }
