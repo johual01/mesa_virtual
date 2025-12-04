@@ -1,17 +1,14 @@
 import {Schema, model, Document, Types } from 'mongoose';
-import { IModifier, triggerTypes, costTypes, system, useTypes, IEffect } from './types';
+import { IModifier, triggerTypes, system, useTypes, IEffect, spellCategories, ICost } from './types';
 
 export interface ISpell extends Document {
     name: string,
     system: system,
     custom?: boolean,
     owner?: Types.ObjectId,
-    cost: string,
-    AP: number,
-    costHP?: string,
-    costType?: costTypes,
+    cost?: ICost[],
     useType: useTypes,
-    category: string,
+    category: spellCategories | string, // Allow custom categories
     description: string,
     trigger?: triggerTypes,
     concentration: boolean,
@@ -23,17 +20,14 @@ export interface ISpell extends Document {
 
 const SpellSchema = new Schema({
     name: {type: String, required: true},
-    system: {type: String, required: true},
-    custom: { type: Boolean },
+    system: {type: String, required: true, enum: Object.values(system)},
+    custom: { type: Boolean, default: false },
     owner: {type: Schema.Types.ObjectId, ref: 'Character'},
-    cost: {type: String},
-    AP: {type: Number},
-    costHP: {type: String},
-    costType: {type: String},
-    useType: {type: String, required: true},
+    cost: {type: [ Object ]},
+    useType: {type: String, required: true, enum: Object.values(useTypes)},
     category: {type: String, required: true},
     description: {type: String, required: true},
-    trigger: {type: String},
+    trigger: {type: String, enum: Object.values(triggerTypes)},
     concentration: {type: Boolean, required: true},
     effects: {type: [ Object ]},
     modifiers: {type: [ Object ] },

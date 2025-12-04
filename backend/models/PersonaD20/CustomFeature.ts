@@ -1,5 +1,5 @@
 import {Schema, model, Document, Types } from 'mongoose';
-import { IFeature } from '../types';
+import { IFeature, useTypes, actions, targetTypes, triggerTypes } from '../types';
 
 export interface ICustomFeature extends IFeature {
     character: Types.ObjectId
@@ -8,33 +8,31 @@ export interface ICustomFeature extends IFeature {
 export interface IPersonaCustomFeatureDoc extends ICustomFeature, Document {}
 
 const CustomFeatureSchema = new Schema<IPersonaCustomFeatureDoc>({
-    character: { type: Schema.Types.ObjectId, required: true },
+    character: { type: Schema.Types.ObjectId, required: true, ref: 'Character' },
     featureId: { type: Schema.Types.ObjectId, required: true },
     name: { type: String, required: true },
     description: { type: String, required: true },
-    useType: { type: String, required: true },
-    action: { type: String },
-    alternativeAction: { type: String },
+    useType: { type: String, required: true, enum: Object.values(useTypes) },
+    action: { type: String, enum: Object.values(actions) },
+    alternativeAction: { type: String, enum: Object.values(actions) },
     modifiers: { type: [Object] },
-    trigger: { type: [String] },
-    condition: { type: [String] },
-    costType: { type: String },
-    cost: { type: Schema.Types.Mixed }, // Can be number or string
-    alternativeCostType: { type: String },
-    alternativeCost: { type: Schema.Types.Mixed }, // Can be number or string
+    trigger: { type: Schema.Types.Mixed },
+    condition: { type: String },
+    cost: { type: [Object] },
+    alternativeCost: { type: [Object] },
     range: { type: Object },
-    target: { type: String },
-    duration: { type: String },
-    resource: { type: String },
+    target: { type: String, enum: Object.values(targetTypes) },
+    duration: { type: Object },
     uses: { type: Number },
-    triggerForRecover: { type: [String] },
-    cd: { type: Schema.Types.Mixed }, // Can be number or string
+    triggerForRecover: { type: Schema.Types.Mixed },
+    cd: { type: Schema.Types.Mixed },
     cooldown: { type: Object },
     subFeatures: { type: [Object] },
     origin: { type: String, default: 'custom' },
-    state: { type: String, required: true, enum: ['ACTIVE', 'INACTIVE', 'DELETED'] },
+    state: { type: String, required: true, enum: ['ACTIVE', 'INACTIVE', 'DELETED'], default: 'ACTIVE' },
     addUsesToParent: { type: Boolean },
-    effects: { type: [Object] },
+    addAsSubfeatureToParent: { type: Boolean },
+    effects: { type: [Object], required: true },
     parent: { type: Schema.Types.ObjectId }
 });
 

@@ -122,6 +122,46 @@ export enum costTypes {
     PERMANENT = 'permanent',
 }
 
+export enum spellCategories {
+    ATTACK = 'attack',
+    BUFF = 'buff',
+    DEBUFF = 'debuff',
+    HEAL = 'heal',
+    SHIELD = 'shield',
+    COUNTER = 'counter',
+    UTILITY = 'utility',
+    SUMMONING = 'summoning',
+}
+
+export enum resourceTypes {
+    RAGE_POINTS = 'Rage Points',
+    REACTION = 'reaction',
+    ACTION_POINTS = 'AP',
+    SPELL_POINTS = 'SP',
+    HP = 'HP',
+    MOVEMENT = 'movement',
+    BONUS_ACTION = 'bonus_action',
+    FREE_ACTION = 'free_action',
+}
+
+export enum durationType {
+    TEMPORAL = 'temporal',
+    PERMANENT = 'permanent',
+    INSTANT = 'instant',
+    CONCENTRATION = 'concentration',
+}
+
+export enum meditionType {
+    ROUNDS = 'rounds',
+    TURNS = 'turns',
+    ATTACKS = 'attacks',
+    MINUTES = 'minutes',
+    HOURS = 'hours',
+    DAYS = 'days',
+    COMBAT = 'combat',
+    REST = 'rest',
+}
+
 export interface IRange {
     type: rangeTypes,
     range?: number,
@@ -129,14 +169,50 @@ export interface IRange {
 }
 
 export interface IDuration {
-    type: string,
+    type: durationType,
     duration: number,
-    medition: string,
+    medition: meditionType,
+}
+
+export interface ICost {
+    amount: string | number,
+    type?: costTypes,
+    resource?: resourceTypes | string,
+}
+
+export enum modifierTypes {
+    // Combat modifiers
+    DAMAGE = 'damage',
+    ATTACK = 'attack',
+    DEFENSE = 'defense',
+    CRITICAL = 'critical',
+    CRITICAL_FAIL = 'criticalFail',
+    DICES = 'dices',
+    
+    // Resistance and healing
+    RESISTANCE = 'resistance',
+    MAGIC_RESISTANCE = 'magic_resistance',
+    HEALING_RECEIVED = 'healing_received',
+    
+    // Actions and movement
+    ACTION = 'action',
+    BONUS_ACTION = 'bonus_action',
+    REACTION = 'reaction',
+    EXTRA_ACTION = 'extra_action',
+    SPEED = 'speed',
+    EXTRA_MOVEMENT = 'extra_movement',
+    
+    // Other
+    OFFENSIVE_ACTION = 'offensive_action',
+    DEFEND = 'defend',
+    ATTACK_WITHOUT_WEAPON = 'attack_without_weapon',
+    ALL_SAVING_THROWS = 'all_saving_throws',
+    STADISTIC = 'stadistic',
 }
 
 export interface IModifier {
     value: number | string,
-    type: string,
+    type: modifierTypes | string,
     description: string,
     permanent?: boolean,
     origin?: string,
@@ -150,7 +226,9 @@ export interface IModifier {
     shouldSaveEachTurn?: boolean,
     state: 'ACTIVE' | 'INACTIVE',
     modifierId?: string,
-    etiquette?: string
+    etiquette?: string,
+    damageType?: elements,
+    dice?: string,
 }
 
 export enum system {
@@ -191,14 +269,11 @@ export interface IFeature {
     modifiers?: IModifier[],
     trigger?: triggerTypes | triggerTypes[],
     condition?: string, // Condición para activar el efecto como "si el objetivo está envenenado", se concatena con el de arriba
-    costType?: costTypes,
-    cost?: number | string,
-    alternativeCostType?: costTypes,
-    alternativeCost?: number | string,
+    cost?: ICost[],
+    alternativeCost?: ICost[],
     range?: IRange,
     target?: targetTypes,
     duration?: IDuration,
-    resource?: string,
     uses?: number,
     triggerForRecover?: triggerTypes | triggerTypes[],
     requireSalvation?: boolean, // Requiere salvación
@@ -214,30 +289,71 @@ export interface IFeature {
 }
 
 
-export interface IEffect {
-    type: string, // Tipo de efecto
-    parent?: Types.ObjectId, // Efecto, feature o hechizo padre
-    damage?: string, // Daño
-    damageType?: elements, // Tipo de daño
-    statusEffect?: IStatusEffect, // Efecto de estado
-    heal?: string, // Cantidad de curación - Puede tener dados o valores fijos o valores dinámicos (por ejemplo, {half_level}) o combinaciones
-    healType?: healingTypes, // Tipo de curación
-    shieldType?: barrierTypes, // Tipo de barrera
-    damageReduction?: string, // Reducción de daño
-    target?: targetTypes, // Objetivo
-    range?: IRange, // Rango
-    trigger?: triggerTypes, // Disparador de evento
-    condition?: string, // Condición para activar el efecto como "si el objetivo está envenenado", se concatena con el de arriba
-    movement?: number, // Cantidad de movimiento generado
-    movementType?: string, // Tipo de movimiento generado
-    movementDirection?: string, // Dirección de movimiento generado
-    uses?: number, // Cantidad de usos del efecto
-    modification: string, // Ajuste de efecto
-    levelCondition?: number, // Condición de nivel para discriminar efectos
-    shouldSaveEachTurn?: boolean, // Debe realizar la salvación cada turno - TODO: Esto debe incluir el cd de salvación cuando se aplica
-    etiquette?: string, // Etiqueta para unificar efectos por condición
-    preventCritical?: boolean, // Evita los críticos
-    canUseFeatures?: boolean, // Puede usar habilidades extras
-    canTriggerEffects?: boolean, // Puede activar efectos adicionales a partir de este
-    salvation?: personaStadistics
+// Base effect interface
+export interface IBaseEffect {
+    type: string,
+    parent?: Types.ObjectId,
+    target?: targetTypes,
+    range?: IRange,
+    trigger?: triggerTypes,
+    condition?: string,
+    uses?: number,
+    levelCondition?: number,
+    shouldSaveEachTurn?: boolean,
+    etiquette?: string,
+    canUseFeatures?: boolean,
+    canTriggerEffects?: boolean,
+    salvation?: personaStadistics,
 }
+
+// Specific effect types
+export interface IDamageEffect extends IBaseEffect {
+    type: 'damage' | 'physical_damage' | 'magical_damage',
+    damage: string,
+    damageType?: elements,
+    preventCritical?: boolean,
+}
+
+export interface IHealEffect extends IBaseEffect {
+    type: 'heal' | 'regeneration',
+    heal: string,
+    healType?: healingTypes,
+}
+
+export interface IShieldEffect extends IBaseEffect {
+    type: 'shield' | 'barrier',
+    heal?: string, // Amount of shield
+    shieldType?: barrierTypes,
+}
+
+export interface IStatusEffectType extends IBaseEffect {
+    type: 'status_effect' | 'debuff' | 'buff',
+    statusEffect?: IStatusEffect,
+}
+
+export interface IMovementEffect extends IBaseEffect {
+    type: 'movement' | 'teleport' | 'push' | 'pull',
+    movement?: number,
+    movementType?: string,
+    movementDirection?: string,
+}
+
+export type modificationEffectTypes =  'modification' | 'reduce_damage' | 'avoid_damage' | 'cancel_disadvantage' | 'reset_bonifier' | 'activate_feature';
+
+export interface IModificationEffect extends IBaseEffect {
+    type: modificationEffectTypes,
+    modification?: string,
+    damageReduction?: string,
+    featureId?: Types.ObjectId,
+    cost?: ICost[],
+}
+
+// Union type for all effects
+export type IEffect = 
+    | IDamageEffect 
+    | IHealEffect 
+    | IShieldEffect 
+    | IStatusEffectType 
+    | IMovementEffect 
+    | IModificationEffect 
+    | IBaseEffect; // Fallback for custom effects

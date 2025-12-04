@@ -1,5 +1,6 @@
 import { Schema, model, Document, Types } from 'mongoose';
 import { IClassLevel, IPersonaClass } from './Class';
+import { resourceTypes } from '../types';
 
 export interface ISubclassLevel extends Omit<IClassLevel, "proficency" | "spells" | "APGained" | "maxPreparedSpells" | "selectSubclass" | "gainSubclassFeature" | "gainStatIncrease"> {
     spells?: Types.ObjectId[],
@@ -13,7 +14,7 @@ export interface IPersonaSubclass extends Document {
     description: string,
     class: Types.ObjectId | IPersonaClass,
     levels: ISubclassLevel[],
-    resourceType?: string | string[],   
+    resourceType?: resourceTypes | resourceTypes[] | string | string[], // Allow custom resources
 }
 
 const SubclassSchema = new Schema({
@@ -21,7 +22,7 @@ const SubclassSchema = new Schema({
     description: {type: String, required: true},
     class: {type: Schema.Types.ObjectId, ref: 'PersonaClass', required: true},
     levels: {type: [Object], required: true},
-    resourceType: {type: [String]},
+    resourceType: {type: Schema.Types.Mixed},
 });
 
 export default model<IPersonaSubclass>('PersonaSubclass', SubclassSchema);

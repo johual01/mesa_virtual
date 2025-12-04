@@ -1,5 +1,5 @@
 import { Schema, model, Document, Types } from 'mongoose';
-import { IFeature, personaStadistics } from '../types';
+import { IFeature, personaStadistics, resourceTypes } from '../types';
 
 export interface IClassLevel {
     level: number,
@@ -25,7 +25,7 @@ export interface IPersonaClass extends Document {
     HPDice: string,
     salvations: personaStadistics[],
     levels: IClassLevel[],
-    resourceType?: string | string[],
+    resourceType?: resourceTypes | resourceTypes[] | string | string[],
     featureIdThatGrantsSecondaryFeatures?: Types.ObjectId,
 }
 
@@ -33,9 +33,10 @@ const ClassSchema = new Schema({
     name: {type: String, required: true},
     description: {type: String, required: true},
     HPDice: {type: String, required: true},
-    salvations: {type: [String], required: true},
+    salvations: {type: [String], required: true, enum: Object.values(personaStadistics)},
     levels: {type: [Object], required: true},
-    resourceType: {type: [String]},
+    resourceType: {type: Schema.Types.Mixed},
+    featureIdThatGrantsSecondaryFeatures: {type: Schema.Types.ObjectId},
 });
 
 export default model<IPersonaClass>('PersonaClass', ClassSchema);
