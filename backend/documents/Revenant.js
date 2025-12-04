@@ -1,5 +1,3 @@
-
-
 const listSpells = await db.spells.insertMany([
     {
         name: 'Ataque Físico I (I)',
