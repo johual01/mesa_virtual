@@ -318,6 +318,7 @@ export interface IHealEffect extends IBaseEffect {
     type: 'heal' | 'regeneration',
     heal: string,
     healType?: healingTypes,
+    resource?: resourceTypes | string,
 }
 
 export interface IShieldEffect extends IBaseEffect {

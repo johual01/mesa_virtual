@@ -1,9 +1,8 @@
 const listSpells = await db.spells.insertMany([
     {
         name: 'Ataque Físico I (I)',
-        cost: 'AP',
+        cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 2,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario.',
@@ -26,9 +25,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Básica (F)',
-        cost: 'AP',
+        cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 2,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +2 a todo daño infligido por 3 turnos a ti o a un aliado.',
@@ -52,9 +50,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Básica (P)',
-        cost: 'AP',
+        cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 2,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +2 el ataque por 3 turnos a ti o a un aliado.',
@@ -78,9 +75,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Básica (D)',
-        cost: 'AP',
+        cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 2,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +2 la defensa y +1 la resistencia mágica por 3 turnos a ti o a un aliado.',
@@ -116,9 +112,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Curación Básica',
-        cost: 'AP',
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 3,
         useType: 'active',
         category: 'heal',
         description: 'Restauras tus puntos de vida en la mitad de tu nivel en d6.',
@@ -136,9 +131,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico I (A)',
-        cost: 'AP',
+        cost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 4,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo en área de la afinidad física del usuario.',
@@ -161,9 +155,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico II (I)',
-        cost: 'AP',
+        cost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 4,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario.',
@@ -186,9 +179,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico I (E)',
-        cost: 'AP',
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 3,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario con 10% (18-20) de porcentaje de crítico aumentado, pero con un porcentaje de pifia aumentado en 10% (1-3).',
@@ -235,9 +227,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico I (M)',
-        cost: 'AP',
+        cost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 4,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual con una afinidad mágica previamente establecida.',
@@ -260,9 +251,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Barrera Física',
-        cost: 'AP',
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 3,
         useType: 'active',
         category: 'shield',
         description: 'Como acción adicional, puedes otorgar una barrera física a ti o a un aliado. Dicha barrera detendrá el primer ataque de un enemigo sin tirar.',
@@ -324,9 +314,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico II (A)',
-        cost: 'AP',
+        cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 6,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo en área de la afinidad física del usuario.',
@@ -349,9 +338,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico II (E)',
-        cost: 'AP',
+        cost: [{ amount: 5, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 5,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario con 10% (18-20) de porcentaje de crítico aumentado, pero con un porcentaje de pifia aumentado en 10% (1-3).',
@@ -398,9 +386,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico II (M)',
-        cost: 'AP',
+        cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 6,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual con una afinidad mágica previamente establecida.',
@@ -423,9 +410,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico III (I)',
-        cost: 'AP',
+        cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 6,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario.',
@@ -448,9 +434,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Rebelión',
-        cost: 'AP',
+        cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 6,
         useType: 'active',
         category: 'buff',
         description: 'Incrementa ratio de crítico en 5% (19-20) en ataques a ti y a todos los aliados durante 3 turnos.',
@@ -471,9 +456,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Compleja (F)',
-        cost: 'AP',
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 3,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +5 a todo daño infligido por 3 turnos a ti o a un aliado.',
@@ -495,9 +479,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Compleja (P)',
-        cost: 'AP',
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 3,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +3 el ataque por 3 turnos a ti o a un aliado.',
@@ -519,9 +502,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Compleja (D)',
-        cost: 'AP',
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 3,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +3 la defensa y +2 la resistencia mágica por 3 turnos a ti o a un aliado.',
@@ -594,9 +576,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico III (A)',
-        cost: 'AP',
+        cost: [{ amount: 8, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 8,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo en área de la afinidad física del usuario.',
@@ -619,9 +600,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico III (E)',
-        cost: 'AP',
+        cost: [{ amount: 7, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 7,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario con 10% (18-20) de porcentaje de crítico aumentado, pero con un porcentaje de pifia aumentado en 10% (1-3).',
@@ -698,9 +678,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico III (M)',
-        cost: 'AP',
+        cost: [{ amount: 8, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 8,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual con una afinidad mágica previamente establecida.',
@@ -723,9 +702,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Completa',
-        cost: 'AP',
+        cost: [{ amount: 7, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 7,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta +3 a tu ataque, +5 al daño infligido, +3 a la Defensa y +2 a la Resistencia Mágica por 3 turnos al usuario.',
@@ -785,9 +763,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico IV (I)',
-        cost: 'AP',
+        cost: [{ amount: 8, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 8,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario.',
@@ -810,9 +787,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Avance Valiente',
-        cost: 'AP',
+        cost: [{ amount: 10, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 10,
         useType: 'active',
         category: 'buff',
         description: 'Incrementa ratio de crítico en 10% (18-20) en ataques a ti y a todos los aliados durante 3 turnos.',
@@ -834,9 +810,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Grito de Guerra',
-        cost: 'AP',
+        cost: [{ amount: 7, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 7,
         useType: 'active',
         category: 'buff',
         description: 'Otorgas a tus aliados +5 al daño infligido y aumentas en 5% su porcentaje de crítico en ataques y reduces en -3 la Defensa y -2 a la Resistencia Mágica a los enemigos por tres turnos.',
@@ -876,9 +851,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Carga',
-        cost: 'AP',
+        cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 6,
         useType: 'active',
         category: 'attack',
         description: 'El siguiente golpe físico impactará. Si la tirada de ataque es exitosa, será un crítico.',
@@ -906,9 +880,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico IV (A)',
-        cost: 'AP',
+        cost: [{ amount: 10, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 10,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo en área de la afinidad física del usuario.',
@@ -931,9 +904,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico IV (E)',
-        cost: 'AP',
+        cost: [{ amount: 9, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 9,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario con 10% (18-20) de porcentaje de crítico aumentado, pero con un porcentaje de pifia aumentado en 10% (1-3).',
@@ -980,9 +952,8 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Ataque Físico IV (M)',
-        cost: 'AP',
+        cost: [{ amount: 10, resource: 'AP' }],
         system: 'PERSONAD20',
-        AP: 10,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual con una afinidad mágica previamente establecida.',
@@ -1025,10 +996,11 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Desenfreno Violento',
-        cost: 'AP and HP',
+        cost: [
+            { amount: 8, resource: 'AP' },
+            { amount: 'level', resource: 'HP' }
+        ],
         system: 'PERSONAD20',
-        AP: 8,
-        costHP: 'level',
         useType: 'active',
         category: 'attack',
         description: 'Aumentas +3 a tu ataque, +6 al daño infligido, 10% de porcentaje de crítico en ataques aumentado al usuario por 3 turnos.',
@@ -1157,12 +1129,10 @@ const characterClass = await db.class.insertOne({
                             description: 'Puedes gastar 3 PI y tu acción para acabar con todos los efectos negativos y debilitadores aplicados en ti. Duplicando su coste en PI, puedes hacerlo con acción adicional.',
                             action: 'action',
                             alternativeAction: 'bonus_action',
-                            costType: 'temporal',
-                            cost: 3,
-                            alternativeCostType: 'temporal',
-                            alternativeCost: 6,
+                            cost: [{ amount: 3, resource: 'Rage Points' }],
+                            alternativeCost: [{ amount: 6, resource: 'Rage Points' }],
                             target: 'self',
-                            resource: 'Rage Points',
+
                             effects: [
                                 {
                                     type: 'healing',
@@ -1184,10 +1154,9 @@ const characterClass = await db.class.insertOne({
                             name: 'Carga',
                             description: 'Puedes gastar 2 PI y tu acción en Correr, si te mueves al menos 4 casillas hacia un objetivo, puedes realizar un ataque con arma contra él con ventaja. Si posees multiataque, el resto de los ataques no se realizarán con ventaja.',
                             action: 'action',
-                            costType: 'temporal',
-                            cost: 2,
+                            cost: [{ amount: 2, resource: 'Rage Points' }],
                             target: 'self',
-                            resource: 'Rage Points',
+
                             effects: [
                                 {
                                     type: 'attack',
@@ -1204,10 +1173,9 @@ const characterClass = await db.class.insertOne({
                             name: 'Heridas Graves',
                             description: 'Cuando impactas un ataque, puedes gastar 3 PI para infligir heridas graves. El objetivo deberá realizar una tirada de salvación de coraje, y en caso de fallar, toda su curación recibida será reducida a la mitad por 10 rondas, además de recibir 1d6 de daño al final de cada uno de sus turnos. El objetivo deberá repetir la tirada de salvación al final de cada una de sus rondas.',
                             trigger: 'at_attack',
-                            costType: 'temporal',
-                            cost: 3,
+                            cost: [{ amount: 3, resource: 'Rage Points' }],
                             target: 'enemy',
-                            resource: 'Rage Points',
+
                             requireSalvation: true,
                             effects: [
                                 {
@@ -1244,10 +1212,9 @@ const characterClass = await db.class.insertOne({
                             name: 'Aturdir',
                             description: 'Puedes gastar 2 PI antes de realizar un ataque con la intención de aturdir al objetivo. Si impactas, el objetivo tendrá que realizar una salvación de coraje, en caso de fallarla tendrá desventaja en su siguiente acción.',
                             trigger: 'before_attack',
-                            costType: 'temporal',
-                            cost: 2,
+                            cost: [{ amount: 2, resource: 'Rage Points' }],
                             target: 'enemy',
-                            resource: 'Rage Points',
+
                             requireSalvation: true,
                             effects: [
                                 {
@@ -1276,10 +1243,9 @@ const characterClass = await db.class.insertOne({
                             name: 'Ejecutar',
                             description: 'Cuando impactas un ataque y el objetivo tiene el estado ensangrentado, puedes gastar 4 PI para infligir daño adicional igual al doble de tu nivel.',
                             trigger: 'at_attack',
-                            costType: 'temporal',
-                            cost: 4,
+                            cost: [{ amount: 4, resource: 'Rage Points' }],
                             target: 'enemy',
-                            resource: 'Rage Points',
+
                             effects: [
                                 {
                                     type: 'damage',
@@ -1295,10 +1261,9 @@ const characterClass = await db.class.insertOne({
                             name: 'Golpe al Tendón',
                             description: 'Puedes gastar 3 PI antes de realizar un ataque con la intención de mellar su movimiento. Si impactas, el objetivo tendrá que realizar una salvación de coraje, en caso de fallarla su velocidad será reducida a 0, o la mitad en caso de superarla, hasta el inicio de tu siguiente turno.',
                             trigger: 'before_attack',
-                            costType: 'temporal',
-                            cost: 3,
+                            cost: [{ amount: 3, resource: 'Rage Points' }],
                             target: 'enemy',
-                            resource: 'Rage Points',
+
                             requireSalvation: true,
                             effects: [
                                 {
@@ -1341,10 +1306,9 @@ const characterClass = await db.class.insertOne({
                             description: 'Puedes gastar 5 PI como reacción al momento de ser impactado por un ataque, otorgándote resistencia al daño físico o mágico, a tu elección, hasta el inicio de tu siguiente turno.',
                             trigger: 'at_receive_attack',
                             action: 'reaction',
-                            costType: 'temporal',
-                            cost: 5,
+                            cost: [{ amount: 5, resource: 'Rage Points' }],
                             target: 'self',
-                            resource: 'Rage Points',
+
                             effects: [
                                 {
                                     type: 'resistance',
@@ -1363,10 +1327,9 @@ const characterClass = await db.class.insertOne({
                             name: 'Arremetida',
                             description: 'Gastando 1 PI, puedes repetir tu tirada de daño luego de verla. Debes utilizar la nueva tirada de daño.',
                             trigger: 'after_damage_roll',
-                            costType: 'temporal',
-                            cost: 1,
+                            cost: [{ amount: 1, resource: 'Rage Points' }],
                             target: 'self',
-                            resource: 'Rage Points',
+
                             effects: [
                                 {
                                     type: 'reroll_damage',
@@ -1382,10 +1345,9 @@ const characterClass = await db.class.insertOne({
                             name: 'Abanicar',
                             description: 'Cuando impactas un ataque contra un enemigo con un arma cuerpo a cuerpo, gastando 1 PI, puedes realizar un ataque adicional a un enemigo distinto a una casilla de distancia del objetivo inicial que esté dentro de tu rango de ataque.',
                             trigger: 'at_attack',
-                            costType: 'temporal',
-                            cost: 1,
+                            cost: [{ amount: 1, resource: 'Rage Points' }],
                             target: 'enemy',
-                            resource: 'Rage Points',
+
                             effects: [
                                 {
                                     type: 'attack_with_weapon',
@@ -1405,10 +1367,8 @@ const characterClass = await db.class.insertOne({
                             name: 'Derribar',
                             description: 'Gastando 1 PI al momento de impactar un ataque, puedes forzar al objetivo a realizar una salvación de coraje, en caso de fallarla, el enemigo caerá al suelo.',
                             trigger: 'at_attack',
-                            costType: 'temporal',
-                            cost: 1,
+                            cost: [{ amount: 1, resource: 'Rage Points' }],
                             target: 'enemy',
-                            resource: 'Rage Points',
                             requireSalvation: true,
                             effects: [
                                 {
@@ -1436,10 +1396,9 @@ const characterClass = await db.class.insertOne({
                             name: 'Empuje',
                             description: 'Cuando impactas un ataque, puedes escoger lanzar al enemigo impactado en un rango de 1 a 3 casillas hacia atrás por 1 PI sin realizar tirada de salvación.',
                             trigger: 'at_attack',
-                            costType: 'temporal',
-                            cost: 1,
+                            cost: [{ amount: 1, resource: 'Rage Points' }],
                             target: 'enemy',
-                            resource: 'Rage Points',
+
                             effects: [
                                 {
                                     type: 'move',
@@ -1530,8 +1489,7 @@ const characterClass = await db.class.insertOne({
                     description: 'Una vez por combate, puedes consumir 3 PI y tu acción adicional para restaurarte tres veces tu nivel en puntos de vida y el doble de tu competencia en PI.',
                     useType: 'active',
                     action: 'bonus_action',
-                    resource: 'Rage Points',
-                    cost: 3,
+                    cost: [{ amount: 3, resource: 'Rage Points' }],
                     effects: [
                         {
                             type: 'healing',
@@ -1720,8 +1678,7 @@ const characterClass = await db.class.insertOne({
                             value: 1,
                         }
                     ],
-                    cost: 3,
-                    resource: 'Rage Points',
+                    cost: [{ amount: 3, resource: 'Rage Points' }],
                     state: 'ACTIVE'
                 },
                 {
@@ -2131,9 +2088,9 @@ const subclass = await db.subclass.insertMany([
                         description: 'A partir de nivel 13, todos tus golpes causan mella en la armadura del rival. Gastas 3 PI para que si uno de tus ataques impacta durante este turno, todos los ataques físicos que realicen los aliados tendrán ventaja hasta el inicio de tu siguiente turno.',
                         useType: 'active',
                         action: 'free_action',
-                        cost: 3,
+                        cost: [{ amount: 3, resource: 'Rage Points' }],
                         target: 'self',
-                        resource: 'Rage Points',
+
                         duration: {
                             type: 'temporal',
                             duration: 1,
@@ -2165,9 +2122,9 @@ const subclass = await db.subclass.insertMany([
                         name: 'Ira Incontenible',
                         description: 'A partir de nivel 18, puedes gastar 1 PI antes de realizar tu tirada de ataque para duplicar el bonificador del daño de dicho ataque.',
                         useType: 'active',
-                        cost: 1,
+                        cost: [{ amount: 1, resource: 'Rage Points' }],
                         target: 'self',
-                        resource: 'Rage Points',
+
                         trigger: 'before_attack',
                         effects: [
                             {
@@ -2400,9 +2357,9 @@ const subclass = await db.subclass.insertMany([
                         description: 'Cuando impactas un ataque, puedes utilizar tu acción adicional y 3 PI para realizar daño con tu escudo. El objetivo recibirá tu nivel en daño contundente y tendrá que superar una salvación de coraje o perderá su acción en su siguiente turno. Debes utilizar un escudo para usar este rasgo.',
                         useType: 'active',
                         action: 'bonus_action',
-                        cost: 3,
+                        cost: [{ amount: 3, resource: 'Rage Points' }],
                         target: 'enemy',
-                        resource: 'Rage Points',
+
                         trigger: 'at_attack',
                         condition: 'self using object-type shield',
                         effects: [
@@ -2514,9 +2471,9 @@ const subclass = await db.subclass.insertMany([
                         description: 'Consumes 2 PI y tu acción adicional para destrabarte o correr. Tu distancia de salto se duplica durante el turno.',
                         useType: 'active',
                         action: 'bonus_action',
-                        cost: 2,
+                        cost: [{ amount: 2, resource: 'Rage Points' }],
                         target: 'self',
-                        resource: 'Rage Points',
+
                         modifiers: [
                             {
                                 type: 'extra_movement',
@@ -2552,9 +2509,9 @@ const subclass = await db.subclass.insertMany([
                         addAsSubfeatureToParent: true,
                         useType: 'active',
                         action: 'bonus_action',
-                        cost: 2,
+                        cost: [{ amount: 2, resource: 'Rage Points' }],
                         target: 'self',
-                        resource: 'Rage Points',
+
                         effects: [
                             {
                                 type: 'attack_without_weapon',
@@ -2585,8 +2542,8 @@ const subclass = await db.subclass.insertMany([
                         useType: 'active',
                         action: 'reaction',
                         target: 'enemy',
-                        resource: 'Rage Points',
-                        cost: 2,
+
+                        cost: [{ amount: 2, resource: 'Rage Points' }],
                         effects: [
                             {
                                 type: 'reduce_damage',
@@ -2616,9 +2573,9 @@ const subclass = await db.subclass.insertMany([
                         useType: 'active',
                         action: 'reaction',
                         target: 'self',
-                        resource: 'Rage Points',
+
                         trigger: 'at_receive_magic_attack',
-                        cost: 3,
+                        cost: [{ amount: 3, resource: 'Rage Points' }],
                         effects: [
                             {
                                 type: 'avoid_damage',
@@ -2672,8 +2629,8 @@ const subclass = await db.subclass.insertMany([
                         useType: 'active',
                         action: 'reaction',
                         target: 'enemy',
-                        resource: 'Rage Points',
-                        cost: 1,
+
+                        cost: [{ amount: 1, resource: 'Rage Points' }],
                         trigger: 'at_failed_receive_attack',
                         effects: [
                             {
@@ -2707,8 +2664,8 @@ const subclass = await db.subclass.insertMany([
                         useType: 'active',
                         action: 'reaction',
                         target: 'self',
-                        resource: 'Rage Points',
-                        cost: 2,
+
+                        cost: [{ amount: 2, resource: 'Rage Points' }],
                         trigger: 'at_failed_save',
                         effects: [
                             {
@@ -2781,7 +2738,6 @@ const subclass = await db.subclass.insertMany([
                                 target: 'self',
                                 description: 'Lanzas “Ráfaga de Golpes” como parte de dicha acción sin consumir PI.',
                                 featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b61'),
-                                cost: 0,
                             }
                         ]
                     },
@@ -2793,8 +2749,8 @@ const subclass = await db.subclass.insertMany([
                         action: 'reaction',
                         target: 'self',
                         trigger: 'before_save',
-                        resource: 'Rage Points',
-                        cost: 2,
+
+                        cost: [{ amount: 2, resource: 'Rage Points' }],
                         effects: [
                             {
                                 type: 'cancel_disadvantage',
