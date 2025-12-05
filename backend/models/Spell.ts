@@ -1,5 +1,5 @@
 import {Schema, model, Document, Types } from 'mongoose';
-import { IModifier, triggerTypes, system, useTypes, IEffect, spellCategories, ICost } from './types';
+import { IModifier, triggerTypes, system, useTypes, IEffect, spellCategories, ICost, actions } from './types';
 
 export interface ISpell extends Document {
     name: string,
@@ -9,6 +9,9 @@ export interface ISpell extends Document {
     class?: Types.ObjectId, // Reference to the class this spell belongs to
     subclass?: Types.ObjectId, // Reference to the subclass
     cost?: ICost[],
+    alternativeCost?: ICost[],
+    action?: actions,
+    alternativeAction?: actions,
     useType: useTypes,
     category: spellCategories | string, // Allow custom categories
     description: string,
@@ -28,6 +31,9 @@ const SpellSchema = new Schema({
     class: {type: Schema.Types.ObjectId, ref: 'PersonaClass'},
     subclass: {type: Schema.Types.ObjectId, ref: 'PersonaSubclass'},
     cost: {type: [ Object ]},
+    alternativeCost: {type: [ Object ]},
+    action: {type: String, enum: Object.values(actions)},
+    alternativeAction: {type: String, enum: Object.values(actions)},
     useType: {type: String, required: true, enum: Object.values(useTypes)},
     category: {type: String, required: true},
     description: {type: String, required: true},

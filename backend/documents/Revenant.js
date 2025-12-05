@@ -273,24 +273,23 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Barrera Física',
-        cost: [{ amount: 3, resource: 'AP' }],
+        cost: [{ amount: 2, resource: 'AP' }],
+        alternativeCost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
         useType: 'active',
+        action: 'action',
+        alternativeAction: 'bonus_action',
         category: 'shield',
-        description: 'Como acción adicional, puedes otorgar una barrera física a ti o a un aliado. Dicha barrera detendrá el primer ataque de un enemigo sin tirar.',
+        description: 'Previenes el siguiente daño físico a ti o a un aliado. Consume 2 AP adicionales si se desea lanzar con acción adicional.',
         concentration: false,
         effects: [
             {
-                type: 'shield',
-                shieldType: 'physical',
-                uses: 1,
+                type: 'barrier',
+                barrierType: 'physical',
                 target: 'ally',
-                range: {
-                    type: 'ranged',
-                    range: 6
-                },
-                trigger: 'before_receive_attack'
+                uses: 1,
+                description: 'Previene el siguiente daño físico'
             }
         ],
         toList: 'list',
