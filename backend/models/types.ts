@@ -275,6 +275,8 @@ export interface IFeature {
     target?: targetTypes,
     duration?: IDuration,
     uses?: number,
+    internalCounter?: boolean,
+    counterCondition?: string,
     triggerForRecover?: triggerTypes | triggerTypes[],
     requireSalvation?: boolean, // Requiere salvación
     cd?: number | string, // Dificultad a superar
@@ -339,7 +341,16 @@ export interface IMovementEffect extends IBaseEffect {
     movementDirection?: string,
 }
 
-export type modificationEffectTypes =  'modification' | 'reduce_damage' | 'avoid_damage' | 'cancel_disadvantage' | 'reset_bonifier' | 'activate_feature';
+export type modificationEffectTypes =  'modification' 
+    | 'reduce_damage' 
+    | 'avoid_damage' 
+    | 'cancel_disadvantage' 
+    | 'reset_bonifier' 
+    | 'activate_feature' 
+    | 'break_concentration'
+    | 'remove_buffs'
+    | 'remove_debuffs'
+    | 'extend_buffs';
 
 export interface IModificationEffect extends IBaseEffect {
     type: modificationEffectTypes,

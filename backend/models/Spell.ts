@@ -12,6 +12,8 @@ export interface ISpell extends Document {
     alternativeCost?: ICost[],
     action?: actions,
     alternativeAction?: actions,
+    internalCounter?: boolean,
+    counterCondition?: string,
     useType: useTypes,
     category: spellCategories | string, // Allow custom categories
     description: string,
@@ -34,6 +36,8 @@ const SpellSchema = new Schema({
     alternativeCost: {type: [ Object ]},
     action: {type: String, enum: Object.values(actions)},
     alternativeAction: {type: String, enum: Object.values(actions)},
+    internalCounter: {type: Boolean},
+    counterCondition: {type: String},
     useType: {type: String, required: true, enum: Object.values(useTypes)},
     category: {type: String, required: true},
     description: {type: String, required: true},

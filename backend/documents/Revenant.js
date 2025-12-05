@@ -753,7 +753,7 @@ const listSpells = await db.spells.insertMany([
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_attack'
+                etiquette: 'empowerment_complete'
             },
             {
                 value: 5,
@@ -765,7 +765,7 @@ const listSpells = await db.spells.insertMany([
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_damage'
+                etiquette: 'empowerment_complete'
             },
             {
                 value: 3,
@@ -777,7 +777,7 @@ const listSpells = await db.spells.insertMany([
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_defense'
+                etiquette: 'empowerment_complete'
             },
             {
                 value: 2,
@@ -789,7 +789,7 @@ const listSpells = await db.spells.insertMany([
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_defense'
+                etiquette: 'empowerment_complete'
             }
         ],
         toList: 'list',
@@ -859,28 +859,28 @@ const listSpells = await db.spells.insertMany([
                 type: 'damage',
                 description: 'Otorgas a tus aliados +5 al daño infligido',
                 target: 'all_allies',
-                etiquette: 'empowerment_damage'
+                etiquette: 'war_cry'
             },
             {
                 type: 'critical',
                 value: 0.05,
                 description: 'Aumentas en 5% su porcentaje de crítico en ataques',
                 target: 'all_allies',
-                etiquette: 'empowerment_critical'
+                etiquette: 'war_cry'
             },
             {
                 value: -3,
                 type: 'defense',
                 description: 'Reduces en -3 la Defensa',
                 target: 'all_enemies',
-                etiquette: 'debilitation_defense'
+                etiquette: 'war_cry'
             },
             {
                 value: -2,
                 type: 'magic_defense',
                 description: 'Reduces en -2 a la Resistencia Mágica',
                 target: 'all_enemies',
-                etiquette: 'debilitation_defense'
+                etiquette: 'war_cry'
             }
         ],
         toList: 'list',
@@ -1348,7 +1348,6 @@ await db.class.updateOne(
                             action: 'reaction',
                             cost: [{ amount: 5, resource: 'Rage Points' }],
                             target: 'self',
-
                             effects: [
                                 {
                                     type: 'resistance',
@@ -1369,12 +1368,11 @@ await db.class.updateOne(
                             trigger: 'after_damage_roll',
                             cost: [{ amount: 1, resource: 'Rage Points' }],
                             target: 'self',
-
                             effects: [
                                 {
                                     type: 'reroll_damage',
                                     target: 'self',
-                                    condition: 'after_damage_roll',
+                                    condition: 'selection',
                                     description: 'Repite tu tirada de daño'
                                 }
                             ],
@@ -1946,7 +1944,9 @@ await db.class.updateOne(
                                 medition: 'turn'
                             },
                             uses: 1,
-                            condition: 'opportunity_attack'
+                            addTo: 'reactionModifiers',
+                            permanent: false,
+                            condition: 'only for opportunity_attack'
                         }
                     ],
                     state: 'ACTIVE'
@@ -2128,16 +2128,14 @@ const subclass = await db.subclass.insertMany([
                         action: 'free_action',
                         cost: [{ amount: 3, resource: 'Rage Points' }],
                         target: 'self',
-
                         duration: {
                             type: 'temporal',
                             duration: 1,
                             medition: 'round'
                         },
-                        condition: 'at_attack',
                         modifiers: [
                             {
-                                type: 'attack against this target',
+                                type: 'debuff',
                                 value: 'advantage',
                                 description: 'Otorga ventaja a los ataques físicos de los aliados contra el objetivo.',
                                 target: 'enemy',
@@ -2410,7 +2408,7 @@ const subclass = await db.subclass.insertMany([
                             {
                                 target: 'enemy',
                                 type: 'loose_action',
-                                condition: 'failed_save',
+                                condition: 'failed save',
                             }
                         ],
                         parent: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),

@@ -1,0 +1,1 @@
+- Verificar que todos los spells repetidos entre clases tengan el mismo texto
