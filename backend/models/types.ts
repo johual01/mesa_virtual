@@ -350,12 +350,16 @@ export type modificationEffectTypes =  'modification'
     | 'break_concentration'
     | 'remove_buffs'
     | 'remove_debuffs'
-    | 'extend_buffs';
+    | 'extend_buffs'
+    | 'change_initiative'
+    | 'spell_cost_reduction'
 
 export interface IModificationEffect extends IBaseEffect {
     type: modificationEffectTypes,
     modification?: string,
     damageReduction?: string,
+    reduction?: number,
+    spellCategory?: spellCategories | string,
     featureId?: Types.ObjectId,
     cost?: ICost[],
 }

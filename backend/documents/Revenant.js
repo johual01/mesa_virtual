@@ -1097,16 +1097,16 @@ const listSpells = await db.spells.insertMany([
         concentration: false,
         effects: [
             {
-                type: 'spellCost',
-                spellType: 'damage',
+                type: 'spell_cost_reduction',
+                spellCategory: 'attack',
                 reduction: 0.5,
                 target: 'self',
                 etiquette: 'weapon_master',
                 condition: 'selection'
             },
             {
-                type: 'spellDamage',
-                spellType: 'damage',
+                type: 'spell_damage_increase',
+                spellCategory: 'attack',
                 dice: 2,
                 target: 'self',
                 etiquette: 'weapon_master',
