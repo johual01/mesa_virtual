@@ -1,8 +1,22 @@
+const { ObjectId } = require('mongodb');
+
+// Primero creamos la clase para tener su ID
+const characterClass = await db.class.insertOne({
+    name: 'Revenant',
+    description: 'Pum te pego',
+    HPDice: '2d4',
+    salvations: ['courage', 'dexterity'],
+    levels: [] // Lo llenaremos después
+})
+
+const characterClassId = characterClass.insertedId;
+
 const listSpells = await db.spells.insertMany([
     {
         name: 'Ataque Físico I (I)',
         cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario.',
@@ -27,6 +41,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Potenciación Básica (F)',
         cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +2 a todo daño infligido por 3 turnos a ti o a un aliado.',
@@ -52,6 +67,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Potenciación Básica (P)',
         cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +2 el ataque por 3 turnos a ti o a un aliado.',
@@ -77,6 +93,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Potenciación Básica (D)',
         cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +2 la defensa y +1 la resistencia mágica por 3 turnos a ti o a un aliado.',
@@ -114,6 +131,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Curación Básica',
         cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'heal',
         description: 'Restauras tus puntos de vida en la mitad de tu nivel en d6.',
@@ -133,6 +151,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico I (A)',
         cost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo en área de la afinidad física del usuario.',
@@ -157,6 +176,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico II (I)',
         cost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario.',
@@ -181,6 +201,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico I (E)',
         cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario con 10% (18-20) de porcentaje de crítico aumentado, pero con un porcentaje de pifia aumentado en 10% (1-3).',
@@ -229,6 +250,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico I (M)',
         cost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual con una afinidad mágica previamente establecida.',
@@ -253,6 +275,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Barrera Física',
         cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'shield',
         description: 'Como acción adicional, puedes otorgar una barrera física a ti o a un aliado. Dicha barrera detendrá el primer ataque de un enemigo sin tirar.',
@@ -316,6 +339,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico II (A)',
         cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo en área de la afinidad física del usuario.',
@@ -340,6 +364,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico II (E)',
         cost: [{ amount: 5, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario con 10% (18-20) de porcentaje de crítico aumentado, pero con un porcentaje de pifia aumentado en 10% (1-3).',
@@ -388,6 +413,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico II (M)',
         cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual con una afinidad mágica previamente establecida.',
@@ -412,6 +438,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico III (I)',
         cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario.',
@@ -436,6 +463,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Rebelión',
         cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'buff',
         description: 'Incrementa ratio de crítico en 5% (19-20) en ataques a ti y a todos los aliados durante 3 turnos.',
@@ -458,6 +486,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Potenciación Compleja (F)',
         cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +5 a todo daño infligido por 3 turnos a ti o a un aliado.',
@@ -481,6 +510,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Potenciación Compleja (P)',
         cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +3 el ataque por 3 turnos a ti o a un aliado.',
@@ -504,6 +534,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Potenciación Compleja (D)',
         cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta en +3 la defensa y +2 la resistencia mágica por 3 turnos a ti o a un aliado.',
@@ -578,6 +609,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico III (A)',
         cost: [{ amount: 8, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo en área de la afinidad física del usuario.',
@@ -602,6 +634,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico III (E)',
         cost: [{ amount: 7, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario con 10% (18-20) de porcentaje de crítico aumentado, pero con un porcentaje de pifia aumentado en 10% (1-3).',
@@ -680,6 +713,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico III (M)',
         cost: [{ amount: 8, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual con una afinidad mágica previamente establecida.',
@@ -704,6 +738,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Potenciación Completa',
         cost: [{ amount: 7, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'buff',
         description: 'Aumenta +3 a tu ataque, +5 al daño infligido, +3 a la Defensa y +2 a la Resistencia Mágica por 3 turnos al usuario.',
@@ -765,6 +800,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico IV (I)',
         cost: [{ amount: 8, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario.',
@@ -789,6 +825,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Avance Valiente',
         cost: [{ amount: 10, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'buff',
         description: 'Incrementa ratio de crítico en 10% (18-20) en ataques a ti y a todos los aliados durante 3 turnos.',
@@ -812,6 +849,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Grito de Guerra',
         cost: [{ amount: 7, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'buff',
         description: 'Otorgas a tus aliados +5 al daño infligido y aumentas en 5% su porcentaje de crítico en ataques y reduces en -3 la Defensa y -2 a la Resistencia Mágica a los enemigos por tres turnos.',
@@ -853,6 +891,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Carga',
         cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'El siguiente golpe físico impactará. Si la tirada de ataque es exitosa, será un crítico.',
@@ -882,6 +921,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico IV (A)',
         cost: [{ amount: 10, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo en área de la afinidad física del usuario.',
@@ -906,6 +946,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico IV (E)',
         cost: [{ amount: 9, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual de la afinidad física del usuario con 10% (18-20) de porcentaje de crítico aumentado, pero con un porcentaje de pifia aumentado en 10% (1-3).',
@@ -954,6 +995,7 @@ const listSpells = await db.spells.insertMany([
         name: 'Ataque Físico IV (M)',
         cost: [{ amount: 10, resource: 'AP' }],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Inflige daño de objetivo individual con una afinidad mágica previamente establecida.',
@@ -1001,6 +1043,7 @@ const listSpells = await db.spells.insertMany([
             { amount: 'level', resource: 'HP' }
         ],
         system: 'PERSONAD20',
+        class: characterClassId,
         useType: 'active',
         category: 'attack',
         description: 'Aumentas +3 a tu ataque, +6 al daño infligido, 10% de porcentaje de crítico en ataques aumentado al usuario por 3 turnos.',
@@ -1078,12 +1121,10 @@ const listSpells = await db.spells.insertMany([
 
 const spells = listSpells.insertedIds;
 
-const characterClass = await db.class.insertOne({
-    name: 'Revenant',
-    description: 'Pum te pego',
-    HPDice: '2d4',
-    salvations: ['courage', 'dexterity'],
-    levels: [
+await db.class.updateOne(
+    { _id: characterClassId },
+    { $set: {
+        levels: [
         {
             level: 1,
             proficency: 2,
@@ -1952,11 +1993,9 @@ const characterClass = await db.class.insertOne({
         }
     ],
     resourceType: 'Rage Points',
-    featureIdThatGrantsSecondaryFeatures: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
-})
-
-
-const characterClassId = characterClass.insertedId;
+        featureIdThatGrantsSecondaryFeatures: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b')
+    }}
+)
 
 const subclass = await db.subclass.insertMany([
     {

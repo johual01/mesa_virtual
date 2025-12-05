@@ -6,6 +6,8 @@ export interface ISpell extends Document {
     system: system,
     custom?: boolean,
     owner?: Types.ObjectId,
+    class?: Types.ObjectId, // Reference to the class this spell belongs to
+    subclass?: Types.ObjectId, // Reference to the subclass
     cost?: ICost[],
     useType: useTypes,
     category: spellCategories | string, // Allow custom categories
@@ -23,6 +25,8 @@ const SpellSchema = new Schema({
     system: {type: String, required: true, enum: Object.values(system)},
     custom: { type: Boolean, default: false },
     owner: {type: Schema.Types.ObjectId, ref: 'Character'},
+    class: {type: Schema.Types.ObjectId, ref: 'PersonaClass'},
+    subclass: {type: Schema.Types.ObjectId, ref: 'PersonaSubclass'},
     cost: {type: [ Object ]},
     useType: {type: String, required: true, enum: Object.values(useTypes)},
     category: {type: String, required: true},
