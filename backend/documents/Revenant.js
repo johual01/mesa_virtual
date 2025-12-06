@@ -1203,7 +1203,15 @@ await db.class.updateOne(
                                     target: 'enemy',
                                     trigger: 'next_physical_attack',
                                     condition: 'move at least 4 squares',
-                                    modification: 'advantage',
+                                    modifiers: [
+                                        {
+                                            type: 'attack',
+                                            value: 'advantage',
+                                            addTo: 'attackModifiers',
+                                            description: 'Realizar un ataque con ventaja',
+                                            target: 'self',
+                                        }
+                                    ]
                                 },
                             ],
                             state: 'ACTIVE',
@@ -2135,10 +2143,11 @@ const subclass = await db.subclass.insertMany([
                         },
                         modifiers: [
                             {
-                                type: 'debuff',
+                                type: 'attack',
                                 value: 'advantage',
+                                addTo: 'attackModifiers',
                                 description: 'Otorga ventaja a los ataques físicos de los aliados contra el objetivo.',
-                                target: 'enemy',
+                                target: 'allies_attacking_target',
                                 duration: {
                                     type: 'temporal',
                                     duration: 1,

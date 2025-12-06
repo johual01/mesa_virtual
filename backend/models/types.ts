@@ -57,6 +57,7 @@ export enum targetTypes {
     ALL_ENEMIES = 'all_enemies',
     ALL_ALLIES = 'all_allies',
     ONLY_ALLY = 'only_ally',
+    ALLIES_ATTACKING_TARGET = 'allies_attacking_target',
     ALL = 'all',
 }
 
@@ -115,6 +116,8 @@ export enum triggerTypes {
     BEFORE_SAVE = 'before_save', // Se activa antes de realizar una salvación
     AT_FAILED_SAVE = 'at_failed_save', // Se activa al fallar una salvación
     AT_SUCCESS_SAVE = 'at_success_save', // Se activa al superar una salvación
+    AT_ALLY_CRITICAL = 'at_ally_critical', // Se activa al un aliado realizar una tirada crítica
+    AT_ALLY_ATTACK = 'at_ally_attack', // Se activa al un aliado realizar un ataque
 }
 
 export enum costTypes {
@@ -135,6 +138,7 @@ export enum spellCategories {
 
 export enum resourceTypes {
     RAGE_POINTS = 'Rage Points',
+    MORALE_POINTS = 'Morale Points',
     REACTION = 'reaction',
     ACTION_POINTS = 'AP',
     SPELL_POINTS = 'SP',
@@ -332,6 +336,7 @@ export interface IShieldEffect extends IBaseEffect {
 export interface IStatusEffectType extends IBaseEffect {
     type: 'status_effect' | 'debuff' | 'buff',
     statusEffect?: IStatusEffect,
+    modifiers?: IModifier[],
 }
 
 export interface IMovementEffect extends IBaseEffect {
@@ -353,12 +358,19 @@ export type modificationEffectTypes =  'modification'
     | 'extend_buffs'
     | 'change_initiative'
     | 'spell_cost_reduction'
+    | 'break_shield'
+    | 'additional_target'
+    | 'stack_buffs'
+    | 'attack_with_weapon'
 
 export interface IModificationEffect extends IBaseEffect {
     type: modificationEffectTypes,
     modification?: string,
+    action?: actions,
     damageReduction?: string,
     reduction?: number,
+    maxStacks?: number,
+    condition?: string,
     spellCategory?: spellCategories | string,
     featureId?: Types.ObjectId,
     cost?: ICost[],
