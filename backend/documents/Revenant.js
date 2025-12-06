@@ -2676,7 +2676,7 @@ const subclass = await db.subclass.insertMany([
                         target: 'enemy',
 
                         cost: [{ amount: 1, resource: 'Rage Points' }],
-                        trigger: 'at_failed_receive_attack',
+                        trigger: 'at_enemy_failed_receive_attack',
                         effects: [
                             {
                                 type: 'redirect_attack_against_other_enemy',

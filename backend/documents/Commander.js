@@ -1252,18 +1252,38 @@ const subclass = await db.subclass.insertMany([
                         action: 'reaction',
                         effects: [
                             {
-                                type: 'modify_effect',
+                                type: 'replace_effect',
                                 target: 'all_allies',
                                 description: 'Redada aplica a todos los aliados sin importar la distancia',
-                                featureId: 'TODAVIA POR COMPLETAR'
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c04'),
+                                effects: [
+                                    {
+                                        type: 'buff',
+                                        target: 'all_allies',
+                                        trigger: 'at_ally_attack',
+                                        condition: 'enemy in your weapon range and you have melee weapon',
+                                        modifiers: [
+                                            {
+                                                type: 'attack',
+                                                description: 'Ventaja al atacar enemigos en tu rango con arma cuerpo a cuerpo',
+                                                value: 'advantage',
+                                                addTo: 'attackModifiers',
+                                                etiquette: 'raid_melee_attack'
+                                            }
+                                        ],
+                                        description: 'Los aliados tienen ventaja al atacar enemigos en tu rango con arma cuerpo a cuerpo'
+                                    }
+                                ]
                             },
                             {
                                 type: 'break_shield',
                                 target: 'enemy',
                                 trigger: 'at_break_shield',
+                                action: 'reaction',
                                 value: 1,
                                 description: 'Rompe un escudo adicional como reacción'
                             }
+                            
                         ],
                         state: 'ACTIVE'
                     }
@@ -1279,15 +1299,17 @@ const subclass = await db.subclass.insertMany([
                         useType: 'passive',
                         effects: [
                             {
-                                type: 'cleanse_negative_effects',
+                                type: 'remove_debuffs',
                                 target: 'ally',
-                                trigger: 'at_awaken_spirit',
+                                trigger: 'at_trigger',
+                                triggerActivatedFor: new ObjectId('6f8f4b3b3f1d9a001f2b3c08'),
                                 description: 'Limpia efectos negativos al usar Despertar Espíritu'
                             },
                             {
                                 type: 'additional_target',
                                 target: 'ally',
-                                trigger: 'at_awaken_spirit',
+                                trigger: 'at_trigger',
+                                triggerActivatedFor: new ObjectId('6f8f4b3b3f1d9a001f2b3c08'),
                                 value: 1,
                                 description: 'Afecta a un aliado adicional con Despertar Espíritu'
                             }
@@ -1306,9 +1328,10 @@ const subclass = await db.subclass.insertMany([
                         useType: 'passive',
                         effects: [
                             {
-                                type: 'stack_empowerments',
-                                target: 'self',
+                                type: 'stack_buffs',
+                                target: 'all_allies',
                                 maxStacks: 3,
+                                condition: 'spell was cast by you',
                                 description: 'Los hechizos de potenciación se acumulan y renuevan duración'
                             }
                         ],
@@ -1335,20 +1358,23 @@ const subclass = await db.subclass.insertMany([
                         trigger: 'at_enemy_attack_at_range',
                         effects: [
                             {
-                                type: 'counter_attack',
+                                type: 'attack_with_weapon',
                                 target: 'enemy',
                                 description: 'Realiza un ataque que reduce el daño enemigo'
                             },
                             {
-                                type: 'damage_reduction',
-                                target: 'self',
+                                type: 'reduce_damage',
+                                target: 'enemy',
                                 value: '{weapon_damage}',
                                 description: 'Reduce el daño del ataque enemigo por el daño de tu arma'
                             },
                             {
-                                type: 'overflow_damage',
-                                description: 'Las cantidades sobrantes se aplican como daño'
-                            }
+                                type: 'damage',
+                                target: 'enemy',
+                                condition: 'if attack impacts',
+                                value: '({weapon_damage} - {enemy_attack_damage} < 0) ? 0 : ({weapon_damage} - {enemy_attack_damage})',
+                                description: 'Reduce el daño de tu ataque por el daño del ataque enemigo'
+                            },
                         ],
                         state: 'ACTIVE'
                     }
@@ -1374,10 +1400,11 @@ const subclass = await db.subclass.insertMany([
                         ],
                         effects: [
                             {
-                                type: 'reduce_speed',
+                                type: 'debuff',
                                 target: 'enemy',
-                                trigger: 'at_opportunity_attack',
-                                value: 'to_0',
+                                trigger: 'at_impact_opportunity_attack',
+                                addTo: 'speedModifiers',
+                                value: 'set_to_0',
                                 duration: {
                                     type: 'temporal',
                                     duration: 1,
@@ -1388,7 +1415,7 @@ const subclass = await db.subclass.insertMany([
                             {
                                 type: 'opportunity_attack',
                                 target: 'enemy',
-                                condition: 'disengage_action',
+                                trigger: 'at_enemy_disengage_action',
                                 description: 'Puedes hacer ataques de oportunidad contra enemigos que se destraben'
                             }
                         ],
@@ -1414,7 +1441,8 @@ const subclass = await db.subclass.insertMany([
                             {
                                 type: 'opportunity_attack',
                                 target: 'enemy',
-                                trigger: 'at_failed_attack_on_sheltered_ally',
+                                trigger: 'at_enemy_failed_attack',
+                                condition: 'target has defensive_guard',
                                 advantage: true,
                                 description: 'Ataque de oportunidad con ventaja cuando fallan contra aliado protegido'
                             }
@@ -1436,7 +1464,7 @@ const subclass = await db.subclass.insertMany([
                             {
                                 type: 'break_shield',
                                 target: 'enemy',
-                                trigger: 'at_opportunity_attack',
+                                trigger: 'at_impact_opportunity_attack',
                                 value: 1,
                                 description: 'Rompe un escudo al impactar ataque de oportunidad'
                             },
@@ -2049,3 +2077,839 @@ const pacifierSpells = await db.spells.insertMany([
         state: 'ACTIVE'
     }
 ])
+
+const subclasses = subclass.insertedIds;
+
+// Ahora actualizamos la clase con los niveles completos
+await db.class.updateOne(
+    { _id: characterClassId },
+    { $set: {
+        levels: [
+            {
+                level: 1,
+                proficency: 2,
+                spells: [spells[0]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c01'),
+                        name: 'Afinidad Elemental',
+                        description: 'Seleccionas una afinidad elemental al crear tu personaje. Esta afinidad determinará el elemento de tus ataques físicos y tu resistencia elemental.',
+                        useType: 'passive',
+                        state: 'ACTIVE',
+                        effects: []
+                    },
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c02'),
+                        name: 'Arma Predilecta',
+                        description: 'Seleccionas un tipo de arma al crear tu personaje. Tendrás competencia con este tipo de arma y podrás usar características especiales con ella.',
+                        useType: 'passive',
+                        state: 'ACTIVE',
+                        effects: []
+                    }
+                ],
+                APGained: 5,
+                knownSpells: 4,
+            },
+            {
+                level: 2,
+                proficency: 2,
+                spells: [spells[1], spells[2], spells[3]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c03'),
+                        name: 'Orden de Mando',
+                        description: 'Cuando impactas un ataque con arma, puedes lanzar un hechizo como parte de dicha acción que no te tenga como objetivo. No puedes lanzar hechizos de daño directo con este efecto.',
+                        useType: 'passive',
+                        trigger: 'at_weapon_attack',
+                        effects: [
+                            {
+                                type: 'cast_spell',
+                                target: 'ally',
+                                trigger: 'at_weapon_attack',
+                                condition: 'not_self_target_and_not_damage_spell',
+                                description: 'Lanza un hechizo como parte del ataque con arma'
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                knownSpells: 4,
+            },
+            {
+                level: 3,
+                proficency: 2,
+                spells: [spells[4]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c04'),
+                        name: 'Redada',
+                        description: 'Todos los aliados que ataquen cuerpo a cuerpo a un enemigo que está en tu rango de ataque tendrán ventaja al atacar. Este efecto no aplica cuando tienes armas a distancia.',
+                        useType: 'passive',
+                        effects: [
+                            {
+                                type: 'buff',
+                                target: 'all_allies',
+                                trigger: 'at_ally_attack',
+                                condition: 'ally is using melee weapon and enemy in your weapon range and you have melee weapon',
+                                modifiers: [
+                                    {
+                                        type: 'attack',
+                                        description: 'Ventaja al atacar enemigos en tu rango con arma cuerpo a cuerpo',
+                                        value: 'advantage',
+                                        addTo: 'attackModifiers',
+                                        etiquette: 'raid_melee_attack'
+                                    }
+                                ],
+                                description: 'Los aliados tienen ventaja al atacar enemigos en tu rango con arma cuerpo a cuerpo'
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                knownSpells: 4,
+            },
+            {
+                level: 4,
+                proficency: 2,
+                spells: [spells[5], spells[6]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c21'),
+                        name: 'Elección de Subclase',
+                        description: 'Seleccionas una especialización: Leader, Convoy o Pacifier.',
+                        useType: 'passive',
+                        state: 'ACTIVE',
+                        effects: []
+                    }
+                ],
+                APGained: 1,
+                knownSpells: 6,
+                subclassSelection: true
+            },
+            {
+                level: 5,
+                proficency: 3,
+                spells: [spells[7], spells[8]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c22'),
+                        name: 'Mejora de Característica',
+                        description: 'Puedes aumentar una característica en +2 o dos características en +1 cada una, o seleccionar un beneficio.',
+                        useType: 'passive',
+                        state: 'ACTIVE',
+                        effects: []
+                    }
+                ],
+                APGained: 2,
+                knownSpells: 6,
+            },
+            {
+                level: 6,
+                proficency: 3,
+                spells: [spells[9], spells[10]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c05'),
+                        name: 'Resguardo Defensivo',
+                        description: 'Obtienes una reacción adicional. Como reacción cuando un ataque se dirija a un aliado, aumentas su Defensa y Resistencia Mágica hasta el final del turno actual en una cantidad igual a tu competencia. Puedes usar este rasgo 3 veces.',
+                        useType: 'active',
+                        action: 'reaction',
+                        trigger: 'at_ally_receive_attack',
+                        uses: 3,
+                        triggerForRecover: 'at_combat_end',
+                        modifiers: [
+                            {
+                                type: 'reaction',
+                                value: 1,
+                                description: 'Obtienes una reacción adicional',
+                                addTo: 'reactionModifiers',
+                                target: 'self',
+                                permanent: true
+                            },
+                            {
+                                type: 'defense',
+                                value: '{proficiency}',
+                                description: 'Aumenta la defensa del aliado',
+                                target: 'ally',
+                                trigger: 'at_ally_receive_attack',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'turns'
+                                },
+                                etiquette: 'defensive_shelter'
+                            },
+                            {
+                                type: 'magic_defense',
+                                value: '{proficiency}',
+                                description: 'Aumenta la resistencia mágica del aliado',
+                                target: 'ally',
+                                trigger: 'at_ally_receive_attack',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'turns'
+                                },
+                                etiquette: 'defensive_shelter'
+                            }
+                        ],
+                        effects: [],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                knownSpells: 6,
+            },
+            {
+                level: 7,
+                proficency: 3,
+                spells: [spells[11]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c06'),
+                        name: 'Multiataque I',
+                        description: 'Puedes realizar un ataque adicional cuando realizas la acción de Atacar en tu turno.',
+                        useType: 'passive',
+                        modifiers: [
+                            {
+                                type: 'extra_action',
+                                value: 1,
+                                description: 'Ataque adicional',
+                                addTo: 'multiattack',
+                                target: 'self',
+                                permanent: true
+                            }
+                        ],
+                        effects: [],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                knownSpells: 6,
+            },
+            {
+                level: 8,
+                proficency: 3,
+                spells: [spells[12], spells[13]],
+                features: [],
+                APGained: 1,
+                knownSpells: 7,
+            },
+            {
+                level: 9,
+                proficency: 4,
+                spells: [spells[14], spells[15], spells[16]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c23'),
+                        name: 'Mejora de Característica',
+                        description: 'Puedes aumentar una característica en +2 o dos características en +1 cada una, o seleccionar un beneficio.',
+                        useType: 'passive',
+                        state: 'ACTIVE',
+                        effects: []
+                    }
+                ],
+                APGained: 2,
+                knownSpells: 7,
+            },
+            {
+                level: 10,
+                proficency: 4,
+                spells: [spells[17], spells[18]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c07'),
+                        name: 'Maestría Armamentística',
+                        description: 'Obtienes una casilla adicional de rango con todas las armas a cuerpo a cuerpo, o tres casillas más en el caso de armas a distancia. Puedes reducir en uno la cantidad de dados de daño del arma por el resto del turno al impactar para realizar un ataque adicional que no suma bonificador en el daño como parte de un ataque. Puedes realizar esta acción en cada multiataque.',
+                        useType: 'passive',
+                        modifiers: [
+                            {
+                                type: 'range',
+                                value: 1,
+                                description: 'Aumenta el rango de armas cuerpo a cuerpo',
+                                addTo: 'meleeWeaponRange',
+                                target: 'self',
+                                permanent: true
+                            },
+                            {
+                                type: 'range',
+                                value: 3,
+                                description: 'Aumenta el rango de armas a distancia',
+                                addTo: 'rangedWeaponRange',
+                                target: 'self',
+                                permanent: true
+                            }
+                        ],
+                        effects: [
+                            {
+                                type: 'exchange_damage_for_attack',
+                                target: 'self',
+                                trigger: 'at_weapon_attack',
+                                condition: 'reduce_one_damage_dice',
+                                description: 'Reduce un dado de daño para obtener un ataque adicional sin bonificador'
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                moralePoints: 8,
+                knownSpells: 7,
+            },
+            {
+                level: 11,
+                proficency: 4,
+                spells: [spells[19], spells[20], spells[21]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c08'),
+                        name: 'Despertar Espíritu',
+                        description: 'Cada vez que impactas un ataque, puedes utilizar un punto de ánimo (PA) para activar un Estímulo en un aliado. Cada vez que impactas un crítico a un enemigo o lo matas recuperas 1 PA. La acumulación de Estímulos extenderá su duración con cada acumulación, hasta un máximo de 6 rondas.',
+                        useType: 'active',
+                        trigger: 'at_attack',
+                        cost: [{ amount: 1, resource: 'Morale Points' }],
+                        resource: 'Morale Points',
+                        effects: [
+                            {
+                                type: 'activate_stimulus',
+                                target: 'ally',
+                                trigger: 'at_attack',
+                                description: 'Activa un Estímulo en un aliado'
+                            },
+                            {
+                                type: 'recover_resource',
+                                resource: 'Morale Points',
+                                value: 1,
+                                target: 'self',
+                                trigger: ['at_critical_attack', 'at_enemy_death'],
+                                description: 'Recupera 1 PA al hacer crítico o matar enemigo'
+                            }
+                        ],
+                        subFeatures: [
+                            {
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c09'),
+                                name: 'Estímulo: Aceleración',
+                                description: 'Aumentas a un aliado su velocidad en 2 y, si así lo desea, una posición más arriba en el listado de iniciativa por 2 turnos.',
+                                useType: 'active',
+                                modifiers: [
+                                    {
+                                        type: 'speed',
+                                        value: 2,
+                                        description: 'Aumenta la velocidad',
+                                        target: 'ally',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        etiquette: 'stimulus_acceleration'
+                                    }
+                                ],
+                                effects: [
+                                    {
+                                        type: 'change_initiative',
+                                        target: 'ally',
+                                        value: 1,
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        description: 'Aumenta una posición en iniciativa'
+                                    }
+                                ],
+                                state: 'ACTIVE'
+                            },
+                            {
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c0a'),
+                                name: 'Estímulo: Precisión',
+                                description: 'Aumentas a un aliado en un 5% de crítico por 2 turnos.',
+                                useType: 'active',
+                                modifiers: [
+                                    {
+                                        type: 'critical',
+                                        value: 5,
+                                        description: 'Aumenta el ratio de crítico',
+                                        target: 'ally',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        etiquette: 'stimulus_precision'
+                                    }
+                                ],
+                                effects: [],
+                                state: 'ACTIVE'
+                            },
+                            {
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c0b'),
+                                name: 'Estímulo: Brutalidad',
+                                description: 'Le proporcionas a un aliado la habilidad de romper un escudo adicional y recuperar tu competencia en AP y el triple de tu competencia en PV temporales cuando rompe un escudo por 2 turnos.',
+                                useType: 'active',
+                                effects: [
+                                    {
+                                        type: 'break_shield',
+                                        target: 'ally',
+                                        value: 1,
+                                        trigger: 'at_break_shield',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        description: 'Rompe un escudo adicional'
+                                    },
+                                    {
+                                        type: 'recover_resource',
+                                        resource: 'AP',
+                                        value: '{proficiency}',
+                                        target: 'ally',
+                                        trigger: 'at_break_shield',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        description: 'Recupera AP al romper escudo'
+                                    },
+                                    {
+                                        type: 'heal',
+                                        healType: 'temp_hp',
+                                        heal: '{proficiency * 3}',
+                                        target: 'ally',
+                                        trigger: 'at_break_shield',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        description: 'Obtiene PV temporales al romper escudo'
+                                    }
+                                ],
+                                state: 'ACTIVE'
+                            },
+                            {
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c0c'),
+                                name: 'Estímulo: Refugio',
+                                description: 'Le otorgas a un aliado resistencia a un elemento y le otorgas dos escudos adicionales por 2 turnos.',
+                                useType: 'active',
+                                modifiers: [
+                                    {
+                                        type: 'resistance',
+                                        value: 'element',
+                                        description: 'Resistencia a un elemento',
+                                        target: 'ally',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        etiquette: 'stimulus_refuge'
+                                    }
+                                ],
+                                effects: [
+                                    {
+                                        type: 'grant_shields',
+                                        target: 'ally',
+                                        value: 2,
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        description: 'Otorga dos escudos adicionales'
+                                    }
+                                ],
+                                state: 'ACTIVE'
+                            },
+                            {
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c0d'),
+                                name: 'Estímulo: Protección',
+                                description: 'Le otorgas a un aliado el cuádruple de tu competencia en PV temporales. Este Estímulo se acumulará sobre sí mismo sumando los PV temporales.',
+                                useType: 'active',
+                                effects: [
+                                    {
+                                        type: 'heal',
+                                        healType: 'acc_temp_hp',
+                                        heal: '{proficiency * 4}',
+                                        target: 'ally',
+                                        description: 'Otorga PV temporales acumulables'
+                                    }
+                                ],
+                                state: 'ACTIVE'
+                            },
+                            {
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c0e'),
+                                name: 'Estímulo: Debilitación',
+                                description: 'Le otorgas a un aliado un +3 a su Salvación Mágica y disminuyes la dificultad de las salvaciones que le sean requeridas en 3 por 2 turnos.',
+                                useType: 'active',
+                                modifiers: [
+                                    {
+                                        type: 'magic_resistance',
+                                        value: 3,
+                                        description: 'Aumenta la resistencia a salvaciones mágicas',
+                                        target: 'ally',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        etiquette: 'stimulus_debilitation'
+                                    },
+                                    {
+                                        type: 'all_saving_throws',
+                                        value: 3,
+                                        description: 'Reduce la dificultad de salvaciones',
+                                        target: 'ally',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        etiquette: 'stimulus_debilitation'
+                                    }
+                                ],
+                                effects: [],
+                                state: 'ACTIVE'
+                            },
+                            {
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c0f'),
+                                name: 'Estímulo: Estilo',
+                                description: 'Aumentas en 1 el rango de ataque cuerpo a cuerpo y en 2 el rango de ataques a distancias a un aliado por dos turnos.',
+                                useType: 'active',
+                                modifiers: [
+                                    {
+                                        type: 'range',
+                                        value: 1,
+                                        description: 'Aumenta el rango de armas cuerpo a cuerpo',
+                                        addTo: 'meleeWeaponRange',
+                                        target: 'ally',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        etiquette: 'stimulus_style'
+                                    },
+                                    {
+                                        type: 'range',
+                                        value: 2,
+                                        description: 'Aumenta el rango de armas a distancia',
+                                        addTo: 'rangedWeaponRange',
+                                        target: 'ally',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        },
+                                        etiquette: 'stimulus_style'
+                                    }
+                                ],
+                                effects: [],
+                                state: 'ACTIVE'
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                moralePoints: 8,
+                knownSpells: 7,
+            },
+            {
+                level: 12,
+                proficency: 4,
+                spells: [spells[22]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c10'),
+                        name: 'Ejecución Combinada',
+                        description: 'Cada vez que tu equipo realice un All-Out Attack o eliminen a un enemigo, te restauras tu competencia en AP y otorgas el efecto de una Potenciación Básica a ti y a todos los aliados de forma permanente por el resto del combate. Este efecto puede acumularse sin restricciones y no puede ser limpiado por efectos.',
+                        useType: 'passive',
+                        trigger: ['at_all_out_attack', 'at_enemy_death'],
+                        effects: [
+                            {
+                                type: 'recover_resource',
+                                resource: 'AP',
+                                value: '{proficiency}',
+                                target: 'self',
+                                trigger: ['at_all_out_attack', 'at_enemy_death'],
+                                description: 'Recupera AP'
+                            },
+                            {
+                                type: 'grant_buff',
+                                target: 'all_allies',
+                                buffType: 'basic_empowerment',
+                                permanent: true,
+                                stackable: true,
+                                uncleansable: true,
+                                trigger: ['at_all_out_attack', 'at_enemy_death'],
+                                description: 'Otorga Potenciación Básica permanente y acumulable'
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                moralePoints: 8,
+                knownSpells: 9,
+            },
+            {
+                level: 13,
+                proficency: 5,
+                spells: [spells[23], spells[24]],
+                features: [],
+                APGained: 1,
+                moralePoints: 8,
+                knownSpells: 9,
+            },
+            {
+                level: 14,
+                proficency: 5,
+                spells: [spells[25], spells[26]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c24'),
+                        name: 'Mejora de Característica',
+                        description: 'Puedes aumentar una característica en +2 o dos características en +1 cada una, o seleccionar un beneficio.',
+                        useType: 'passive',
+                        state: 'ACTIVE',
+                        effects: []
+                    }
+                ],
+                APGained: 2,
+                moralePoints: 9,
+                knownSpells: 9,
+            },
+            {
+                level: 15,
+                proficency: 5,
+                spells: [spells[27], spells[28]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c11'),
+                        name: 'Multiataque II',
+                        description: 'Puedes realizar un ataque adicional más cuando realizas la acción de Atacar en tu turno.',
+                        useType: 'passive',
+                        modifiers: [
+                            {
+                                type: 'extra_action',
+                                value: 1,
+                                description: 'Segundo ataque adicional',
+                                addTo: 'multiattack',
+                                target: 'self',
+                                permanent: true
+                            }
+                        ],
+                        effects: [],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                moralePoints: 9,
+                knownSpells: 9,
+            },
+            {
+                level: 16,
+                proficency: 5,
+                spells: [spells[29], spells[30]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c12'),
+                        name: 'Unidad de Combate',
+                        description: 'Como acción adicional, obtienes un +1 a tu ataque por cada cinco efectos positivos y +1 a tu daño por cada dos efectos positivos que tengan los aliados (Los potenciadores en área cuentan por cada aliado) por el resto del turno.',
+                        useType: 'active',
+                        action: 'bonus_action',
+                        modifiers: [
+                            {
+                                type: 'attack',
+                                value: '{positive_effects / 5}',
+                                description: 'Aumenta el ataque por efectos positivos de aliados',
+                                target: 'self',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'turns'
+                                },
+                                etiquette: 'combat_unity'
+                            },
+                            {
+                                type: 'damage',
+                                value: '{positive_effects / 2}',
+                                description: 'Aumenta el daño por efectos positivos de aliados',
+                                target: 'self',
+                                duration: {
+                                    type: 'temporal',
+                                    duration: 1,
+                                    medition: 'turns'
+                                },
+                                etiquette: 'combat_unity'
+                            }
+                        ],
+                        effects: [],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                moralePoints: 9,
+                knownSpells: 10,
+            },
+            {
+                level: 17,
+                proficency: 6,
+                spells: [spells[31], spells[32]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c13'),
+                        name: 'Repetición Marcial',
+                        description: 'Cuando realizas un Estímulo, otorgas dicho efecto a un aliado adicional. El efecto de "Maestría Armamentística" ahora te permite reducir cualquier cantidad de dados, ganando dicha cantidad de ataques adicionales.',
+                        useType: 'passive',
+                        effects: [
+                            {
+                                type: 'additional_target',
+                                target: 'ally',
+                                value: 1,
+                                condition: 'when_using_stimulus',
+                                description: 'Afecta a un aliado adicional al usar Estímulo'
+                            },
+                            {
+                                type: 'modify_feature',
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c07'),
+                                description: 'Mejora Maestría Armamentística para reducir cualquier cantidad de dados'
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                moralePoints: 9,
+                knownSpells: 10,
+            },
+            {
+                level: 18,
+                proficency: 6,
+                spells: [spells[33], spells[34]],
+                features: [],
+                APGained: 1,
+                moralePoints: 10,
+                knownSpells: 10,
+            },
+            {
+                level: 19,
+                proficency: 6,
+                spells: [spells[35], spells[36]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c25'),
+                        name: 'Mejora de Característica',
+                        description: 'Puedes aumentar una característica en +2 o dos características en +1 cada una, o seleccionar un beneficio.',
+                        useType: 'passive',
+                        state: 'ACTIVE',
+                        effects: []
+                    }
+                ],
+                APGained: 2,
+                moralePoints: 10,
+                knownSpells: 10,
+            },
+            {
+                level: 20,
+                proficency: 6,
+                spells: [spells[37], spells[38]],
+                features: [
+                    {
+                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c14'),
+                        name: 'Líder del Batallón',
+                        description: 'Cuando estás en combate, la cantidad máxima de escudos de los enemigos se reduce en 2. Los enemigos sin escudos son eliminados por tu presencia de forma directa. Cuando ves que un escudo es roto, puedes utilizar tu reacción para reducir un escudo adicional. Además, como acción y una vez por combate, puedes provocar un All-Out Attack que tenga como objetivo a un solo enemigo. Este enemigo perderá un escudo de forma permanente y cada aliado recibirá +3 al daño contra él por el resto del combate.',
+                        useType: 'passive',
+                        action: 'reaction',
+                        trigger: 'at_break_shield',
+                        uses: 1,
+                        triggerForRecover: 'at_combat_end',
+                        modifiers: [
+                            {
+                                type: 'max_shields',
+                                value: -2,
+                                description: 'Reduce la cantidad máxima de escudos enemigos',
+                                target: 'all_enemies',
+                                permanent: true,
+                                etiquette: 'battalion_leader'
+                            }
+                        ],
+                        effects: [
+                            {
+                                type: 'instant_kill',
+                                target: 'all_enemies',
+                                condition: 'no_shields',
+                                description: 'Elimina enemigos sin escudos'
+                            },
+                            {
+                                type: 'break_shield',
+                                target: 'enemy',
+                                trigger: 'at_break_shield',
+                                value: 1,
+                                action: 'reaction',
+                                description: 'Rompe un escudo adicional como reacción'
+                            },
+                            {
+                                type: 'all_out_attack',
+                                target: 'enemy',
+                                action: 'action',
+                                uses: 1,
+                                triggerForRecover: 'at_combat_end',
+                                description: 'Provoca un All-Out Attack contra un enemigo'
+                            },
+                            {
+                                type: 'break_shield',
+                                target: 'enemy',
+                                value: 1,
+                                permanent: true,
+                                condition: 'all_out_attack_target',
+                                description: 'El objetivo del All-Out Attack pierde un escudo permanentemente'
+                            }
+                        ],
+                        subFeatures: [
+                            {
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c26'),
+                                name: 'All-Out Attack Especial',
+                                description: 'Provoca un All-Out Attack contra un enemigo que pierde un escudo permanentemente y los aliados obtienen +3 al daño contra él.',
+                                useType: 'active',
+                                action: 'action',
+                                uses: 1,
+                                triggerForRecover: 'at_combat_end',
+                                modifiers: [
+                                    {
+                                        type: 'damage',
+                                        value: 3,
+                                        description: 'Aumenta el daño contra el objetivo',
+                                        target: 'all_allies',
+                                        permanent: true,
+                                        condition: 'against_all_out_attack_target',
+                                        etiquette: 'battalion_leader_all_out'
+                                    }
+                                ],
+                                effects: [
+                                    {
+                                        type: 'break_shield',
+                                        target: 'enemy',
+                                        value: 1,
+                                        permanent: true,
+                                        description: 'Pierde un escudo permanentemente'
+                                    }
+                                ],
+                                state: 'ACTIVE'
+                            }
+                        ],
+                        state: 'ACTIVE'
+                    }
+                ],
+                APGained: 1,
+                moralePoints: 12,
+                knownSpells: 14,
+            }
+        ]
+    }}
+)

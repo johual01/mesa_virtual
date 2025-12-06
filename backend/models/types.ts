@@ -91,7 +91,8 @@ export enum triggerTypes {
     AT_ALLY_DEATH = 'at_ally_death', // Se activa al morir un aliado
     AT_RECEIVE_ATTACK = 'at_receive_attack', // Se activa al recibir un ataque
     AT_RECEIVE_MAGIC_ATTACK = 'at_receive_magic_attack', // Se activa al recibir un ataque mágico
-    AT_FAILED_RECEIVE_ATTACK = 'at_failed_receive_attack', // Se activa al ver el fallo de un ataque hacia ti
+    AT_ENEMY_FAILED_RECEIVE_ATTACK = 'at_enemy_failed_receive_attack', // Se activa al ver el fallo de un ataque hacia ti
+    AT_ENEMY_FAILED_ATTACK = 'at_enemy_failed_attack', // Se activa al ver el fallo de un ataque realizado por un enemigo
     AT_ALLY_RECEIVE_ATTACK = 'at_ally_receive_attack', // Se activa al recibir un ataque un aliado
     BEFORE_ATTACK = 'before_attack', // Se activa antes de realizar un ataque
     BEFORE_RECEIVE_ATTACK = 'before_receive_attack', // Se activa antes de recibir un ataque
@@ -118,6 +119,8 @@ export enum triggerTypes {
     AT_SUCCESS_SAVE = 'at_success_save', // Se activa al superar una salvación
     AT_ALLY_CRITICAL = 'at_ally_critical', // Se activa al un aliado realizar una tirada crítica
     AT_ALLY_ATTACK = 'at_ally_attack', // Se activa al un aliado realizar un ataque
+    AT_IMPACT_OPPORTUNITY_ATTACK = 'at_impact_opportunity_attack', // Se activa al impactar un ataque de oportunidad
+    AT_ENEMY_DISENGAGE_ACTION = 'at_enemy_disengage_action', // Se activa cuando un enemigo realiza la acción de desengancharse
 }
 
 export enum costTypes {
@@ -362,6 +365,8 @@ export type modificationEffectTypes =  'modification'
     | 'additional_target'
     | 'stack_buffs'
     | 'attack_with_weapon'
+    | 'opportunity_attack'
+    | 'modify_feature_uses'
 
 export interface IModificationEffect extends IBaseEffect {
     type: modificationEffectTypes,
@@ -369,6 +374,7 @@ export interface IModificationEffect extends IBaseEffect {
     action?: actions,
     damageReduction?: string,
     reduction?: number,
+    multiplier?: number,
     maxStacks?: number,
     condition?: string,
     spellCategory?: spellCategories | string,
