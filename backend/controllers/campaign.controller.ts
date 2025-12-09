@@ -7,21 +7,15 @@ import { Types } from 'mongoose';
 import { saveImage } from '../functions';
 import { IUser } from '../models/User';
 
-export const getCampaigns =  async (req: Request, res: Response) => {
-    var id = new Types.ObjectId(req.body.userId);
-    const buscarCampanas = await Campaign.aggregate(
-        [
+export const getCampaigns = async (req: Request, res: Response) => {
+    try {
+        const userId = new Types.ObjectId(req.body.userId);
+        const campaigns = await Campaign.aggregate([
             {
                 $match: {
                     $or: [
-                        {
-                            owner: id
-                        },
-                        {
-                            players: {
-                                $in: [id]
-                            }
-                        }
+                        { owner: userId },
+                        { players: { $in: [userId] } }
                     ],
                     state: campaignState.ACTIVE
                 }
@@ -33,341 +27,410 @@ export const getCampaigns =  async (req: Request, res: Response) => {
                     image: 1
                 }
             }
-        ]
-    );
-    res.send(
-        {
-            campanas: buscarCampanas
-        }
-    )
+        ]);
+
+        res.status(200).json({ campaigns });
+    } catch (e) {
+        res.status(500).json({ errMsg: 'Error al obtener campañas', error: e });
+    }
 }
 
 export const createCampaign = async (req: Request, res: Response) => {
     try {
-        if (!req.body.name || !req.body.description || !req.body.notes || !req.body.publicEntries) return res.status(400).json({errMsg: 'Faltan datos'});
-        var objCampana = {
+        if (!req.body.name || !req.body.description) {
+            return res.status(400).json({ errMsg: 'Faltan datos' });
+        }
+
+        const userId = new Types.ObjectId(req.body.userId);
+        let imageUrl = '';
+
+        if (req.body.image) {
+            if (!req.body.image.startsWith('https://')) {
+                const savedImage = await saveImage(req.body.image, userId, 'profilePics');
+                if (typeof savedImage === 'string') {
+                    imageUrl = savedImage;
+                }
+            } else {
+                imageUrl = req.body.image;
+            }
+        }
+
+        const campaignData = {
             name: req.body.name,
-            owner: new Types.ObjectId(req.body.userId),
+            owner: userId,
             players: [],
             characters: [],
-            image: '',
+            image: imageUrl,
             description: req.body.description,
             notes: req.body.notes || [],
             history: [],
             publicEntries: req.body.publicEntries || [],
             state: campaignState.ACTIVE,
-        }
-        if (req.body.image) {
-            var srcImage = '';
-            if ((req.body.image).indexOf('https://') == -1) {
-                const srcImageFinal = await saveImage(req.body.image,  new Types.ObjectId(req.body.userId), 'profilePics');
-                if (typeof(srcImageFinal) == 'string') {
-                    srcImage = srcImageFinal;
-                }
-            } else {
-                srcImage = req.body.image;
-            }
-            objCampana.image = srcImage;
-        }
-        const campaign: ICampaign = new Campaign(objCampana);
+        };
+        const campaign: ICampaign = new Campaign(campaignData);
         const savedCampaign = await campaign.save();
-        const history = new History(
-            {
-                event: 'Campaña creada',
-                description: 'La campaña ha sido creada',
-                user: new Types.ObjectId(req.body.userId),
-                origin: origin.USER,
-                referenceType: referenceType.CAMPAIGN,
-                reference: savedCampaign._id,
-                body: req.body
-            }
-        )
+
+        const history = new History({
+            event: 'Campaña creada',
+            description: 'La campaña ha sido creada',
+            user: userId,
+            origin: origin.USER,
+            referenceType: referenceType.CAMPAIGN,
+            reference: savedCampaign._id,
+            body: req.body
+        });
+
         const savedHistory = await history.save();
         savedCampaign.history.push(savedHistory._id as Types.ObjectId);
         await savedCampaign.save();
-        res.send(
-            {
-                message: "Campaña Creada",
-                campaign: savedCampaign
-            }
-        );
+
+        res.json({
+            message: 'Campaña creada',
+            campaign: savedCampaign
+        });
     } catch (e) {
-        res.status(400).json(e);
+        res.status(500).json({ errMsg: 'Error al crear campaña', error: e });
     }
 }
 
 export const deleteCampaign = async (req: Request, res: Response) => {
     try {
-        const objectid = new Types.ObjectId(req.body.userId);
-        const doc = await Campaign.findOne(
-            {
-                _id: new Types.ObjectId(req.params.campaignId)
-            }
-        );
-        if (doc) {
-            if (doc.owner as unknown as Types.ObjectId == objectid) {
-                doc.state = campaignState.DELETED;
-                const history = new History(
-                    {
-                        event: 'Campaña eliminada',
-                        description: 'La campaña ha sido eliminada',
-                        user: objectid,
-                        origin: origin.USER,
-                        referenceType: referenceType.CAMPAIGN,
-                        reference: doc._id
-                    }
-                )
-                const savedHistory = await history.save();
-                doc.history.push(savedHistory._id as Types.ObjectId);
-                await doc.save();
-                res.send({success: true})
-            } else {
-                res.send({success: false, error: 'Solo el dueño puede eliminar la campaña'})
-            }
-        } else {
-            res.send({success: false, error: 'No se encontró la campaña'})
+        const userId = new Types.ObjectId(req.body.userId);
+        const campaignId = new Types.ObjectId(req.params.campaignId);
+        const campaign = await Campaign.findById(campaignId);
+
+        if (!campaign) {
+            return res.status(404).json({ errMsg: 'No se encontró la campaña' });
         }
+
+        if (campaign.owner.toString() !== userId.toString()) {
+            return res.status(403).json({ errMsg: 'Solo el dueño puede eliminar la campaña' });
+        }
+
+        campaign.state = campaignState.DELETED;
+
+        const history = new History({
+            event: 'Campaña eliminada',
+            description: 'La campaña ha sido eliminada',
+            user: userId,
+            origin: origin.USER,
+            referenceType: referenceType.CAMPAIGN,
+            reference: campaign._id
+        });
+
+        const savedHistory = await history.save();
+        campaign.history.push(savedHistory._id as Types.ObjectId);
+        await campaign.save();
+
+        res.status(200).json({ message: 'Campaña eliminada' });
     } catch (e) {
-        res.send({success: false, error: e})
+        res.status(500).json({ errMsg: 'Error al eliminar campaña', error: e });
     }
 }
 
 export const openCampaign = async (req: Request, res: Response) => {
-    const campaign = await Campaign.findById(new Types.ObjectId(req.params.campaignId))
-                        .populate<{ owner: IUser }>('owner', '-password -email')
-                        .populate<{ players: IUser }>('players', '-password -email -joinDate')
-                        .populate('publicEntries')
-                        .populate('notes')
-    if (!campaign) return res.send({success: false, error: 'No se encontró la campaña'});
-    var object = campaign.toJSON();
-    if (object.owner._id.toString() != req.params.userId) {
-        delete object['notes'];
-    }
-    res.send(
-        {
-            campaign: object
+    try {
+        const campaignId = new Types.ObjectId(req.params.campaignId);
+        const campaign = await Campaign.findById(campaignId)
+            .populate<{ owner: IUser }>('owner', '-password -email')
+            .populate<{ players: IUser }>('players', '-password -email -joinDate')
+            .populate('publicEntries')
+            .populate('notes');
+
+        if (!campaign) {
+            return res.status(404).json({ errMsg: 'No se encontró la campaña' });
         }
-    )
+
+        const campaignData = campaign.toJSON();
+
+        // Solo el dueño puede ver las notas privadas
+        if (campaignData.owner._id.toString() !== req.params.userId) {
+            delete campaignData.notes;
+        }
+
+        res.status(200).json({ campaign: campaignData });
+    } catch (e) {
+        res.status(500).json({ errMsg: 'Error al abrir campaña', error: e });
+    }
 }
 
 export const editCampaign = async (req: Request, res: Response) => {
     try {
-        if (!req.body.name || !req.body.description || !req.body.notes || !req.body.publicEntries) return res.status(400).json({errMsg: 'Faltan datos'});
-        const campaign = await Campaign.findById(new Types.ObjectId(req.params.campaignId));
-        if (!campaign) return res.status(400).json({errMsg: 'No se encontró la campaña'});
-        var objCampana = {
+        if (!req.body.name || !req.body.description) {
+            return res.status(400).json({ errMsg: 'Faltan datos' });
+        }
+
+        const campaignId = new Types.ObjectId(req.params.campaignId);
+        const campaign = await Campaign.findById(campaignId);
+
+        if (!campaign) {
+            return res.status(404).json({ errMsg: 'No se encontró la campaña' });
+        }
+
+        let imageUrl = '';
+
+        if (req.body.image) {
+            if (!req.body.image.startsWith('https://')) {
+                const savedImage = await saveImage(req.body.image, new Types.ObjectId(req.body.userId), 'campaignPics');
+                if (typeof savedImage === 'string') {
+                    imageUrl = savedImage;
+                }
+            } else {
+                imageUrl = req.body.image;
+            }
+        }
+
+        const updateData = {
             name: req.body.name,
-            image: '',
+            image: imageUrl,
             description: req.body.description,
             notes: req.body.notes,
             publicEntries: req.body.publicEntries
-        }
-        if (req.body.image) {
-            var srcImage = '';
-            if ((req.body.image).indexOf('https://') == -1) {
-                const srcImageFinal = await saveImage(req.body.image, new Types.ObjectId(req.body.userId), 'campaignPics');
-                if (typeof(srcImageFinal) == 'string') {
-                    srcImage = srcImageFinal;
-                }
-            } else {
-                srcImage = req.body.image;
-            }
-            objCampana.image = srcImage;
-        }
-        const history = new History(
-            {
-                event: 'Campaña actualizada',
-                description: 'La campaña ha sido actualizada',
-                user: new Types.ObjectId(req.body.userId),
-                origin: origin.USER,
-                referenceType: referenceType.CAMPAIGN,
-                reference: new Types.ObjectId(req.params.campaignId),
-                body: req.body
-            }
-        )
+        };
+        const userId = new Types.ObjectId(req.body.userId);
+        const history = new History({
+            event: 'Campaña actualizada',
+            description: 'La campaña ha sido actualizada',
+            user: userId,
+            origin: origin.USER,
+            referenceType: referenceType.CAMPAIGN,
+            reference: campaignId,
+            body: req.body
+        });
+
         const savedHistory = await history.save();
         const updatedCampaign = await Campaign.findOneAndUpdate(
+            { _id: campaignId },
             {
-                _id: new Types.ObjectId(req.params.campaignId)
-            }, 
-            {
-               $set: objCampana,
-               $push: { history: savedHistory._id }
+                $set: updateData,
+                $push: { history: savedHistory._id }
             },
-            {
-                new: true
-            }
+            { new: true }
         );
-        res.send(
-            {
-                message: "Campaña Actualizada",
-                campaign: updatedCampaign
-            }
-        );
+
+        res.status(200).json({
+            message: 'Campaña actualizada',
+            campaign: updatedCampaign
+        });
     } catch (e) {
-        res.status(400).json(e);
+        res.status(500).json({ errMsg: 'Error al actualizar campaña', error: e });
     }
 }
 
 export const joinCampaign = async (req: Request, res: Response) => {
     try {
-        const objectid = req.body.userId;
-        const campaign = await Campaign.findOne({ _id: new Types.ObjectId(req.params.campaignId) });
-        if (!campaign) return res.send({success: false, error: 'No se encontró la campaña'});
-        if (campaign.owner == objectid) return res.send({success: false, error: 'No puedes unirte a tu propia campaña'});
-        if (campaign.players.includes(objectid)) return res.send({success: false, error: 'Ya estás en la campaña'});
-        const history = new History(
-            {
-                event: 'Se ha unido un nuevo jugador',
-                description: 'El jugador ' + objectid + ' se ha unido a la campaña.',
-                user: new Types.ObjectId(req.body.userId),
-                origin: origin.USER,
-                referenceType: referenceType.CAMPAIGN,
-                reference: new Types.ObjectId(req.params.campaignId)
-            }
-        )
+        const userId = new Types.ObjectId(req.body.userId);
+        const campaignId = new Types.ObjectId(req.params.campaignId);
+        const campaign = await Campaign.findById(campaignId);
+
+        if (!campaign) {
+            return res.status(404).json({ errMsg: 'No se encontró la campaña' });
+        }
+
+        if (campaign.owner.toString() === userId.toString()) {
+            return res.status(400).json({ errMsg: 'No puedes unirte a tu propia campaña' });
+        }
+
+        if (campaign.players.some(player => player.toString() === userId.toString())) {
+            return res.status(400).json({ errMsg: 'Ya estás en la campaña' });
+        }
+
+        const history = new History({
+            event: 'Se ha unido un nuevo jugador',
+            description: `El jugador ${userId} se ha unido a la campaña.`,
+            user: userId,
+            origin: origin.USER,
+            referenceType: referenceType.CAMPAIGN,
+            reference: campaignId
+        });
+
         const savedHistory = await history.save();
-        const updated = await Campaign.findOneAndUpdate(
+        await Campaign.findOneAndUpdate(
             {
-                _id: new Types.ObjectId(req.params.campaignId),
-                owner: {$ne: objectid},
-                players: {
-                    $nin: [objectid]
-                }
+                _id: campaignId,
+                owner: { $ne: userId },
+                players: { $nin: [userId] }
             },
             {
                 $push: {
-                    players: objectid,
+                    players: userId,
                     history: savedHistory._id
                 }
             }
         );
-        console.log(updated);
-        res.send({success: true})
+
+        res.status(200).json({ message: 'Te has unido a la campaña' });
     } catch (e) {
-        res.send({success: false, error: e})
+        res.status(500).json({ errMsg: 'Error al unirse a la campaña', error: e });
     }
 }
 
 export const removeFromCampaign = async (req: Request, res: Response) => {
     try {
-        const user = new Types.ObjectId(req.body.userId);
-        const player = new Types.ObjectId(req.body.playerId);
-        const campaign = new Types.ObjectId(req.body.campaignId);
-        const doc = await Campaign.findOne(
-            {
-                _id: campaign
-            }
-        );
-        if (doc) {
-            if (doc.owner as unknown as Types.ObjectId == user || user == player) {
-                const history = new History(
-                    {
-                        event: 'Un jugador ha abandonado la campaña',
-                        description: 'El jugador ' + player + ' ha abandonado la campaña.',
-                        user,
-                        origin: origin.USER,
-                        referenceType: referenceType.CAMPAIGN,
-                        reference: doc._id
-                    }
-                )
-                const savedHistory = await history.save();
-                var object = doc.toObject();
-                object.players = object.players.filter(val => val != player);
-                await doc.populate('characters');
-                object.characters = (object.characters as ICharacter[]).filter(val => val.player as unknown as Types.ObjectId != player);
-                doc.overwrite(object);
-                doc.history.push(savedHistory._id as Types.ObjectId);
-                await doc.save();
-                res.send({success: true})
-            } else {
-                res.send({success: false, error: 'Solo el dueño puede eliminar a otro jugador'})
-            }
-        } else {
-            res.send({success: false, error: 'No se encontró la campaña'})
+        const userId = new Types.ObjectId(req.body.userId);
+        const playerId = new Types.ObjectId(req.body.playerId);
+        const campaignId = new Types.ObjectId(req.body.campaignId);
+        const campaign = await Campaign.findById(campaignId);
+
+        if (!campaign) {
+            return res.status(404).json({ errMsg: 'No se encontró la campaña' });
         }
+
+        // Solo el dueño puede remover a otros, o el jugador puede salirse
+        if (campaign.owner.toString() !== userId.toString() && userId.toString() !== playerId.toString()) {
+            return res.status(403).json({ errMsg: 'Solo el dueño puede eliminar a otro jugador' });
+        }
+
+        const history = new History({
+            event: 'Un jugador ha abandonado la campaña',
+            description: `El jugador ${playerId} ha abandonado la campaña.`,
+            user: userId,
+            origin: origin.USER,
+            referenceType: referenceType.CAMPAIGN,
+            reference: campaign._id
+        });
+
+        const savedHistory = await history.save();
+        const campaignData = campaign.toObject();
+        campaignData.players = campaignData.players.filter(player => player.toString() !== playerId.toString());
+
+        await campaign.populate('characters');
+        campaignData.characters = (campaignData.characters as ICharacter[]).filter(
+            char => !(char.player as Types.ObjectId).equals(playerId)
+        );
+
+        campaign.overwrite(campaignData);
+        campaign.history.push(savedHistory._id as Types.ObjectId);
+        await campaign.save();
+
+        res.status(200).json({ message: 'Jugador removido de la campaña' });
     } catch (e) {
-        res.send({success: false, error: e})
+        res.status(500).json({ errMsg: 'Error al remover jugador', error: e });
     }
 }
 
 export const addRegister = async (req: Request, res: Response) => {
     try {
-        if (!req.body.title || !req.body.text || !req.body.campaignId) return res.status(400).json({errMsg: 'Faltan datos'});
-        const campaign = await Campaign.findById(new Types.ObjectId(req.body.campaignId));
-        if (!campaign) return res.send({success: false, error: 'No se encontró la campaña'});
-        const obj = new Note({
+        if (!req.body.title || !req.body.text || !req.body.campaignId) {
+            return res.status(400).json({ errMsg: 'Faltan datos' });
+        }
+
+        const campaignId = new Types.ObjectId(req.body.campaignId);
+        const campaign = await Campaign.findById(campaignId);
+
+        if (!campaign) {
+            return res.status(404).json({ errMsg: 'No se encontró la campaña' });
+        }
+
+        const note = new Note({
             title: req.body.title,
             text: req.body.text,
             owner: new Types.ObjectId(req.body.userId)
-        })
-        const note = await obj.save()
-        const updateBody: any = {
-            $push: {}
-        }
-        if (req.body.isPrivate) {
-            updateBody.$push['notes'] = note._id
-        } else {
-            updateBody.$push['publicEntries'] = note._id
-        }
-        const updated = await Campaign.updateOne(
-            {
-                _id: new Types.ObjectId(req.body.campaignId)
-            },
-            updateBody
+        });
+
+        const savedNote = await note.save();
+
+        const updateField = req.body.isPrivate ? 'notes' : 'publicEntries';
+        await Campaign.updateOne(
+            { _id: campaignId },
+            { $push: { [updateField]: savedNote._id } }
         );
-        console.log(updated);
-        res.send({success: true, note })
+
+        res.status(201).json({ message: 'Registro creado', note: savedNote });
     } catch (e) {
-        res.send({success: false})
+        res.status(500).json({ errMsg: 'Error al crear registro', error: e });
     }
 }
 
 export const updateRegister = async (req: Request, res: Response) => {
     try {
-        if (!req.body.title || !req.body.text) return res.status(400).json({errMsg: 'Faltan datos'});
-        const note = await Note.findOne({ _id: new Types.ObjectId(req.params.registerId) });
-        if (!note) return res.send({success: false, error: 'No se encontró la nota'});
-        const updateNote = await Note.updateOne(
-            {
-                _id: new Types.ObjectId(req.params.registerId)
-            },
+        if (!req.body.title || !req.body.text || !req.body.campaignId) {
+            return res.status(400).json({ errMsg: 'Faltan datos' });
+        }
+
+        const registerId = new Types.ObjectId(req.params.registerId);
+        const campaignId = new Types.ObjectId(req.body.campaignId as string);
+        const note = await Note.findById(registerId);
+        
+        const campaign = await Campaign.findById(campaignId);
+            
+        if (!campaign) {
+            return res.status(404).json({ errMsg: 'No se encontró la campaña' });
+        }
+
+        if (!note) {
+            return res.status(404).json({ errMsg: 'No se encontró la nota' });
+        }
+
+        const updatedNote = await Note.findByIdAndUpdate(
+            registerId,
             {
                 title: req.body.title,
-                text: req.body.text,
+                text: req.body.text
+            },
+            { new: true }
+        );
+
+        // Manejar cambio de visibilidad (pública/privada)
+        if (req.body.isPrivate !== undefined) {
+            const isCurrentlyPrivate = campaign.notes?.some(n => n.toString() === registerId.toString()) || false;
+            const isCurrentlyPublic = campaign.publicEntries?.some(e => e.toString() === registerId.toString()) || false;
+            const shouldBePrivate = req.body.isPrivate;
+
+            // Si debe cambiar de pública a privada
+            if (shouldBePrivate && isCurrentlyPublic) {
+                await Campaign.updateOne(
+                    { _id: campaignId },
+                    {
+                        $pull: { publicEntries: registerId },
+                        $push: { notes: registerId }
+                    }
+                );
             }
-        )
-        console.log(updateNote);
-        res.send({success: true, note: updateNote })
+            // Si debe cambiar de privada a pública
+            else if (!shouldBePrivate && isCurrentlyPrivate) {
+                await Campaign.updateOne(
+                    { _id: campaignId },
+                    {
+                        $pull: { notes: registerId },
+                        $push: { publicEntries: registerId }
+                    }
+                );
+            }
+        }
+
+        res.status(200).json({ message: 'Registro actualizado', note: updatedNote });
     } catch (e) {
-        res.send({success: false, error: e})
+        res.status(500).json({ errMsg: 'Error al actualizar registro', error: e });
     }
 }
 
 export const deleteRegister = async (req: Request, res: Response) => {
     try {
-        if (!req.body.campaignId) return res.status(400).json({errMsg: 'Faltan datos'});
-        const note = await Note.findOne({ _id: new Types.ObjectId(req.params.registerId) });
-        if (!note) return res.send({success: false, error: 'No se encontró la nota'});
-        const updatedNote = await Note.updateOne(
-            {
-                _id: new Types.ObjectId(req.params.registerId)
-            },
-            {
-                state: noteState.DELETED
-            }
-        )
-        const campaign = await Campaign.updateOne(
-            {
-                _id: new Types.ObjectId(req.body.campaignId)
-            },
-            {
-                $pull: { notes: req.params.registerId, publicEntries: req.params.registerId }
-            }
-        )
-        console.log(updatedNote, campaign);
-        res.send({success: true, campaign })
+        if (!req.body.campaignId) {
+            return res.status(400).json({ errMsg: 'Faltan datos' });
+        }
+
+        const registerId = new Types.ObjectId(req.params.registerId);
+        const campaignId = new Types.ObjectId(req.body.campaignId);
+        const note = await Note.findById(registerId);
+
+        if (!note) {
+            return res.status(404).json({ errMsg: 'No se encontró la nota' });
+        }
+
+        await Note.updateOne(
+            { _id: registerId },
+            { state: noteState.DELETED }
+        );
+
+        await Campaign.updateOne(
+            { _id: campaignId },
+            { $pull: { notes: registerId, publicEntries: registerId } }
+        );
+
+        res.status(200).json({ message: 'Registro eliminado' });
     } catch (e) {
-        res.send({success: false, error: e})
+        res.status(500).json({ errMsg: 'Error al eliminar registro', error: e });
     }
 }
