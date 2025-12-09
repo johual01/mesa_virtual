@@ -23,7 +23,7 @@ router.put('/addRegister/:campaignId', validateToken, Campaign.addRegister);
 router.patch('/updateRegister/:registerId', validateToken, Campaign.updateRegister);
 router.delete('/deleteRegister/:registerId', validateToken, Campaign.deleteRegister);
 router.post('/removeFromCampaign', validateToken, Campaign.removeFromCampaign);
-router.post('/deleteCampana/:campaignId', validateToken, Campaign.deleteCampaign);
+router.post('/deleteCampaign/:campaignId', validateToken, Campaign.deleteCampaign);
 
 // rutas del personaje
 router.get('/getCreateCharacterInfo', validateToken, Character.getCreateCharacterInfo);

@@ -1,5 +1,5 @@
 import { IStatusEffect } from './StatusEffect';
-import { Types } from 'mongoose';
+import { ObjectId, Types } from 'mongoose';
 
 export enum healingTypes {
     HP = 'hp',
@@ -121,6 +121,12 @@ export enum triggerTypes {
     AT_ALLY_ATTACK = 'at_ally_attack', // Se activa al un aliado realizar un ataque
     AT_IMPACT_OPPORTUNITY_ATTACK = 'at_impact_opportunity_attack', // Se activa al impactar un ataque de oportunidad
     AT_ENEMY_DISENGAGE_ACTION = 'at_enemy_disengage_action', // Se activa cuando un enemigo realiza la acción de desengancharse
+    AT_APPLY_STATUS_EFFECT = 'at_apply_status_effect', // Se activa al aplicar un efecto de estado
+    AT_REMOVE_STATUS_EFFECT = 'at_remove_status_effect', // Se activa al eliminar un efecto de estado
+    AT_APPLY_DEBUFF_EFFECT = 'at_apply_debuff_effect', // Se activa al aplicar un efecto negativo
+    AT_APPLY_BUFF_EFFECT = 'at_apply_buff_effect', // Se activa al aplicar un efecto positivo
+    AT_APPLY_NEGATIVE_EFFECT = 'at_apply_negative_effect', // Se activa al aplicar un efecto negativo o debilitante
+    AT_DISPEL_EFFECT = 'at_dispel_effect', // Se activa al disipar un efecto
 }
 
 export enum costTypes {
@@ -198,7 +204,7 @@ export enum modifierTypes {
     
     // Resistance and healing
     RESISTANCE = 'resistance',
-    MAGIC_RESISTANCE = 'magic_resistance',
+    MAGIC_DEFENSE = 'magic_defense',
     HEALING_RECEIVED = 'healing_received',
     
     // Actions and movement
@@ -235,6 +241,7 @@ export interface IModifier {
     modifierId?: string,
     etiquette?: string,
     damageType?: elements,
+    triggeredBy?: ObjectId,
     dice?: string,
 }
 

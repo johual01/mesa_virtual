@@ -2695,7 +2695,7 @@ const subclass = await db.subclass.insertMany([
                             {
                                 type: 'all_saving_throws',
                                 value: 'proficency',
-                                addTo: 'savingThrowsModifiers',
+                                addTo: 'savingThrowModifiers',
                                 description: 'Obtienes pericia en todas las tiradas de salvación.',
                                 target: 'self',
                                 permanent: true
@@ -2748,7 +2748,7 @@ const subclass = await db.subclass.insertMany([
                                 permanent: true
                             },
                             {
-                                type: 'magic_resistance',
+                                type: 'magic_defense',
                                 value: 'dexterity',
                                 description: 'Sumas tu bonificador de destreza en tu resistencia mágica.',
                                 target: 'self',
