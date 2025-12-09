@@ -96,6 +96,7 @@ export enum triggerTypes {
     AT_ALLY_RECEIVE_ATTACK = 'at_ally_receive_attack', // Se activa al recibir un ataque un aliado
     BEFORE_ATTACK = 'before_attack', // Se activa antes de realizar un ataque
     BEFORE_RECEIVE_ATTACK = 'before_receive_attack', // Se activa antes de recibir un ataque
+    BEFORE_ALLY_RECEIVE_ATTACK = 'before_ally_receive_attack', // Se activa antes de que un aliado reciba un ataque
     AT_ZONE = 'at_zone', // Se activa al entrar en una zona
     NEXT_ATTACK = 'next_attack', // Se activa al siguiente ataque
     NEXT_SPELL = 'next_spell', // Se activa al siguiente hechizo

@@ -1459,32 +1459,38 @@ const subclass = await db.subclass.insertMany([
                         name: 'Resquebrajar',
                         description: 'Todos los enemigos que reciban un ataque de oportunidad de tu parte perderán un escudo al impactar, tendrá desventaja en toda salvación que le requieran y un multiataque por 2 turnos.',
                         useType: 'passive',
-                        trigger: 'at_opportunity_attack',
+                        trigger: 'at_impact_opportunity_attack',
                         effects: [
                             {
                                 type: 'break_shield',
                                 target: 'enemy',
-                                trigger: 'at_impact_opportunity_attack',
                                 value: 1,
                                 description: 'Rompe un escudo al impactar ataque de oportunidad'
                             },
                             {
-                                type: 'grant_disadvantage',
+                                type: 'debuff',
                                 target: 'enemy',
-                                trigger: 'at_opportunity_attack',
-                                type_affected: 'all_saving_throws',
-                                duration: {
-                                    type: 'temporal',
-                                    duration: 2,
-                                    medition: 'rounds'
-                                },
+                                addTo: 'savingThrowModifiers',
+                                modifiers: [
+                                    {
+                                        type: 'all_saving_throws',
+                                        value: 'disadvantage',
+                                        description: 'Desventaja en todas las tiradas de salvación',
+                                        target: 'self',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 2,
+                                            medition: 'rounds'
+                                        }
+                                    }
+                                ],
                                 description: 'El enemigo tiene desventaja en salvaciones'
                             },
                             {
-                                type: 'reduce_multiattack',
+                                type: 'attack_with_weapon',
                                 target: 'enemy',
-                                trigger: 'at_opportunity_attack',
-                                value: 1,
+                                trigger: 'at_attack',
+                                value: -1,
                                 duration: {
                                     type: 'temporal',
                                     duration: 2,
@@ -1510,16 +1516,22 @@ const subclass = await db.subclass.insertMany([
                     {
                         featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c1d'),
                         name: 'Karma',
-                        description: 'Obtienes una reacción adicional. Además, cada vez que te van a realizar un ataque, puedes realizar un ataque de oportunidad como reacción. Tienes ventaja en todos los ataques que realices fuera de tu turno.',
-                        useType: 'passive',
-                        action: 'reaction',
-                        trigger: 'at_receive_attack',
+                        description: 'Obtienes una reacción adicional. Además, cada vez que te realizan un ataque, puedes realizar un ataque de oportunidad como reacción. Tienes ventaja en todos los ataques que realices fuera de tu turno.',
                         modifiers: [
                             {
                                 type: 'reaction',
                                 value: 1,
                                 description: 'Obtienes una reacción adicional',
                                 addTo: 'reactionModifiers',
+                                target: 'self',
+                                permanent: true
+                            },
+                            {
+                                type: 'attack',
+                                value: 'advantage',
+                                condition: 'is not your turn',
+                                description: 'Tienes ventaja en ataques fuera de tu turno',
+                                addTo: 'attackModifiers',
                                 target: 'self',
                                 permanent: true
                             }
@@ -1532,12 +1544,6 @@ const subclass = await db.subclass.insertMany([
                                 advantage: true,
                                 description: 'Realiza un ataque de oportunidad al recibir un ataque'
                             },
-                            {
-                                type: 'grant_advantage',
-                                target: 'self',
-                                condition: 'attacks_outside_turn',
-                                description: 'Tienes ventaja en ataques fuera de tu turno'
-                            }
                         ],
                         state: 'ACTIVE'
                     }
@@ -1549,7 +1555,7 @@ const subclass = await db.subclass.insertMany([
                     {
                         featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c1e'),
                         name: 'Deflexión',
-                        description: 'Cada vez que realizas un efecto negativo en un enemigo, obtienes un bonificador de daño igual a tu competencia. Los ataques que fallen en tu contra no te causarán ningún tipo de daño y te darán ventaja en ataques contra el enemigo que realizó el ataque hasta el final de tu siguiente turno.',
+                        description: 'Cada vez que realizas un efecto negativo en un enemigo, obtienes un bonificador de daño igual a tu competencia hasta el final de tu siguiente turno. Los ataques que fallen en tu contra no te causarán ningún tipo de daño y te darán ventaja en ataques contra el enemigo que realizó el ataque hasta el final de tu siguiente turno.',
                         useType: 'passive',
                         modifiers: [
                             {
@@ -1568,21 +1574,31 @@ const subclass = await db.subclass.insertMany([
                         ],
                         effects: [
                             {
-                                type: 'negate_damage',
+                                type: 'reduce_damage',
                                 target: 'self',
-                                trigger: 'at_failed_receive_attack',
+                                multiplier: 0,
+                                trigger: 'at_enemy_failed_receive_attack',
                                 description: 'Los ataques fallidos no causan daño'
                             },
                             {
-                                type: 'grant_advantage',
+                                type: 'buff',
                                 target: 'self',
-                                trigger: 'at_failed_receive_attack',
-                                condition: 'attacks_against_attacker',
-                                duration: {
-                                    type: 'temporal',
-                                    duration: 1,
-                                    medition: 'turns'
-                                },
+                                trigger: 'at_enemy_failed_receive_attack',
+                                modifiers: [
+                                    {
+                                        type: 'attack',
+                                        value: 'advantage',
+                                        description: 'Ventaja al atacar al enemigo que falló',
+                                        target: 'self',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 1,
+                                            medition: 'rounds'
+                                        },
+                                        condition: 'against trigger target',
+                                        triggeredBy: '{enemy_id}'
+                                    }
+                                ],
                                 description: 'Tienes ventaja contra el enemigo que falló'
                             }
                         ],
@@ -1596,13 +1612,13 @@ const subclass = await db.subclass.insertMany([
                     {
                         featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c1f'),
                         name: 'Fluidez',
-                        description: 'Cuando impactas un ataque, una vez por turno, obtienes un bonificador a tu defensa y resistencia mágica igual a la mitad de tu competencia redondeada hacia abajo. Además, tus hechizos que tengan como objetivo a un enemigo tendrán el coste reducido a la mitad durante el transcurso de tus ataques.',
+                        description: 'Cuando impactas un ataque, una vez por turno, obtienes un bonificador a tu defensa y resistencia mágica igual a la mitad de tu competencia redondeada hacia abajo hasta el inicio de tu siguiente turno. Además, tus hechizos que tengan como objetivo a un enemigo tendrán el coste reducido a la mitad durante el transcurso de tus ataques.',
                         useType: 'passive',
                         trigger: 'at_attack',
                         modifiers: [
                             {
                                 type: 'defense',
-                                value: '{proficiency / 2}',
+                                value: 'floor({proficiency / 2})',
                                 description: 'Aumenta la defensa',
                                 target: 'self',
                                 trigger: 'at_attack',
@@ -1615,7 +1631,7 @@ const subclass = await db.subclass.insertMany([
                             },
                             {
                                 type: 'magic_defense',
-                                value: '{proficiency / 2}',
+                                value: 'floor({proficiency / 2})',
                                 description: 'Aumenta la resistencia mágica',
                                 target: 'self',
                                 trigger: 'at_attack',
@@ -1631,7 +1647,7 @@ const subclass = await db.subclass.insertMany([
                             {
                                 type: 'spell_cost_reduction',
                                 target: 'self',
-                                condition: 'enemy_targeting_spells_during_attacks',
+                                condition: 'spell targets enemy and during your attacks',
                                 reduction: 0.5,
                                 description: 'Reduce el coste de hechizos contra enemigos a la mitad'
                             }
@@ -1658,28 +1674,23 @@ const subclass = await db.subclass.insertMany([
                                 permanent: true
                             },
                             {
-                                type: 'weapon_damage_dice',
-                                value: 1,
-                                description: 'Todas tus armas tienen un dado adicional de daño',
+                                type: 'damage',
+                                value: '1d{max_die_size} + {count_dice}',
+                                description: 'Todas tus armas tienen un dado adicional y un bonificador igual a la cantidad máxima de dados del arma como daño adicional',
                                 target: 'self',
+                                condition: 'is a weapon attack',
                                 permanent: true,
                                 etiquette: 'asura'
                             },
-                            {
-                                type: 'weapon_damage',
-                                value: '{max_weapon_dice}',
-                                description: 'Bonificador igual a la cantidad máxima del dado del arma',
-                                target: 'self',
-                                permanent: true,
-                                etiquette: 'asura'
-                            }
                         ],
                         effects: [
                             {
-                                type: 'cast_damage_spell',
+                                type: 'cast_spell',
                                 target: 'enemy',
+                                spellCategory: 'attack',
                                 trigger: 'at_spell_cast_during_attack',
                                 uses: 1,
+                                triggerForRecover: 'at_turn_start',
                                 description: 'Puedes lanzar un hechizo de daño como parte de tu ataque'
                             }
                         ],
@@ -1695,7 +1706,7 @@ const subclass = await db.subclass.insertMany([
 const pacifierSubclassId = subclass.insertedIds[2];
 
 // Hechizos adicionales para Pacifier
-const pacifierSpells = await db.spells.insertMany([
+const pacifierAdditionalSpells = await db.spells.insertMany([
     // Nivel 4 - Debilitaciones Básicas
     {
         name: 'Debilitación Básica (F)',
@@ -1729,7 +1740,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         category: 'debuff',
         description: 'Reduce en -2 el ataque por 3 turnos a un enemigo.',
@@ -1748,7 +1759,7 @@ const pacifierSpells = await db.spells.insertMany([
                 etiquette: 'debilitation_attack'
             }
         ],
-        toList: 'pacifier',
+        toList: 'additional',
         state: 'ACTIVE'
     },
     {
@@ -1756,7 +1767,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         category: 'debuff',
         description: 'Reduce en -2 a la defensa y -1 a la resistencia mágica a un enemigo.',
@@ -1787,7 +1798,7 @@ const pacifierSpells = await db.spells.insertMany([
                 etiquette: 'debilitation_defense'
             }
         ],
-        toList: 'pacifier',
+        toList: 'additional',
         state: 'ACTIVE'
     },
     // Nivel 8
@@ -1796,7 +1807,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         category: 'utility',
         description: 'Estableces una zona de 2 casillas de radio en el mapa. Nadie podrá entrar de esta zona por 3 turnos. Los individuos que se encuentren en dicha área saldrán por el lado más próximo del punto de inicio.',
@@ -1819,7 +1830,7 @@ const pacifierSpells = await db.spells.insertMany([
                 description: 'Nadie puede entrar en la zona, los que están dentro son expulsados'
             }
         ],
-        toList: 'pacifier',
+        toList: 'additional',
         state: 'ACTIVE'
     },
     {
@@ -1827,7 +1838,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         action: 'reaction',
         category: 'counter',
@@ -1838,25 +1849,26 @@ const pacifierSpells = await db.spells.insertMany([
                 type: 'counterspell',
                 target: 'enemy',
                 trigger: 'at_enemy_spell_cast',
-                condition: 'spell_cost_3_or_less',
+                condition: 'target spell cost <=3',
                 description: 'El hechizo falla automáticamente si cuesta 3 AP o menos'
             },
             {
                 type: 'counterspell',
                 target: 'enemy',
                 trigger: 'at_enemy_spell_cast',
-                condition: 'spell_cost_greater_than_3',
+                condition: 'target spell cost >3',
                 cd: '12 + {spell_cost}',
                 description: 'Requiere tirada de ataque vs CD 12 + coste del hechizo'
             },
             {
-                type: 'attack_with_weapon',
+                type: 'damage',
                 target: 'enemy',
-                condition: 'counterspell_success',
+                condition: 'counterspell success',
+                value: '{weapon_damage}',
                 description: 'Aplica daño de arma si el hechizo falla'
             }
         ],
-        toList: 'pacifier',
+        toList: 'additional',
         state: 'ACTIVE'
     },
     {
@@ -1864,7 +1876,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 5, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         category: 'debuff',
         description: 'Causas un estado alterado de tu afinidad a los enemigos con dificultad igual a 10 + salvación de carisma.',
@@ -1874,18 +1886,18 @@ const pacifierSpells = await db.spells.insertMany([
         effects: [
             {
                 type: 'status_effect',
-                statusType: 'affinity',
+                statusType: '{elemental_affinity_equivalent_to_status}',
                 target: 'enemies_at_range',
                 range: {
                     type: 'area',
                     range: 6,
                     shape: 'cone'
                 },
-                salvation: 'charisma',
+                salvation: '{statusType_save}',
                 description: 'Aplica estado alterado de tu afinidad'
             }
         ],
-        toList: 'pacifier',
+        toList: 'additional',
         state: 'ACTIVE'
     },
     // Nivel 13 - Debilitaciones Complejas
@@ -1894,7 +1906,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         category: 'debuff',
         description: 'Reduce en -5 a todo daño infligido por 3 turnos a un enemigo.',
@@ -1913,7 +1925,7 @@ const pacifierSpells = await db.spells.insertMany([
                 etiquette: 'debilitation_damage_complex'
             }
         ],
-        toList: 'pacifier',
+        toList: 'additional',
         state: 'ACTIVE'
     },
     {
@@ -1921,7 +1933,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         category: 'debuff',
         description: 'Reduce en -4 el ataque por 3 turnos a un enemigo.',
@@ -1940,7 +1952,7 @@ const pacifierSpells = await db.spells.insertMany([
                 etiquette: 'debilitation_attack_complex'
             }
         ],
-        toList: 'pacifier',
+        toList: 'additional',
         state: 'ACTIVE'
     },
     {
@@ -1948,7 +1960,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 2, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         category: 'debuff',
         description: 'Reduce en -3 a la defensa y -2 a la resistencia mágica a un enemigo.',
@@ -1979,7 +1991,7 @@ const pacifierSpells = await db.spells.insertMany([
                 etiquette: 'debilitation_defense_complex'
             }
         ],
-        toList: 'pacifier',
+        toList: 'additional',
         state: 'ACTIVE'
     },
     // Nivel 18 - Debilitaciones Totales
@@ -1988,7 +2000,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         category: 'debuff',
         description: 'Reduce en -5 a todo daño infligido por 3 turnos a todos los enemigos.',
@@ -2007,7 +2019,7 @@ const pacifierSpells = await db.spells.insertMany([
                 etiquette: 'debilitation_damage_total'
             }
         ],
-        toList: 'pacifier',
+        toList: 'additional',
         state: 'ACTIVE'
     },
     {
@@ -2015,7 +2027,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         category: 'debuff',
         description: 'Reduce en -4 el ataque por 3 turnos a todos los enemigos.',
@@ -2042,7 +2054,7 @@ const pacifierSpells = await db.spells.insertMany([
         cost: [{ amount: 4, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
-        subclass: 'Pacifier',
+        subclass: pacifierSubclassId,
         useType: 'active',
         category: 'debuff',
         description: 'Reduce en -3 a la defensa y -2 a la resistencia mágica a todos los enemigos.',
@@ -2073,7 +2085,7 @@ const pacifierSpells = await db.spells.insertMany([
                 etiquette: 'debilitation_defense_total'
             }
         ],
-        toList: 'pacifier',
+        toList: 'additional',
         state: 'ACTIVE'
     }
 ])
@@ -2089,24 +2101,7 @@ await db.class.updateOne(
                 level: 1,
                 proficency: 2,
                 spells: [spells[0]],
-                features: [
-                    {
-                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c01'),
-                        name: 'Afinidad Elemental',
-                        description: 'Seleccionas una afinidad elemental al crear tu personaje. Esta afinidad determinará el elemento de tus ataques físicos y tu resistencia elemental.',
-                        useType: 'passive',
-                        state: 'ACTIVE',
-                        effects: []
-                    },
-                    {
-                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c02'),
-                        name: 'Arma Predilecta',
-                        description: 'Seleccionas un tipo de arma al crear tu personaje. Tendrás competencia con este tipo de arma y podrás usar características especiales con ella.',
-                        useType: 'passive',
-                        state: 'ACTIVE',
-                        effects: []
-                    }
-                ],
+                features: [],
                 APGained: 5,
                 knownSpells: 4,
             },
@@ -2120,13 +2115,13 @@ await db.class.updateOne(
                         name: 'Orden de Mando',
                         description: 'Cuando impactas un ataque con arma, puedes lanzar un hechizo como parte de dicha acción que no te tenga como objetivo. No puedes lanzar hechizos de daño directo con este efecto.',
                         useType: 'passive',
-                        trigger: 'at_weapon_attack',
+                        trigger: 'at_attack',
                         effects: [
                             {
                                 type: 'cast_spell',
                                 target: 'ally',
-                                trigger: 'at_weapon_attack',
-                                condition: 'not_self_target_and_not_damage_spell',
+                                trigger: 'at_attack',
+                                condition: 'attack is with weapon and spell is not damage spell and spell target is not self',
                                 description: 'Lanza un hechizo como parte del ataque con arma'
                             }
                         ],
@@ -2174,34 +2169,17 @@ await db.class.updateOne(
                 level: 4,
                 proficency: 2,
                 spells: [spells[5], spells[6]],
-                features: [
-                    {
-                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c21'),
-                        name: 'Elección de Subclase',
-                        description: 'Seleccionas una especialización: Leader, Convoy o Pacifier.',
-                        useType: 'passive',
-                        state: 'ACTIVE',
-                        effects: []
-                    }
-                ],
+                features: [],
                 APGained: 1,
                 knownSpells: 6,
-                subclassSelection: true
+                selectSubclass: true,
+                gainSubclassFeature: true
             },
             {
                 level: 5,
                 proficency: 3,
                 spells: [spells[7], spells[8]],
-                features: [
-                    {
-                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c22'),
-                        name: 'Mejora de Característica',
-                        description: 'Puedes aumentar una característica en +2 o dos características en +1 cada una, o seleccionar un beneficio.',
-                        useType: 'passive',
-                        state: 'ACTIVE',
-                        effects: []
-                    }
-                ],
+                gainStatIncrease: true,
                 APGained: 2,
                 knownSpells: 6,
             },
@@ -2213,10 +2191,10 @@ await db.class.updateOne(
                     {
                         featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c05'),
                         name: 'Resguardo Defensivo',
-                        description: 'Obtienes una reacción adicional. Como reacción cuando un ataque se dirija a un aliado, aumentas su Defensa y Resistencia Mágica hasta el final del turno actual en una cantidad igual a tu competencia. Puedes usar este rasgo 3 veces.',
+                        description: 'Obtienes una reacción adicional. Como reacción cuando un ataque se dirija a un aliado, aumentas su Defensa y Resistencia Mágica hasta el final del turno actual en una cantidad igual a tu competencia. Puedes usar este rasgo 3 veces por combate.',
                         useType: 'active',
                         action: 'reaction',
-                        trigger: 'at_ally_receive_attack',
+                        trigger: 'before_ally_receive_attack',
                         uses: 3,
                         triggerForRecover: 'at_combat_end',
                         modifiers: [
@@ -2233,7 +2211,7 @@ await db.class.updateOne(
                                 value: '{proficiency}',
                                 description: 'Aumenta la defensa del aliado',
                                 target: 'ally',
-                                trigger: 'at_ally_receive_attack',
+                                trigger: 'before_ally_receive_attack',
                                 duration: {
                                     type: 'temporal',
                                     duration: 1,
@@ -2246,7 +2224,7 @@ await db.class.updateOne(
                                 value: '{proficiency}',
                                 description: 'Aumenta la resistencia mágica del aliado',
                                 target: 'ally',
-                                trigger: 'at_ally_receive_attack',
+                                trigger: 'before_ally_receive_attack',
                                 duration: {
                                     type: 'temporal',
                                     duration: 1,
@@ -2268,21 +2246,19 @@ await db.class.updateOne(
                 spells: [spells[11]],
                 features: [
                     {
-                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c06'),
-                        name: 'Multiataque I',
-                        description: 'Puedes realizar un ataque adicional cuando realizas la acción de Atacar en tu turno.',
+                        featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b4a'),
+                        name: 'Multi Ataque I',
+                        description: 'Puedes realizar un ataque adicional con arma como parte de un ataque con arma o hechizo.',
                         useType: 'passive',
-                        modifiers: [
+                        action: 'free_action',
+                        effects: [
                             {
-                                type: 'extra_action',
-                                value: 1,
-                                description: 'Ataque adicional',
-                                addTo: 'multiattack',
-                                target: 'self',
-                                permanent: true
+                                type: 'attack_with_weapon',
+                                target: 'enemy',
+                                description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                                trigger: 'at_attack'
                             }
                         ],
-                        effects: [],
                         state: 'ACTIVE'
                     }
                 ],
@@ -2290,27 +2266,20 @@ await db.class.updateOne(
                 knownSpells: 6,
             },
             {
+                // Te quedaste aca
                 level: 8,
                 proficency: 3,
                 spells: [spells[12], spells[13]],
                 features: [],
                 APGained: 1,
                 knownSpells: 7,
+                gainSubclassFeature: true
             },
             {
                 level: 9,
                 proficency: 4,
                 spells: [spells[14], spells[15], spells[16]],
-                features: [
-                    {
-                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c23'),
-                        name: 'Mejora de Característica',
-                        description: 'Puedes aumentar una característica en +2 o dos características en +1 cada una, o seleccionar un beneficio.',
-                        useType: 'passive',
-                        state: 'ACTIVE',
-                        effects: []
-                    }
-                ],
+                gainStatIncrease: true,
                 APGained: 2,
                 knownSpells: 7,
             },
@@ -2548,7 +2517,7 @@ await db.class.updateOne(
                                 useType: 'active',
                                 modifiers: [
                                     {
-                                        type: 'magic_resistance',
+                                        type: 'magic_defense',
                                         value: 3,
                                         description: 'Aumenta la resistencia a salvaciones mágicas',
                                         target: 'ally',
