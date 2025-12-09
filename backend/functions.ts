@@ -62,6 +62,7 @@ export const requestFile = async (req: Request, res: Response) => {
 }
 
 const stringIsNumber = (value: string | number) => isNaN(Number(value)) === false;
+
 export function enumToArray(enumme: any) {
     return Object.keys(enumme)
         .filter(stringIsNumber)

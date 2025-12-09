@@ -2,7 +2,7 @@ import { Router } from "express";
 import { validateToken } from "../jwt";
 import * as Profile from "../controllers/profile.controller"
 import * as Campaign from "../controllers/campaign.controller"
-import * as Character from "../controllers/character.controller"
+import * as Character from "../controllers/character"
 import * as CharacterFeatures from "../controllers/characterFeatures.controller"
 import * as CharacterSpells from "../controllers/characterSpells.controller"
 import * as CharacterInventory from "../controllers/characterInventory.controller"
