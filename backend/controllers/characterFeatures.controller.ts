@@ -7,68 +7,144 @@ import CustomFeature from '../models/PersonaD20/CustomFeature';
 
 // changeFeatureStatus
 export const changeFeatureStatus = async (req: Request, res: Response) => {
-    const { characterId, featureId } = req.params;
-    const { status } = req.body;
-    const characterObjectId = new Types.ObjectId(characterId);
-    if (!status) return res.status(400).json({message: 'Estado es requerido'});
-    if (status !== 'active' && status !== 'inactive') return res.status(400).json({message: 'Estado inválido'});
-    const character = await Character.findById(characterObjectId);
-    if (!character) return res.status(404).json({message: 'Personaje no encontrado'});
-    const characterStatus = await CharacterStatus.findOne({characterId: characterObjectId});
-    if (!characterStatus) return res.status(404).json({message: 'Estado del personaje no encontrado'});
-    const feature = characterStatus.inactiveFeatures?.find(feature => feature == new ObjectId(featureId));
-    switch (status) {
-        case 'active':
-            if (!characterStatus.inactiveFeatures) return res.status(400).json({message: 'No hay rasgos inactivos'});
-            if (!feature) return res.status(404).json({message: 'Rasgo no encontrado'});
-            characterStatus.inactiveFeatures.filter((value) => value != new ObjectId(featureId));
+    try {
+        const { characterId, featureId } = req.params;
+        const { status } = req.body;
+
+        if (!status) {
+            return res.status(400).json({ errMsg: 'Estado es requerido' });
+        }
+
+        if (status !== 'active' && status !== 'inactive') {
+            return res.status(400).json({ errMsg: 'Estado inválido' });
+        }
+
+        const characterObjectId = new Types.ObjectId(characterId);
+        const featureObjectId = new ObjectId(featureId);
+
+        const character = await Character.findById(characterObjectId);
+        if (!character) {
+            return res.status(404).json({ errMsg: 'Personaje no encontrado' });
+        }
+
+        const characterStatus = await CharacterStatus.findOne({ characterId: characterObjectId });
+        if (!characterStatus) {
+            return res.status(404).json({ errMsg: 'Estado del personaje no encontrado' });
+        }
+
+        const featureIndex = characterStatus.inactiveFeatures?.findIndex(
+            f => f.toString() === featureObjectId.toString()
+        );
+
+        if (status === 'active') {
+            if (!characterStatus.inactiveFeatures || characterStatus.inactiveFeatures.length === 0) {
+                return res.status(400).json({ errMsg: 'No hay rasgos inactivos' });
+            }
+
+            if (featureIndex === -1 || featureIndex === undefined) {
+                return res.status(404).json({ errMsg: 'Rasgo no encontrado en inactivos' });
+            }
+
+            // Remover de inactivos
+            characterStatus.inactiveFeatures = characterStatus.inactiveFeatures.filter(
+                f => f.toString() !== featureObjectId.toString()
+            );
             await characterStatus.save();
-            break;
-        case 'inactive':
-            if (feature) return res.status(404).json({message: 'El rasgo ya está inactivo'});
-            if (!characterStatus.inactiveFeatures) characterStatus.inactiveFeatures = [];
-            characterStatus.inactiveFeatures.push(new ObjectId(featureId));
+        } else {
+            // status === 'inactive'
+            if (featureIndex !== -1 && featureIndex !== undefined) {
+                return res.status(400).json({ errMsg: 'El rasgo ya está inactivo' });
+            }
+
+            if (!characterStatus.inactiveFeatures) {
+                characterStatus.inactiveFeatures = [];
+            }
+
+            characterStatus.inactiveFeatures.push(featureObjectId);
             await characterStatus.save();
-            break;
+        }
+
+        return res.status(200).json({ message: 'Estado del rasgo actualizado' });
+    } catch (e) {
+        return res.status(500).json({ errMsg: 'Error al cambiar estado del rasgo', error: e });
     }
-    return res.status(200).json({ success: true });
 }
 
 // addFeature
 export const addFeature = async (req: Request, res: Response) => {
-    const { characterId } = req.params;
-    const { name, description, useType } = req.body;
-    const characterObjectId = new Types.ObjectId(characterId);
-    const character = await Character.findById(characterObjectId);
-    if (!character) return res.status(404).json({message: 'Personaje no encontrado'});
-    if (!name || !description || !useType) return res.status(400).json({message: 'Nombre, descripción y tipo de uso son requeridos'});
-    const newFeature = new CustomFeature({
-        character: characterObjectId,
-        featureId: new Types.ObjectId().toString(),
-        name,
-        description,
-        useType,
-        state: 'ACTIVE'
-    })
-    await newFeature.save();
-    return res.status(200).json({ success: true });
+    try {
+        const { characterId } = req.params;
+        const { name, description, useType } = req.body;
+
+        if (!name || !description || !useType) {
+            return res.status(400).json({ errMsg: 'Nombre, descripción y tipo de uso son requeridos' });
+        }
+
+        const characterObjectId = new Types.ObjectId(characterId);
+        const character = await Character.findById(characterObjectId);
+
+        if (!character) {
+            return res.status(404).json({ errMsg: 'Personaje no encontrado' });
+        }
+
+        const newFeature = new CustomFeature({
+            character: characterObjectId,
+            featureId: new Types.ObjectId().toString(),
+            name,
+            description,
+            useType,
+            state: 'ACTIVE'
+        });
+
+        const savedFeature = await newFeature.save();
+
+        return res.status(201).json({ 
+            message: 'Rasgo creado',
+            feature: savedFeature 
+        });
+    } catch (e) {
+        return res.status(500).json({ errMsg: 'Error al crear rasgo', error: e });
+    }
 }
 
 // editFeature
 export const editFeature = async (req: Request, res: Response) => {
-    const { characterId, featureId } = req.params;
-    const { name, description, useType, state } = req.body;
-    const characterObjectId = new Types.ObjectId(characterId);
-    const featureObjectId = new Types.ObjectId(featureId);
-    const character = await Character.findById(characterObjectId);
-    if (!character) return res.status(404).json({message: 'Personaje no encontrado'});
-    const feature = await CustomFeature.findOne({character: characterObjectId, featureId: featureObjectId});
-    if (!feature) return res.status(404).json({message: 'Rasgo no encontrado'});
-    if (!name || !description || !useType || !state) return res.status(400).json({message: 'Nombre, descripción, estado y tipo de uso son requeridos'});
-    feature.name = name;
-    feature.description = description;
-    feature.useType = useType;
-    feature.state = state;
-    await feature.save();
-    return res.status(200).json({ success: true });
+    try {
+        const { characterId, featureId } = req.params;
+        const { name, description, useType } = req.body;
+
+        if (!name || !description || !useType) {
+            return res.status(400).json({ errMsg: 'Nombre, descripción y tipo de uso son requeridos' });
+        }
+
+        const characterObjectId = new Types.ObjectId(characterId);
+        const featureObjectId = new Types.ObjectId(featureId);
+
+        const character = await Character.findById(characterObjectId);
+        if (!character) {
+            return res.status(404).json({ errMsg: 'Personaje no encontrado' });
+        }
+
+        const feature = await CustomFeature.findOne({ 
+            character: characterObjectId, 
+            featureId: featureObjectId 
+        });
+
+        if (!feature) {
+            return res.status(404).json({ errMsg: 'Rasgo no encontrado' });
+        }
+
+        feature.name = name;
+        feature.description = description;
+        feature.useType = useType;
+
+        const updatedFeature = await feature.save();
+
+        return res.status(200).json({ 
+            message: 'Rasgo actualizado',
+            feature: updatedFeature 
+        });
+    } catch (e) {
+        return res.status(500).json({ errMsg: 'Error al editar rasgo', error: e });
+    }
 }

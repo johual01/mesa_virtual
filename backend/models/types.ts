@@ -127,6 +127,8 @@ export enum triggerTypes {
     AT_APPLY_BUFF_EFFECT = 'at_apply_buff_effect', // Se activa al aplicar un efecto positivo
     AT_APPLY_NEGATIVE_EFFECT = 'at_apply_negative_effect', // Se activa al aplicar un efecto negativo o debilitante
     AT_DISPEL_EFFECT = 'at_dispel_effect', // Se activa al disipar un efecto
+    AT_SPELL_CAST_DURING_ATTACK = 'at_spell_cast_during_attack', // Se activa al lanzar un hechizo como parte de un ataque
+    AT_ENEMY_SPELL_CAST = 'at_enemy_spell_cast', // Se activa al lanzar un hechizo un enemigo
 }
 
 export enum costTypes {
@@ -218,7 +220,6 @@ export enum modifierTypes {
     // Other
     OFFENSIVE_ACTION = 'offensive_action',
     DEFEND = 'defend',
-    ATTACK_WITHOUT_WEAPON = 'attack_without_weapon',
     ALL_SAVING_THROWS = 'all_saving_throws',
     STADISTIC = 'stadistic',
 }
@@ -320,6 +321,8 @@ export interface IBaseEffect {
     canUseFeatures?: boolean,
     canTriggerEffects?: boolean,
     salvation?: personaStadistics,
+    cd?: number | string,
+    duration?: IDuration,
 }
 
 // Specific effect types
@@ -374,6 +377,9 @@ export type modificationEffectTypes =  'modification'
     | 'attack_with_weapon'
     | 'opportunity_attack'
     | 'modify_feature_uses'
+    | 'cast_spell'
+    | 'create_zone'
+    | 'counterspell'
 
 export interface IModificationEffect extends IBaseEffect {
     type: modificationEffectTypes,
@@ -387,6 +393,7 @@ export interface IModificationEffect extends IBaseEffect {
     spellCategory?: spellCategories | string,
     featureId?: Types.ObjectId,
     cost?: ICost[],
+    zoneType?: string,
 }
 
 // Union type for all effects

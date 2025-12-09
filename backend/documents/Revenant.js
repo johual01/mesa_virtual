@@ -2447,14 +2447,14 @@ const subclass = await db.subclass.insertMany([
                         condition: 'character unarmed and unarmored',
                         modifiers: [
                             {
-                                type: 'attack_without_weapon',
+                                type: 'attack',
                                 value: 'dexterity',
                                 description: 'Puedes usar destreza en lugar de coraje en los ataques y tiradas de daño.',
                                 target: 'self'
                             },
                             {
                                 type: 'attack',
-                                value: 'martial_dice',
+                                value: '{martial_dice}',
                                 description: 'Puedes utilizar el dado de artes marciales al realizar ataques sin armas como bonificador.',
                                 target: 'self'
                             },
