@@ -56,6 +56,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'damage',
                 description: 'Aumenta en +2 a todo daño infligido',
                 target: 'ally',
+                addTo: 'damageModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -82,6 +83,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'attack',
                 description: 'Aumenta en +2 el ataque',
                 target: 'ally',
+                addTo: 'attackModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -100,7 +102,7 @@ const listSpells = await db.spells.insertMany([
         class: characterClassId,
         useType: 'active',
         category: 'buff',
-        description: 'Aumenta en +2 la defensa y +1 la resistencia mágica por 3 turnos a ti o a un aliado.',
+        description: 'Aumenta en +2 a la defensa y +1 a la resistencia mágica por 3 turnos a ti o a un aliado.',
         concentration: false,
         modifiers: [
             {
@@ -108,6 +110,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'defense',
                 description: 'Aumenta en +2 la defensa',
                 target: 'ally',
+                addTo: 'defenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -120,6 +123,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'magic_defense',
                 description: 'Aumenta en +1 la resistencia mágica',
                 target: 'ally',
+                addTo: 'magicDefenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -564,19 +568,20 @@ const listSpells = await db.spells.insertMany([
     // Nivel 11 - Potenciaciones Complejas
     {
         name: 'Potenciación Compleja (F)',
-        cost: [{ amount: 2, resource: 'AP' }],
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
         useType: 'active',
         category: 'buff',
-        description: 'Aumenta en +5 a todo daño infligido por 3 turnos al usuario.',
+        description: 'Aumenta en +5 a todo daño infligido por 3 turnos a ti o a un aliado.',
         concentration: false,
         modifiers: [
             {
                 value: 5,
                 type: 'damage',
                 description: 'Aumenta en +5 a todo daño infligido',
-                target: 'self',
+                target: 'ally',
+                addTo: 'damageModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -590,19 +595,20 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Compleja (P)',
-        cost: [{ amount: 2, resource: 'AP' }],
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
         useType: 'active',
         category: 'buff',
-        description: 'Aumenta en +3 el ataque por 3 turnos al usuario.',
+        description: 'Aumenta en +3 el ataque por 3 turnos a ti o a un aliado.',
         concentration: false,
         modifiers: [
             {
                 value: 3,
                 type: 'attack',
                 description: 'Aumenta en +3 el ataque',
-                target: 'self',
+                target: 'ally',
+                addTo: 'attackModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -616,7 +622,7 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Compleja (D)',
-        cost: [{ amount: 2, resource: 'AP' }],
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
         useType: 'active',
@@ -629,6 +635,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'defense',
                 description: 'Aumenta en +3 la defensa',
                 target: 'ally',
+                addTo: 'defenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -641,6 +648,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'magic_defense',
                 description: 'Aumenta en +2 la resistencia mágica',
                 target: 'ally',
+                addTo: 'magicDefenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -768,19 +776,20 @@ const listSpells = await db.spells.insertMany([
     // Nivel 15
     {
         name: 'Potenciación Completa',
-        cost: [{ amount: 7, resource: 'AP' }],
+        cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
         useType: 'active',
         category: 'buff',
-        description: 'Aumenta +3 a tu ataque, +5 al daño infligido, +3 a la Defensa y +2 a la Resistencia Mágica por 3 turnos al usuario.',
+        description: 'Aumenta +3 a tu ataque, +5 al daño infligido, +3 a la Defensa y +2 a la Resistencia Mágica por 3 turnos a ti o a un aliado.',
         concentration: false,
         modifiers: [
             {
                 value: 3,
                 type: 'attack',
                 description: 'Aumenta en +3 el ataque',
-                target: 'self',
+                target: 'ally',
+                addTo: 'attackModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -792,7 +801,8 @@ const listSpells = await db.spells.insertMany([
                 value: 5,
                 type: 'damage',
                 description: 'Aumenta en +5 el daño infligido',
-                target: 'self',
+                target: 'ally',
+                addTo: 'damageModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -804,7 +814,8 @@ const listSpells = await db.spells.insertMany([
                 value: 3,
                 type: 'defense',
                 description: 'Aumenta en +3 la Defensa',
-                target: 'self',
+                target: 'ally',
+                addTo: 'defenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -816,7 +827,8 @@ const listSpells = await db.spells.insertMany([
                 value: 2,
                 type: 'magic_defense',
                 description: 'Aumenta en +2 la Resistencia Mágica',
-                target: 'self',
+                target: 'ally',
+                addTo: 'magicDefenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,

@@ -31,7 +31,7 @@ db.spell.insertMany([
     {
         spellId: new ObjectId(),
         name: 'Potenciación Básica (F)',
-        description: 'Aumenta en +2 a todo daño infligido por 3 turnos al usuario.',
+        description: 'Aumenta en +2 a todo daño infligido por 3 turnos a ti o a un aliado.',
         cost: 2,
         damage: null,
         levelRequirement: 2,
@@ -39,12 +39,19 @@ db.spell.insertMany([
         class: characterClassId,
         concentration: false,
         duration: 3,
-        effects: [
+        modifiers: [
             {
-                type: 'damage_buff',
                 value: 2,
-                target: 'self',
-                duration: 3
+                type: 'damage',
+                description: 'Aumenta en +2 a todo daño infligido',
+                target: 'ally',
+                addTo: 'damageModifiers',
+                duration: {
+                    type: 'temporal',
+                    duration: 3,
+                    medition: 'rounds'
+                },
+                etiquette: 'empowerment_damage'
             }
         ],
         castingAttribute: 'courage',
@@ -53,7 +60,7 @@ db.spell.insertMany([
     {
         spellId: new ObjectId(),
         name: 'Potenciación Básica (P)',
-        description: 'Aumenta en +2 el ataque por 3 turnos al usuario.',
+        description: 'Aumenta en +2 el ataque por 3 turnos a ti o a un aliado.',
         cost: 2,
         damage: null,
         levelRequirement: 2,
@@ -61,12 +68,19 @@ db.spell.insertMany([
         class: characterClassId,
         concentration: false,
         duration: 3,
-        effects: [
+        modifiers: [
             {
-                type: 'attack_buff',
                 value: 2,
-                target: 'self',
-                duration: 3
+                type: 'attack',
+                description: 'Aumenta en +2 el ataque',
+                target: 'ally',
+                addTo: 'attackModifiers',
+                duration: {
+                    type: 'temporal',
+                    duration: 3,
+                    medition: 'rounds'
+                },
+                etiquette: 'empowerment_attack'
             }
         ],
         castingAttribute: 'courage',
@@ -327,20 +341,27 @@ db.spell.insertMany([
     {
         spellId: new ObjectId(),
         name: 'Potenciación Compleja (F)',
-        description: 'Aumenta en +5 a todo daño infligido por 3 turnos al usuario.',
-        cost: 2,
+        description: 'Aumenta en +5 a todo daño infligido por 3 turnos a ti o a un aliado.',
+        cost: 3,
         damage: null,
         levelRequirement: 11,
         targetType: 'self',
         class: characterClassId,
         concentration: false,
         duration: 3,
-        effects: [
+        modifiers: [
             {
-                type: 'damage_buff',
                 value: 5,
-                target: 'self',
-                duration: 3
+                type: 'damage',
+                description: 'Aumenta en +5 a todo daño infligido',
+                target: 'ally',
+                addTo: 'damageModifiers',
+                duration: {
+                    type: 'temporal',
+                    duration: 3,
+                    medition: 'rounds'
+                },
+                etiquette: 'empowerment_damage'
             }
         ],
         castingAttribute: 'courage',
@@ -349,20 +370,27 @@ db.spell.insertMany([
     {
         spellId: new ObjectId(),
         name: 'Potenciación Compleja (P)',
-        description: 'Aumenta en +3 el ataque por 3 turnos al usuario.',
-        cost: 2,
+        description: 'Aumenta en +3 el ataque por 3 turnos a ti o a un aliado.',
+        cost: 3,
         damage: null,
         levelRequirement: 11,
         targetType: 'self',
         class: characterClassId,
         concentration: false,
         duration: 3,
-        effects: [
+        modifiers: [
             {
-                type: 'attack_buff',
                 value: 3,
-                target: 'self',
-                duration: 3
+                type: 'attack',
+                description: 'Aumenta en +3 el ataque',
+                target: 'ally',
+                addTo: 'attackModifiers',
+                duration: {
+                    type: 'temporal',
+                    duration: 3,
+                    medition: 'rounds'
+                },
+                etiquette: 'empowerment_attack'
             }
         ],
         castingAttribute: 'courage',
@@ -455,38 +483,66 @@ db.spell.insertMany([
     {
         spellId: new ObjectId(),
         name: 'Potenciación Completa',
-        description: 'Aumenta +3 a tu ataque, +5 al daño infligido, +3 a la Defensa y +2 a la Resistencia Mágica por 3 turnos al usuario.',
-        cost: 7,
+        description: 'Aumenta +3 a tu ataque, +5 al daño infligido, +3 a la Defensa y +2 a la Resistencia Mágica por 3 turnos a ti o a un aliado.',
+        cost: 6,
         damage: null,
         levelRequirement: 15,
         targetType: 'self',
         class: characterClassId,
         concentration: false,
         duration: 3,
-        effects: [
+        modifiers: [
             {
-                type: 'attack_buff',
                 value: 3,
-                target: 'self',
-                duration: 3
+                type: 'attack',
+                description: 'Aumenta +3 a tu ataque',
+                target: 'ally',
+                addTo: 'attackModifiers',
+                duration: {
+                    type: 'temporal',
+                    duration: 3,
+                    medition: 'rounds'
+                },
+                etiquette: 'empowerment_complete'
             },
             {
-                type: 'damage_buff',
                 value: 5,
-                target: 'self',
-                duration: 3
+                type: 'damage',
+                description: 'Aumenta +5 al daño infligido',
+                target: 'ally',
+                addTo: 'damageModifiers',
+                duration: {
+                    type: 'temporal',
+                    duration: 3,
+                    medition: 'rounds'
+                },
+                etiquette: 'empowerment_complete'
             },
             {
-                type: 'defense_buff',
                 value: 3,
-                target: 'self',
-                duration: 3
+                type: 'defense',
+                description: 'Aumenta +3 a la Defensa',
+                target: 'ally',
+                addTo: 'defenseModifiers',
+                duration: {
+                    type: 'temporal',
+                    duration: 3,
+                    medition: 'rounds'
+                },
+                etiquette: 'empowerment_complete'
             },
             {
-                type: 'magic_resistance_buff',
                 value: 2,
-                target: 'self',
-                duration: 3
+                type: 'magic_defense',
+                description: 'Aumenta +2 a la Resistencia Mágica',
+                target: 'ally',
+                addTo: 'magicDefenseModifiers',
+                duration: {
+                    type: 'temporal',
+                    duration: 3,
+                    medition: 'rounds'
+                },
+                etiquette: 'empowerment_complete'
             }
         ],
         castingAttribute: 'courage',

@@ -101,6 +101,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'damage',
                 description: 'Aumenta en +2 a todo daño infligido',
                 target: 'ally',
+                addTo: 'damageModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -128,6 +129,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'attack',
                 description: 'Aumenta en +2 el ataque',
                 target: 'ally',
+                addTo: 'attackModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -155,6 +157,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'defense',
                 description: 'Aumenta en +2 la defensa',
                 target: 'ally',
+                addTo: 'defenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -167,6 +170,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'magic_defense',
                 description: 'Aumenta en +1 la resistencia mágica',
                 target: 'ally',
+                addTo: 'magicDefenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -727,7 +731,7 @@ const listSpells = await db.spells.insertMany([
     // Nivel 10
     {
         name: 'Potenciación Compleja (F)',
-        cost: [{ amount: 2, resource: 'AP' }],
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
         useType: 'active',
@@ -741,12 +745,13 @@ const listSpells = await db.spells.insertMany([
                 type: 'damage',
                 description: 'Aumenta en +5 a todo daño infligido',
                 target: 'ally',
+                addTo: 'damageModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_damage_complex'
+                etiquette: 'empowerment_damage'
             }
         ],
         toList: 'list',
@@ -754,7 +759,7 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Compleja (P)',
-        cost: [{ amount: 2, resource: 'AP' }],
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
         useType: 'active',
@@ -768,12 +773,13 @@ const listSpells = await db.spells.insertMany([
                 type: 'attack',
                 description: 'Aumenta en +3 el ataque',
                 target: 'ally',
+                addTo: 'attackModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_attack_complex'
+                etiquette: 'empowerment_attack'
             }
         ],
         toList: 'list',
@@ -781,7 +787,7 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Compleja (D)',
-        cost: [{ amount: 2, resource: 'AP' }],
+        cost: [{ amount: 3, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
         useType: 'active',
@@ -795,24 +801,26 @@ const listSpells = await db.spells.insertMany([
                 type: 'defense',
                 description: 'Aumenta en +3 la defensa',
                 target: 'ally',
+                addTo: 'defenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_defense_complex'
+                etiquette: 'empowerment_defense'
             },
             {
                 value: 2,
                 type: 'magic_defense',
                 description: 'Aumenta en +2 la resistencia mágica',
                 target: 'ally',
+                addTo: 'magicDefenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_defense_complex'
+                etiquette: 'empowerment_defense'
             }
         ],
         toList: 'list',
@@ -1085,7 +1093,7 @@ const listSpells = await db.spells.insertMany([
     },
     {
         name: 'Potenciación Completa',
-        cost: [{ amount: 8, resource: 'AP' }],
+        cost: [{ amount: 6, resource: 'AP' }],
         system: 'PERSONAD20',
         class: characterClassId,
         useType: 'active',
@@ -1099,6 +1107,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'attack',
                 description: 'Aumenta en +3 el ataque',
                 target: 'ally',
+                addTo: 'attackModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -1111,6 +1120,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'damage',
                 description: 'Aumenta en +5 el daño',
                 target: 'ally',
+                addTo: 'damageModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -1123,6 +1133,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'defense',
                 description: 'Aumenta en +3 la defensa',
                 target: 'ally',
+                addTo: 'defenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
@@ -1135,6 +1146,7 @@ const listSpells = await db.spells.insertMany([
                 type: 'magic_defense',
                 description: 'Aumenta en +2 la resistencia mágica',
                 target: 'ally',
+                addTo: 'magicDefenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,

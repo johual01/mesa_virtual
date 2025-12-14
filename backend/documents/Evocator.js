@@ -36,20 +36,22 @@ db.spells.insertMany([
     {
         _id: new ObjectId(),
         name: 'Potenciación Básica (F)',
+        description: 'Aumenta en +2 a todo daño infligido por 3 turnos a ti o a un aliado.',
         level: 2,
         cost: [{ stat: 'AP', value: 2 }],
         modifiers: [
             {
                 value: 2,
-                type: 'buff',
-                description: 'Aumenta todo daño infligido',
-                target: 'self_or_ally',
+                type: 'damage',
+                description: 'Aumenta en +2 a todo daño infligido',
+                target: 'ally',
+                addTo: 'damageModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
-                    medition: 'turns'
+                    medition: 'rounds'
                 },
-                etiquette: 'empowerment_basic'
+                etiquette: 'empowerment_damage'
             }
         ],
         concentration: false,
@@ -61,20 +63,22 @@ db.spells.insertMany([
     {
         _id: new ObjectId(),
         name: 'Potenciación Básica (P)',
+        description: 'Aumenta en +2 el ataque por 3 turnos a ti o a un aliado.',
         level: 2,
         cost: [{ stat: 'AP', value: 2 }],
         modifiers: [
             {
                 value: 2,
-                type: 'attack_buff',
-                description: 'Aumenta el ataque',
-                target: 'self_or_ally',
+                type: 'attack',
+                description: 'Aumenta en +2 el ataque',
+                target: 'ally',
+                addTo: 'attackModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
-                    medition: 'turns'
+                    medition: 'rounds'
                 },
-                etiquette: 'empowerment_basic'
+                etiquette: 'empowerment_attack'
             }
         ],
         concentration: false,
@@ -86,32 +90,35 @@ db.spells.insertMany([
     {
         _id: new ObjectId(),
         name: 'Potenciación Básica (D)',
+        description: 'Aumenta en +2 a la defensa y +1 a la resistencia mágica por 3 turnos a ti o a un aliado.',
         level: 2,
         cost: [{ stat: 'AP', value: 2 }],
         modifiers: [
             {
                 value: 2,
-                type: 'defense_buff',
-                description: 'Aumenta defensa',
-                target: 'self_or_ally',
+                type: 'defense',
+                description: 'Aumenta en +2 la defensa',
+                target: 'ally',
+                addTo: 'defenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
-                    medition: 'turns'
+                    medition: 'rounds'
                 },
-                etiquette: 'empowerment_basic'
+                etiquette: 'empowerment_defense'
             },
             {
                 value: 1,
-                type: 'magic_resistance_buff',
-                description: 'Aumenta resistencia mágica',
-                target: 'self_or_ally',
+                type: 'magic_defense',
+                description: 'Aumenta en +1 la resistencia mágica',
+                target: 'ally',
+                addTo: 'magicDefenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
-                    medition: 'turns'
+                    medition: 'rounds'
                 },
-                etiquette: 'empowerment_basic'
+                etiquette: 'empowerment_defense'
             }
         ],
         concentration: false,
@@ -600,10 +607,10 @@ db.spells.insertMany([
         _id: new ObjectId(),
         name: 'Potenciación Compleja (F)',
         level: 10,
-        cost: [{ stat: 'AP', value: 2 }],
+        cost: [{ stat: 'AP', value: 3 }],
         modifiers: [
             {
-                value: 3,
+                value: 5,
                 type: 'buff',
                 description: 'Aumenta todo daño infligido',
                 target: 'self_or_ally',
@@ -625,10 +632,10 @@ db.spells.insertMany([
         _id: new ObjectId(),
         name: 'Potenciación Compleja (P)',
         level: 10,
-        cost: [{ stat: 'AP', value: 2 }],
+        cost: [{ stat: 'AP', value: 3 }],
         modifiers: [
             {
-                value: 4,
+                value: 3,
                 type: 'attack_buff',
                 description: 'Aumenta el ataque',
                 target: 'self_or_ally',
@@ -650,7 +657,7 @@ db.spells.insertMany([
         _id: new ObjectId(),
         name: 'Potenciación Compleja (D)',
         level: 10,
-        cost: [{ stat: 'AP', value: 2 }],
+        cost: [{ stat: 'AP', value: 3 }],
         modifiers: [
             {
                 value: 3,
@@ -928,54 +935,59 @@ db.spells.insertMany([
     {
         _id: new ObjectId(),
         name: 'Potenciación Completa',
+        description: 'Aumenta +3 a tu ataque, +5 al daño infligido, +3 a la Defensa y +2 a la Resistencia Mágica por 3 turnos a ti o a un aliado.',
         level: 14,
-        cost: [{ stat: 'AP', value: 8 }],
+        cost: [{ stat: 'AP', value: 6 }],
         modifiers: [
             {
                 value: 3,
-                type: 'attack_buff',
+                type: 'attack',
                 description: 'Aumenta ataque',
-                target: 'self_or_ally',
+                target: 'ally',
+                addTo: 'attackModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
-                    medition: 'turns'
+                    medition: 'rounds'
                 },
                 etiquette: 'empowerment_complete'
             },
             {
                 value: 5,
-                type: 'damage_buff',
+                type: 'damage',
                 description: 'Aumenta daño infligido',
-                target: 'self_or_ally',
+                target: 'ally',
+                addTo: 'damageModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
-                    medition: 'turns'
+                    medition: 'rounds'
                 },
                 etiquette: 'empowerment_complete'
             },
             {
                 value: 3,
-                type: 'defense_buff',
+                type: 'defense',
                 description: 'Aumenta defensa',
-                target: 'self_or_ally',
+                target: 'ally',
+                addTo: 'defenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
-                    medition: 'turns'
+                    medition: 'rounds'
                 },
                 etiquette: 'empowerment_complete'
             },
             {
                 value: 2,
-                type: 'magic_resistance_buff',
+                type: 'magic_defense',
                 description: 'Aumenta resistencia mágica',
-                target: 'self_or_ally',
+                target: 'ally',
+                addTo: 'magicDefenseModifiers',
                 duration: {
                     type: 'temporal',
                     duration: 3,
-                    medition: 'turns'
+                    medition: 'rounds'
                 },
                 etiquette: 'empowerment_complete'
             }
