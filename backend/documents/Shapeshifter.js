@@ -535,7 +535,7 @@ db.spell.insertMany([
     {
         spellId: new ObjectId(),
         name: 'Desplazamiento Acelerado',
-        description: 'En un destello, te teletransportas una cantidad de casillas igual a tu nivel a un lugar sin ocupar que puedas ver.',
+        description: 'En un destello, te teletransportas hasta 6 casillas a un lugar sin ocupar que puedas ver.',
         cost: 5,
         damage: null,
         levelRequirement: 18,
@@ -545,7 +545,7 @@ db.spell.insertMany([
         effects: [
             {
                 type: 'teleport',
-                range: '{level}',
+                range: 6,
                 target: 'self',
                 condition: 'unoccupied_visible_space'
             }

@@ -965,7 +965,7 @@ db.spell.insertMany([
     },
     {
         spellId: new ObjectId(),
-        name: 'Explosión Mágica',
+        name: 'Hechizo Potenciador',
         description: 'Tu siguiente hechizo de daño causará dos dados del daño a lo largo de 3 turnos de forma adicional. Acción adicional.',
         cost: 2,
         damage: null,

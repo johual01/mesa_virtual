@@ -547,7 +547,7 @@ db.spells.insertMany([
     // Nivel 9
     {
         _id: new ObjectId(),
-        name: 'Hechizo de Reducción',
+        name: 'Hechizo de Debilitación',
         level: 9,
         cost: [{ stat: 'AP', value: 3 }],
         effects: [
@@ -1189,7 +1189,7 @@ db.spells.insertMany([
         _id: new ObjectId(),
         name: 'Reflejo Arcano IV',
         level: 17,
-        cost: [{ stat: 'AP', value: 2 }],
+        cost: [{ stat: 'AP', value: 4 }],
         effects: [
             {
                 type: 'cast_spell',

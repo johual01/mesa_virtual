@@ -235,23 +235,23 @@ db.spell.insertMany([
         state: 'ACTIVE'
     },
     {
-        spellId: new ObjectId(),
         name: 'Escudo de Espíritu',
-        description: 'Te asignas tu nivel multiplicado por 3 en PV temporales.',
-        cost: 5,
-        damage: null,
-        levelRequirement: 5,
-        targetType: 'self',
+        cost: [{ amount: 5, resource: 'AP' }],
         class: characterClassId,
+        useType: 'active',
+        action: 'action',
+        category: 'buff',
+        description: 'Asignas tu nivel multiplicado por 3 en PV temporales a ti o a un aliado.',
         concentration: false,
         effects: [
             {
-                type: 'temp_hp',
-                value: '{level * 3}',
-                target: 'self'
+                type: 'heal',
+                healType: 'temp_hp',
+                heal: '{level * 3}',
+                target: 'ally'
             }
         ],
-        castingAttribute: 'courage_or_intelligence',
+        toList: 'list',
         state: 'ACTIVE'
     },
     // Nivel 6
