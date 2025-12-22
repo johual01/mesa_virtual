@@ -1,18 +1,16 @@
 const { ObjectId } = require('mongodb');
 
-// Primero creamos la clase para tener su ID
 const characterClass = await db.class.insertOne({
     name: 'Commander',
     description: 'Líder táctico que potencia a sus aliados y coordina el campo de batalla',
     HPDice: '1d8',
     salvations: ['dexterity', 'intelligence'],
     resourceType: 'Morale Points',
-    levels: [] // Lo llenaremos después
+    levels: []
 })
 
 const characterClassId = characterClass.insertedId;
 
-// Ahora creamos los hechizos con referencia a la clase
 const listSpells = await db.spells.insertMany([
     // Nivel 1
     {
@@ -2182,7 +2180,7 @@ await db.class.updateOne(
                 proficency: 2,
                 spells: [spells[5], spells[6]],
                 features: [],
-                APGained: 1,
+                APGained: 2,
                 knownSpells: 6,
                 selectSubclass: true,
                 gainSubclassFeature: true
@@ -2192,7 +2190,7 @@ await db.class.updateOne(
                 proficency: 3,
                 spells: [spells[7], spells[8]],
                 gainStatIncrease: true,
-                APGained: 2,
+                APGained: 1,
                 knownSpells: 6,
             },
             {
@@ -2278,12 +2276,11 @@ await db.class.updateOne(
                 knownSpells: 6,
             },
             {
-                // Te quedaste aca
                 level: 8,
                 proficency: 3,
                 spells: [spells[12], spells[13]],
                 features: [],
-                APGained: 1,
+                APGained: 2,
                 knownSpells: 7,
                 gainSubclassFeature: true
             },
@@ -2292,7 +2289,7 @@ await db.class.updateOne(
                 proficency: 4,
                 spells: [spells[14], spells[15], spells[16]],
                 gainStatIncrease: true,
-                APGained: 2,
+                APGained: 1,
                 knownSpells: 7,
             },
             {
@@ -2310,7 +2307,7 @@ await db.class.updateOne(
                                 type: 'range',
                                 value: 1,
                                 description: 'Aumenta el rango de armas cuerpo a cuerpo',
-                                addTo: 'meleeWeaponRange',
+                                addTo: 'meleeWeaponRangeModifiers',
                                 target: 'self',
                                 permanent: true
                             },
@@ -2318,17 +2315,39 @@ await db.class.updateOne(
                                 type: 'range',
                                 value: 3,
                                 description: 'Aumenta el rango de armas a distancia',
-                                addTo: 'rangedWeaponRange',
+                                addTo: 'rangedWeaponRangeModifiers',
                                 target: 'self',
                                 permanent: true
                             }
                         ],
                         effects: [
                             {
-                                type: 'exchange_damage_for_attack',
-                                target: 'self',
-                                trigger: 'at_weapon_attack',
-                                condition: 'reduce_one_damage_dice',
+                                type: 'attack_with_weapon',
+                                target: 'enemy',
+                                trigger: 'at_attack',
+                                condition: 'selection',
+                                etiquette: 'weapon_mastery_attack',
+                                modifiers: [
+                                    {
+                                        type: 'damage',
+                                        dice: -1,
+                                        description: 'Reduce un dado de daño',
+                                        target: 'self',
+                                        duration: {
+                                            type: 'temporal',
+                                            duration: 1,
+                                            medition: 'turns'
+                                        }
+                                    },
+                                    {
+                                        type: 'damage',
+                                        value: 0,
+                                        description: 'Ataque adicional sin bonificador',
+                                        target: 'self',
+                                        forEtiquette: 'weapon_mastery_attack',
+                                        setValue: true
+                                    }
+                                ],
                                 description: 'Reduce un dado de daño para obtener un ataque adicional sin bonificador'
                             }
                         ],
@@ -2336,7 +2355,6 @@ await db.class.updateOne(
                     }
                 ],
                 APGained: 1,
-                moralePoints: 8,
                 knownSpells: 7,
             },
             {
@@ -2354,12 +2372,6 @@ await db.class.updateOne(
                         resource: 'Morale Points',
                         effects: [
                             {
-                                type: 'activate_stimulus',
-                                target: 'ally',
-                                trigger: 'at_attack',
-                                description: 'Activa un Estímulo en un aliado'
-                            },
-                            {
                                 type: 'recover_resource',
                                 resource: 'Morale Points',
                                 value: 1,
@@ -2376,10 +2388,11 @@ await db.class.updateOne(
                                 useType: 'active',
                                 modifiers: [
                                     {
-                                        type: 'speed',
+                                        type: 'buff',
                                         value: 2,
                                         description: 'Aumenta la velocidad',
                                         target: 'ally',
+                                        addTo: 'speedModifiers',
                                         duration: {
                                             type: 'temporal',
                                             duration: 2,
@@ -2393,6 +2406,7 @@ await db.class.updateOne(
                                         type: 'change_initiative',
                                         target: 'ally',
                                         value: 1,
+                                        condition: 'selection',
                                         duration: {
                                             type: 'temporal',
                                             duration: 2,
@@ -2410,10 +2424,11 @@ await db.class.updateOne(
                                 useType: 'active',
                                 modifiers: [
                                     {
-                                        type: 'critical',
-                                        value: 5,
+                                        type: 'buff',
+                                        value: 0.05,
                                         description: 'Aumenta el ratio de crítico',
                                         target: 'ally',
+                                        addTo: 'criticalModifiers',
                                         duration: {
                                             type: 'temporal',
                                             duration: 2,
@@ -2480,9 +2495,11 @@ await db.class.updateOne(
                                 modifiers: [
                                     {
                                         type: 'resistance',
-                                        value: 'element',
+                                        value: '{elemental_affinity}',
                                         description: 'Resistencia a un elemento',
                                         target: 'ally',
+                                        condition: 'selection',
+                                        options: '{elemental_affinities}',
                                         duration: {
                                             type: 'temporal',
                                             duration: 2,
@@ -2493,8 +2510,9 @@ await db.class.updateOne(
                                 ],
                                 effects: [
                                     {
-                                        type: 'grant_shields',
+                                        type: 'buff',
                                         target: 'ally',
+                                        addTo: 'shieldModifiers',
                                         value: 2,
                                         duration: {
                                             type: 'temporal',
@@ -2514,9 +2532,10 @@ await db.class.updateOne(
                                 effects: [
                                     {
                                         type: 'heal',
-                                        healType: 'acc_temp_hp',
+                                        healType: 'accumulative_temp_hp',
                                         heal: '{proficiency * 4}',
                                         target: 'ally',
+                                        etiquette: 'stimulus_protection',
                                         description: 'Otorga PV temporales acumulables'
                                     }
                                 ],
@@ -2525,7 +2544,7 @@ await db.class.updateOne(
                             {
                                 featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c0e'),
                                 name: 'Estímulo: Debilitación',
-                                description: 'Le otorgas a un aliado un +3 a su Salvación Mágica y disminuyes la dificultad de las salvaciones que le sean requeridas en 3 por 2 turnos.',
+                                description: 'Le otorgas a un aliado un +3 a su Salvación Mágica y a todas sus tiradas de salvación por 2 turnos.',
                                 useType: 'active',
                                 modifiers: [
                                     {
@@ -2543,7 +2562,7 @@ await db.class.updateOne(
                                     {
                                         type: 'all_saving_throws',
                                         value: 3,
-                                        description: 'Reduce la dificultad de salvaciones',
+                                        description: 'Aumenta todas las tiradas de salvación',
                                         target: 'ally',
                                         duration: {
                                             type: 'temporal',
@@ -2566,7 +2585,7 @@ await db.class.updateOne(
                                         type: 'range',
                                         value: 1,
                                         description: 'Aumenta el rango de armas cuerpo a cuerpo',
-                                        addTo: 'meleeWeaponRange',
+                                        addTo: 'meleeWeaponRangeModifiers',
                                         target: 'ally',
                                         duration: {
                                             type: 'temporal',
@@ -2579,7 +2598,7 @@ await db.class.updateOne(
                                         type: 'range',
                                         value: 2,
                                         description: 'Aumenta el rango de armas a distancia',
-                                        addTo: 'rangedWeaponRange',
+                                        addTo: 'rangedWeaponRangeModifiers',
                                         target: 'ally',
                                         duration: {
                                             type: 'temporal',
@@ -2597,7 +2616,7 @@ await db.class.updateOne(
                     }
                 ],
                 APGained: 1,
-                moralePoints: 8,
+                resourcePool: 8,
                 knownSpells: 7,
             },
             {
@@ -2617,25 +2636,39 @@ await db.class.updateOne(
                                 resource: 'AP',
                                 value: '{proficiency}',
                                 target: 'self',
-                                trigger: ['at_all_out_attack', 'at_enemy_death'],
                                 description: 'Recupera AP'
                             },
                             {
-                                type: 'grant_buff',
+                                type: 'cast_spell',
+                                action: 'free',
+                                spellCategory: 'effect',
+                                reduction: 1,
+                                condition: 'basic_buff',
                                 target: 'all_allies',
-                                buffType: 'basic_empowerment',
-                                permanent: true,
-                                stackable: true,
-                                uncleansable: true,
-                                trigger: ['at_all_out_attack', 'at_enemy_death'],
+                                modifiers: [
+                                    {
+                                        type: 'change_property',
+                                        property: 'is_accumulative',
+                                        value: true,
+                                        description: 'Hace que el efecto sea acumulativo',
+                                        target: 'self'
+                                    },
+                                    {
+                                        type: 'change_property',
+                                        property: 'is_dispellable',
+                                        value: false,
+                                        description: 'Hace que el efecto no pueda ser disipado',
+                                        target: 'self'
+                                    }
+                                ],
                                 description: 'Otorga Potenciación Básica permanente y acumulable'
                             }
                         ],
                         state: 'ACTIVE'
                     }
                 ],
-                APGained: 1,
-                moralePoints: 8,
+                APGained: 2,
+                resourcePool: 8,
                 knownSpells: 9,
             },
             {
@@ -2644,26 +2677,18 @@ await db.class.updateOne(
                 spells: [spells[23], spells[24]],
                 features: [],
                 APGained: 1,
-                moralePoints: 8,
+                resourcePool: 8,
                 knownSpells: 9,
+                gainSubclassFeature: true
             },
             {
                 level: 14,
                 proficency: 5,
                 spells: [spells[25], spells[26]],
-                features: [
-                    {
-                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c24'),
-                        name: 'Mejora de Característica',
-                        description: 'Puedes aumentar una característica en +2 o dos características en +1 cada una, o seleccionar un beneficio.',
-                        useType: 'passive',
-                        state: 'ACTIVE',
-                        effects: []
-                    }
-                ],
-                APGained: 2,
-                moralePoints: 9,
+                APGained: 1,
+                resourcePool: 9,
                 knownSpells: 9,
+                gainStatIncrease: true
             },
             {
                 level: 15,
@@ -2673,24 +2698,22 @@ await db.class.updateOne(
                     {
                         featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c11'),
                         name: 'Multiataque II',
-                        description: 'Puedes realizar un ataque adicional más cuando realizas la acción de Atacar en tu turno.',
+                        description: 'Puedes realizar un ataque adicional más con arma como parte de un ataque con arma o hechizo.',
                         useType: 'passive',
-                        modifiers: [
+                        action: 'free_action',
+                        effects: [
                             {
-                                type: 'extra_action',
-                                value: 1,
-                                description: 'Segundo ataque adicional',
-                                addTo: 'multiattack',
-                                target: 'self',
-                                permanent: true
+                                type: 'attack_with_weapon',
+                                target: 'enemy',
+                                description: 'Realiza un ataque adicional con arma como parte de un ataque con arma o hechizo.',
+                                trigger: 'at_attack'
                             }
                         ],
-                        effects: [],
                         state: 'ACTIVE'
                     }
                 ],
                 APGained: 1,
-                moralePoints: 9,
+                resourcePool: 9,
                 knownSpells: 9,
             },
             {
@@ -2734,11 +2757,12 @@ await db.class.updateOne(
                         state: 'ACTIVE'
                     }
                 ],
-                APGained: 1,
-                moralePoints: 9,
+                APGained: 2,
+                resourcePool: 9,
                 knownSpells: 10,
             },
             {
+                // Te quedaste acá
                 level: 17,
                 proficency: 6,
                 spells: [spells[31], spells[32]],
@@ -2753,7 +2777,7 @@ await db.class.updateOne(
                                 type: 'additional_target',
                                 target: 'ally',
                                 value: 1,
-                                condition: 'when_using_stimulus',
+                                trigger: 'at_use_feature',
                                 description: 'Afecta a un aliado adicional al usar Estímulo'
                             },
                             {
@@ -2766,7 +2790,7 @@ await db.class.updateOne(
                     }
                 ],
                 APGained: 1,
-                moralePoints: 9,
+                resourcePool: 9,
                 knownSpells: 10,
             },
             {
@@ -2775,7 +2799,7 @@ await db.class.updateOne(
                 spells: [spells[33], spells[34]],
                 features: [],
                 APGained: 1,
-                moralePoints: 10,
+                resourcePool: 10,
                 knownSpells: 10,
             },
             {
@@ -2792,8 +2816,8 @@ await db.class.updateOne(
                         effects: []
                     }
                 ],
-                APGained: 2,
-                moralePoints: 10,
+                APGained: 1,
+                resourcePool: 10,
                 knownSpells: 10,
             },
             {
@@ -2887,8 +2911,8 @@ await db.class.updateOne(
                         state: 'ACTIVE'
                     }
                 ],
-                APGained: 1,
-                moralePoints: 12,
+                APGained: 2,
+                resourcePool: 12,
                 knownSpells: 14,
             }
         ]

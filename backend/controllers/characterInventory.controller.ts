@@ -1,7 +1,9 @@
 import {Request, Response} from 'express';
 import {Types} from 'mongoose';
-import CharacterInventory, { Item, equipmentType, IEquipmentCategory } from '../models/PersonaD20/CharacterEquipment';
+import CharacterInventory, { IWeaponProperties, Item, equipmentType } from '../models/PersonaD20/CharacterEquipment';
 import Character from '../models/Character';
+import { ICharacterPersonaDetail } from '../models/PersonaD20/CharacterDetail';
+import { rangeTypes } from '../models/types';
 
 // Función auxiliar para validar datos del item
 const validateItemData = (data: any): string | null => {
@@ -206,5 +208,44 @@ export const deleteItem = async (req: Request, res: Response) => {
         res.status(200).json({ message: 'Equipo eliminado correctamente' });
     } catch (e) {
         res.status(500).json({ errMsg: 'Error al eliminar equipo', error: e });
+    }
+}
+
+export const getEquippedItems = async (req: Request, res: Response) => {
+    try {
+        const characterId = req.params.characterId;
+        const character = await Character.findById(characterId);
+        if (!character) {
+            return res.status(404).json({ errMsg: 'El personaje no existe' });
+        }
+
+        const characterData = character.characterData as ICharacterPersonaDetail
+
+        const characterObjectId = new Types.ObjectId(characterId);
+        const equippedItems = await CharacterInventory.find({
+            character: characterObjectId,
+            equipped: true,
+            state: 'ACTIVE'
+        });
+
+        const rangeModifiers = characterData.combatData.range;
+
+        equippedItems.forEach((item) => {
+            if (item.type === equipmentType.WEAPON) {
+                item.properties = item.properties as IWeaponProperties;
+                if (item.properties.range.type === rangeTypes.RANGED) {
+                    item.properties.range.range = (item.properties.range.range || 0) + 
+                        rangeModifiers.weaponRangedRangeModifiers.reduce((total, mod) => total + (typeof mod.value === 'number' ? mod.value : 0), 0);
+                }
+                if (item.properties.range.type === rangeTypes.MELEE) {
+                    item.properties.range.type = rangeTypes.RANGED;
+                    item.properties.range.range = rangeModifiers.weaponMeleeRangeModifiers.reduce((total, mod) => total + (typeof mod.value === 'number' ? mod.value : 0), 0);
+                }
+            }
+        });
+
+        res.status(200).json({ equippedItems });
+    } catch (e) {
+        res.status(500).json({ errMsg: 'Error al obtener items equipados', error: e });
     }
 }

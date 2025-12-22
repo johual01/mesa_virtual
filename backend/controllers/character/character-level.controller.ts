@@ -294,6 +294,15 @@ export const levelUp = async (req: Request, res: Response) => {
                     case 'criticalDamageModifiers':
                         characterDetail.combatData.damage.criticalDamageModifiers.push(modifier);
                         break;
+                    case 'meleeWeaponRangeModifiers':
+                        characterDetail.combatData.range.weaponMeleeRangeModifiers.push(modifier);
+                        break;
+                    case 'rangedWeaponRangeModifiers':
+                        characterDetail.combatData.range.weaponRangedRangeModifiers.push(modifier);
+                        break;
+                    case 'shieldModifiers':
+                        characterDetail.combatData.defense.shieldModifiers.push(modifier);
+                        break;
                 }
                 characterDetail.markModified('combatData');
             }

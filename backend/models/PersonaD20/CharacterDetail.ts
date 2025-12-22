@@ -82,6 +82,7 @@ export interface ICharacterPersonaDetail {
         defense: {
             defenseModifiers: IModifier[], // Suma destreza
             magicDefenseModifiers: IModifier[] // Suma instintos
+            shieldModifiers: IModifier[] // Suma coraje
         },
         speed: {
             initiativeModifiers: IModifier[], // Suma instintos
@@ -126,6 +127,10 @@ export interface ICharacterPersonaDetail {
             rangeDamageModifiers: IModifier[],
             meleeDamageModifiers: IModifier[],
             criticalDamageModifiers: IModifier[],
+        }
+        range: {
+            weaponRangedRangeModifiers: IModifier[],
+            weaponMeleeRangeModifiers: IModifier[],
         }
     }
 }
@@ -280,6 +285,10 @@ const characterPersonaDetailSchema = new Schema({
             magicDefenseModifiers: {
                 type: [Object],
                 required: true
+            },
+            shieldModifiers: {
+                type: [Object],
+                required: true
             }
         },
         speed: {
@@ -406,8 +415,17 @@ const characterPersonaDetailSchema = new Schema({
                 type: [Object],
                 required: true
             }
+        },
+        range: {
+            weaponRangedRangeModifiers: {
+                type: [Object],
+                required: true
+            },
+            weaponMeleeRangeModifiers: {
+                type: [Object],
+                required: true
+            }
         }
-        
     }
 }, {
     timestamps: true

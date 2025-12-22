@@ -176,6 +176,16 @@ export const getCharacter = async (req: Request, res: Response) => {
                 state: 'ACTIVE' 
             }
         ];
+        baseModifiers.shieldModifiers = [
+            { value: 2, type: 'base', description: 'Modificador de escudo base', state: 'ACTIVE' },
+            { 
+                value: stadisticBonifiers.courage,
+                type: 'stadistic',
+                stadistic: personaStadistics.COURAGE,
+                description: 'Bonificación de coraje',
+                state: 'ACTIVE'
+            }
+        ];
         baseModifiers.speedModifiers = [
             { value: 6, type: 'base', description: 'Velocidad base', state: 'ACTIVE' }
         ];
@@ -470,8 +480,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                     },
                 },
                 resource: {
-                    name: characterClass.resourceType,
-                    uses: characterActualLevel?.resourceUses || 0,
+                    name: characterClass.resourceType
                 }
             },
         });

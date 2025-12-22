@@ -130,6 +130,7 @@ export enum triggerTypes {
     AT_DISPEL_EFFECT = 'at_dispel_effect', // Se activa al disipar un efecto
     AT_SPELL_CAST_DURING_ATTACK = 'at_spell_cast_during_attack', // Se activa al lanzar un hechizo como parte de un ataque
     AT_ENEMY_SPELL_CAST = 'at_enemy_spell_cast', // Se activa al lanzar un hechizo un enemigo
+    AT_ALL_OUT_ATTACK = 'at_all_out_attack', // Se activa al realizar un ataque total
 }
 
 export enum costTypes {
@@ -244,6 +245,9 @@ export interface IModifier {
     etiquette?: string,
     damageType?: elements,
     triggeredBy?: ObjectId,
+    forEtiquette?: string,
+    setValue?: boolean,
+    options?: string | string[],
     dice?: string,
 }
 
@@ -381,6 +385,8 @@ export type modificationEffectTypes =  'modification'
     | 'cast_spell'
     | 'create_zone'
     | 'counterspell'
+    | 'recover_resource'
+    | 'change_initiative'
 
 export interface IModificationEffect extends IBaseEffect {
     type: modificationEffectTypes,
@@ -395,6 +401,7 @@ export interface IModificationEffect extends IBaseEffect {
     featureId?: Types.ObjectId,
     cost?: ICost[],
     zoneType?: string,
+    resource?: resourceTypes | string,
 }
 
 // Union type for all effects
