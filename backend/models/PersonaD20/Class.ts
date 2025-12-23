@@ -27,6 +27,8 @@ export interface IPersonaClass extends Document {
     salvations: personaStadistics[],
     levels: IClassLevel[],
     resourceType?: resourceTypes | resourceTypes[] | string | string[],
+    initialResourcePoolValue?: number,
+    secondaryInitialResourcePoolValue?: number,
     featureIdThatGrantsSecondaryFeatures?: Types.ObjectId,
 }
 
@@ -37,6 +39,8 @@ const ClassSchema = new Schema({
     salvations: {type: [String], required: true, enum: Object.values(personaStadistics)},
     levels: {type: [Object], required: true},
     resourceType: {type: Schema.Types.Mixed},
+    initialResourcePoolValue: {type: Number},
+    secondaryInitialResourcePoolValue: {type: Number},
     featureIdThatGrantsSecondaryFeatures: {type: Schema.Types.ObjectId},
 });
 

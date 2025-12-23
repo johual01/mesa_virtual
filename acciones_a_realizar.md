@@ -1,2 +1,1 @@
-- Verificar que todos los spells repetidos entre clases tengan el mismo texto
-- Ver en el script de Revenant los puntos maximos de ira
+- Verificado Revenant y Commander

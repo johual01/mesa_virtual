@@ -1148,6 +1148,7 @@ await db.class.updateOne(
             level: 2,
             proficency: 2,
             spells: [spells[1], spells[2], spells[3]],
+            resourcePool: 2,
             features: [
                 {
                     featureId: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
@@ -1481,6 +1482,7 @@ await db.class.updateOne(
         {
             level: 3,
             proficency: 2,
+            resourcePool: 3,
             spells: [spells[4]],
             features: [
                 {
@@ -1517,6 +1519,7 @@ await db.class.updateOne(
         },
         {
             level: 4,
+            resourcePool: 4,
             proficency: 2,
             spells: [spells[5]],
             features: [],
@@ -1528,6 +1531,7 @@ await db.class.updateOne(
         },
         {
             level: 5,
+            resourcePool: 5,
             proficency: 3,
             spells: [spells[6], spells[7]],
             features: [],
@@ -1538,6 +1542,7 @@ await db.class.updateOne(
         },
         {
             level: 6,
+            resourcePool: 6,
             proficency: 3,
             spells: [spells[8], spells[9]],
             features: [
@@ -1587,6 +1592,7 @@ await db.class.updateOne(
         },
         {
             level: 7,
+            resourcePool: 7,
             proficency: 3,
             spells: [spells[10]],
             features: [
@@ -1613,6 +1619,7 @@ await db.class.updateOne(
         },
         {
             level: 8,
+            resourcePool: 8,
             proficency: 3,
             spells: [spells[11]],
             features: [],
@@ -1623,6 +1630,7 @@ await db.class.updateOne(
         },
         {
             level: 9,
+            resourcePool: 9,
             proficency: 4,
             spells: [spells[12], spells[13]],
             features: [],
@@ -1633,6 +1641,7 @@ await db.class.updateOne(
         },
         {
             level: 10,
+            resourcePool: 10,
             proficency: 4,
             spells: [spells[14], spells[15]],
             features: [
@@ -1674,6 +1683,7 @@ await db.class.updateOne(
         },
         {
             level: 11,
+            resourcePool: 11,
             proficency: 4,
             spells: [spells[16], spells[17], spells[18]],
             features: [
@@ -1767,6 +1777,7 @@ await db.class.updateOne(
         },
         {
             level: 12,
+            resourcePool: 12,
             proficency: 4,
             spells: [spells[19], spells[20]],
             features: [
@@ -1807,6 +1818,7 @@ await db.class.updateOne(
         },
         {
             level: 13,
+            resourcePool: 13,
             proficency: 5,
             spells: [spells[21], spells[22]],
             features: [],
@@ -1817,6 +1829,7 @@ await db.class.updateOne(
         },
         {
             level: 14,
+            resourcePool: 14,
             proficency: 5,
             spells: [spells[23], spells[24]],
             features: [],
@@ -1827,6 +1840,7 @@ await db.class.updateOne(
         },
         {
             level: 15,
+            resourcePool: 15,
             proficency: 5,
             spells: [spells[25], spells[26]],
             features: [
@@ -1853,6 +1867,7 @@ await db.class.updateOne(
         },
         {
             level: 16,
+            resourcePool: 16,
             proficency: 5,
             spells: [spells[27], spells[28]],
             features: [
@@ -1884,6 +1899,7 @@ await db.class.updateOne(
         },
         {
             level: 17,
+            resourcePool: 17,
             proficency: 6,
             spells: [spells[29], spells[30]],
             features: [
@@ -1923,6 +1939,7 @@ await db.class.updateOne(
         },
         {
             level: 18,
+            resourcePool: 18,
             proficency: 6,
             spells: [spells[31], spells[32]],
             features: [],
@@ -1933,6 +1950,7 @@ await db.class.updateOne(
         },
         {
             level: 19,
+            resourcePool: 19,
             proficency: 6,
             spells: [spells[33], spells[34]],
             features: [],
@@ -1943,6 +1961,7 @@ await db.class.updateOne(
         },
         {
             level: 20,
+            resourcePool: 20,
             proficency: 6,
             spells: [spells[35]],
             features: [
@@ -2012,9 +2031,9 @@ await db.class.updateOne(
         }
     ],
     resourceType: 'Rage Points',
-        featureIdThatGrantsSecondaryFeatures: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b')
-    }}
-)
+    featureIdThatGrantsSecondaryFeatures: new ObjectId('5f7f4b3b3f1d9a001f2b3b3b'),
+    initialResourcePoolValue: 0
+}})
 
 const subclass = await db.subclass.insertMany([
     {
