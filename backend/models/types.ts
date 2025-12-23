@@ -319,7 +319,7 @@ export interface IBaseEffect {
     range?: IRange,
     trigger?: triggerTypes,
     condition?: string,
-    uses?: number,
+    uses?: number | 'selection',
     levelCondition?: number,
     shouldSaveEachTurn?: boolean,
     etiquette?: string,
@@ -387,6 +387,9 @@ export type modificationEffectTypes =  'modification'
     | 'counterspell'
     | 'recover_resource'
     | 'change_initiative'
+    | 'additional_target'
+    | 'modify_feature_uses'
+    | 'all_out_attack'
 
 export interface IModificationEffect extends IBaseEffect {
     type: modificationEffectTypes,
@@ -402,6 +405,7 @@ export interface IModificationEffect extends IBaseEffect {
     cost?: ICost[],
     zoneType?: string,
     resource?: resourceTypes | string,
+    forEtiquette?: string,
 }
 
 // Union type for all effects

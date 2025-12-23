@@ -2772,18 +2772,23 @@ await db.class.updateOne(
                         name: 'Repetición Marcial',
                         description: 'Cuando realizas un Estímulo, otorgas dicho efecto a un aliado adicional. El efecto de "Maestría Armamentística" ahora te permite reducir cualquier cantidad de dados, ganando dicha cantidad de ataques adicionales.',
                         useType: 'passive',
-                        effects: [
+                        modifiers: [
                             {
                                 type: 'additional_target',
-                                target: 'ally',
                                 value: 1,
-                                trigger: 'at_use_feature',
-                                description: 'Afecta a un aliado adicional al usar Estímulo'
-                            },
+                                description: 'Permite afectar a un aliado adicional con cualquier Estímulo',
+                                target: 'self',
+                                permanent: true,
+                                featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c08'),
+                            }
+                        ],
+                        effects: [
                             {
-                                type: 'modify_feature',
+                                type: 'modify_feature_uses',
                                 featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c07'),
-                                description: 'Mejora Maestría Armamentística para reducir cualquier cantidad de dados'
+                                uses: 'selection',
+                                target: 'self',
+                                description: 'Mejora de Maestría Armamentística: ahora puedes reducir cualquier cantidad de dados de daño, obteniendo un ataque adicional por cada dado reducido sin bonificador de daño'
                             }
                         ],
                         state: 'ACTIVE'
@@ -2801,21 +2806,13 @@ await db.class.updateOne(
                 APGained: 1,
                 resourcePool: 10,
                 knownSpells: 10,
+                gainSubclassFeature: true
             },
             {
                 level: 19,
                 proficency: 6,
                 spells: [spells[35], spells[36]],
-                features: [
-                    {
-                        featureId: new ObjectId('6f8f4b3b3f1d9a001f2b3c25'),
-                        name: 'Mejora de Característica',
-                        description: 'Puedes aumentar una característica en +2 o dos características en +1 cada una, o seleccionar un beneficio.',
-                        useType: 'passive',
-                        state: 'ACTIVE',
-                        effects: []
-                    }
-                ],
+                gainStatIncrease: true,
                 APGained: 1,
                 resourcePool: 10,
                 knownSpells: 10,
@@ -2830,16 +2827,13 @@ await db.class.updateOne(
                         name: 'Líder del Batallón',
                         description: 'Cuando estás en combate, la cantidad máxima de escudos de los enemigos se reduce en 2. Los enemigos sin escudos son eliminados por tu presencia de forma directa. Cuando ves que un escudo es roto, puedes utilizar tu reacción para reducir un escudo adicional. Además, como acción y una vez por combate, puedes provocar un All-Out Attack que tenga como objetivo a un solo enemigo. Este enemigo perderá un escudo de forma permanente y cada aliado recibirá +3 al daño contra él por el resto del combate.',
                         useType: 'passive',
-                        action: 'reaction',
-                        trigger: 'at_break_shield',
-                        uses: 1,
-                        triggerForRecover: 'at_combat_end',
                         modifiers: [
                             {
-                                type: 'max_shields',
+                                type: 'buff',
                                 value: -2,
                                 description: 'Reduce la cantidad máxima de escudos enemigos',
                                 target: 'all_enemies',
+                                addTo: 'shieldModifiers',
                                 permanent: true,
                                 etiquette: 'battalion_leader'
                             }
@@ -2848,7 +2842,7 @@ await db.class.updateOne(
                             {
                                 type: 'instant_kill',
                                 target: 'all_enemies',
-                                condition: 'no_shields',
+                                condition: 'enemy has total shields equals to 0',
                                 description: 'Elimina enemigos sin escudos'
                             },
                             {
@@ -2858,22 +2852,6 @@ await db.class.updateOne(
                                 value: 1,
                                 action: 'reaction',
                                 description: 'Rompe un escudo adicional como reacción'
-                            },
-                            {
-                                type: 'all_out_attack',
-                                target: 'enemy',
-                                action: 'action',
-                                uses: 1,
-                                triggerForRecover: 'at_combat_end',
-                                description: 'Provoca un All-Out Attack contra un enemigo'
-                            },
-                            {
-                                type: 'break_shield',
-                                target: 'enemy',
-                                value: 1,
-                                permanent: true,
-                                condition: 'all_out_attack_target',
-                                description: 'El objetivo del All-Out Attack pierde un escudo permanentemente'
                             }
                         ],
                         subFeatures: [
@@ -2892,15 +2870,16 @@ await db.class.updateOne(
                                         description: 'Aumenta el daño contra el objetivo',
                                         target: 'all_allies',
                                         permanent: true,
-                                        condition: 'against_all_out_attack_target',
+                                        condition: 'against target',
                                         etiquette: 'battalion_leader_all_out'
                                     }
                                 ],
                                 effects: [
                                     {
-                                        type: 'break_shield',
+                                        type: 'debuff',
                                         target: 'enemy',
-                                        value: 1,
+                                        value: -1,
+                                        addTo: 'shieldModifiers',
                                         permanent: true,
                                         description: 'Pierde un escudo permanentemente'
                                     }
