@@ -1793,7 +1793,7 @@ const mezclaAnimicaFeature = {
     description: 'Con tu acción, utilizas tu cuerpo para canalizar y mezclar distintas concentraciones de ánimas a fin de generar hechizos adecuados para cada situación. Del listado proporcionado abajo, puedes construir un hechizo personalizado mezclando una cantidad de elementos igual a tu competencia. Puedes repetir el mismo elemento más de una vez, pero contarán como elementos distintos para la cantidad máxima indicada. Puedes utilizar este efecto una cantidad de veces por incursión igual a la cantidad de mezclas anímicas indicadas en la tabla de niveles. Al finalizar un combate, recuperas un uso de mezcla anímica.',
     useType: 'active',
     action: 'action',
-    uses: 3,
+    uses: '{proficiency}',
     triggerForRecover: 'at_combat_end',
     state: 'ACTIVE',
     subFeatures: [
