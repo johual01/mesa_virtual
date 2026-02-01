@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useNotificationContext } from "@/context/notifications"
 import { Loader2, Eye, EyeOff } from "lucide-react"
+import { authService } from "@/services/authService"
 
 export function RegisterForm() {
   const router = useRouter()
@@ -66,25 +67,12 @@ export function RegisterForm() {
     setLoading(true)
 
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-        }),
+      await authService.signup({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || errorData.errMsg || 'Error al registrarse')
-      }
-
-      await response.json() // Consumir la respuesta
       success('¡Registro exitoso!', 'Tu cuenta ha sido creada. Ahora puedes iniciar sesión.')
       
       // Limpiar formulario

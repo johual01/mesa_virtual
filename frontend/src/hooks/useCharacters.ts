@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 import { characterService } from '@/services/characterService';
-import { CharacterSummary, Character, CharacterCreateInfo } from '@/types/character';
+import { CharacterSummary, Character, CharacterCreateInfo, CharacterState } from '@/types/character';
 
-export const useCharacters = () => {
+interface UseCharactersOptions {
+  origin?: 'user' | 'campaign';
+  state?: CharacterState;
+  campaignId?: string;
+}
+
+export const useCharacters = (options: UseCharactersOptions = { origin: 'user' }) => {
   const [characters, setCharacters] = useState<CharacterSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -11,8 +17,12 @@ export const useCharacters = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await characterService.getCharacters();
-      setCharacters(response.characters);
+      const response = await characterService.getCharacters({
+        origin: options.origin || 'user',
+        state: options.state,
+        campaignId: options.campaignId,
+      });
+      setCharacters(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar personajes');
     } finally {
@@ -22,7 +32,7 @@ export const useCharacters = () => {
 
   useEffect(() => {
     fetchCharacters();
-  }, []);
+  }, [options.origin, options.state, options.campaignId]);
 
   return {
     characters,

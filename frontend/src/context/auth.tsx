@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import Cookies from 'js-cookie';
+import { authService } from '@/services/authService';
 
 interface User {
   _id: string;
@@ -19,27 +20,29 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    Cookies.remove('jwt');
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      Cookies.remove('jwt');
+    }
   }, []);
 
   const refreshAccessToken = useCallback(async () => {
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/refresh', {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
-      } else {
-        logout();
+      const data = await authService.refresh();
+      localStorage.setItem('token', data.token);
+      
+      // Mantener el usuario actual si existe
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const savedUser = JSON.parse(userStr);
+        setUser(savedUser);
       }
     } catch (error) {
       console.error('Error refreshing token:', error);
@@ -68,20 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string, rememberMe: boolean) => {
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password, rememberMe }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.errMsg || 'Error al iniciar sesión');
-      }
+      const data = await authService.login({ email, password, rememberMe });
 
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));

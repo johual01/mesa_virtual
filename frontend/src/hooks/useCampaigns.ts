@@ -12,7 +12,7 @@ export const useCampaigns = () => {
       setLoading(true);
       setError(null);
       const response = await campaignService.getCampaigns();
-      setCampaigns(response.campanas);
+      setCampaigns(response.campaigns);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar campañas');
     } finally {
@@ -42,7 +42,7 @@ export const useCampaign = (campaignId: string | null) => {
       setLoading(true);
       setError(null);
       const response = await campaignService.getCampaign(id);
-      setCampaign(response);
+      setCampaign(response.campaign);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar campaña');
     } finally {

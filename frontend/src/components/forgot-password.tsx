@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { authService } from "@/services/authService"
 
 interface ForgotPasswordProps {
   trigger?: React.ReactNode;
@@ -41,19 +42,7 @@ export function ForgotPassword({ trigger, defaultEmail = '', onClose }: ForgotPa
     setMessage('');
 
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.errMsg || 'Error al enviar el correo de recuperación');
-      }
+      const data = await authService.forgotPassword(email);
 
       setMessage(data.message || 'Se ha enviado un correo para recuperar la contraseña');
       setIsSuccess(true);

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter, useSearchParams } from 'next/navigation';
+import { authService } from "@/services/authService"
 
 interface ResetPasswordProps {
   onSuccess?: () => void;
@@ -48,22 +49,7 @@ export function ResetPassword({ onSuccess, onError }: ResetPasswordProps) {
     setMessage('');
 
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ 
-          password 
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.errMsg || 'Error al actualizar la contraseña');
-      }
+      const data = await authService.resetPassword({ password, token });
 
       setMessage(data.message || 'Contraseña actualizada correctamente');
       setIsSuccess(true);
