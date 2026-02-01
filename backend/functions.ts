@@ -44,9 +44,8 @@ export const saveImage = async (file: UploadedFile, userId: Types.ObjectId, buck
         return new Error('Invalid file type. Only images are allowed.');
     }
 
-    const extension = file.mimetype.split('/')[1];
     const now = new Date();
-    const fileName = `${now.getTime()}.${extension}`;
+    const fileName = String(now.getTime());
 
     await minioClient.putObject(bucketName, fileName, file.buffer, file.size, { "userId": userId.toString() });
 
@@ -82,14 +81,16 @@ export const saveImageFromBase64 = async (base64: string, userId: Types.ObjectId
 
 export const readFile = async (key: string) => {
     const bucket = key.split('.')[0];
-    const realKey = key.split('.')[1] + '.' + key.split('.')[2];
+    const realKey = key.split('.')[1];
     return await minioClient.getObject(bucket, realKey);
 }
 
 export const requestFile = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
-        if (typeof id != "string") return;
+        if (typeof id != "string") {
+            return res.status(400).send({msgError: "ID de archivo inválido"});
+        }
         const result = await readFile(id);  
         
         res.write(result);
