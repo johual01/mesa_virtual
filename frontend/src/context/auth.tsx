@@ -27,17 +27,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const refreshAccessToken = useCallback(async () => {
-    const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/refresh', {
-      method: 'GET',
-      credentials: 'include', // Esto asegura que las cookies se envíen con la solicitud
-    });
+    try {
+      const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/refresh', {
+        method: 'GET',
+        credentials: 'include',
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setUser(data.user);
-    } else {
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setUser(data.user);
+      } else {
+        logout();
+      }
+    } catch (error) {
+      console.error('Error refreshing token:', error);
       logout();
     }
   }, [logout]);
@@ -62,22 +67,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [refreshAccessToken]);
 
   const login = async (email: string, password: string, rememberMe: boolean) => {
-    const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password, rememberMe }),
-    });
+    try {
+      const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password, rememberMe }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Login failed');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.errMsg || 'Error al iniciar sesión');
+      }
+
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+    } catch (error) {
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error('No se pudo conectar con el servidor. Verifica tu conexión.');
+      }
+      throw error;
     }
-
-    const data = await response.json();
-    setUser(data.user);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    localStorage.setItem('token', data.token);
   };
 
   return (
