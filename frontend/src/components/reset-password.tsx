@@ -49,13 +49,13 @@ export function ResetPassword({ onSuccess, onError }: ResetPasswordProps) {
 
     try {
       const response = await fetch(process.env.NEXT_PUBLIC_URL_API + '/auth/reset-password', {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ 
-          password,
-          token 
+          password 
         }),
       });
 

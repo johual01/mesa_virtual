@@ -106,7 +106,7 @@ export function ForgotPasswordModal({ isOpen, onClose, defaultEmail = '' }: Forg
             </div>
 
             {message && !isSuccess && (
-              <div className="text-sm p-3 rounded bg-destructive/10 text-destructive">
+              <div className="text-sm p-3 rounded-md bg-red-500/15 text-red-400 border border-red-500/30">
                 {message}
               </div>
             )}

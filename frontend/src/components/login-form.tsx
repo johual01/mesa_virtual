@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import React, { useState } from 'react';
 import { useAuth } from '@/context/auth';
 import { ForgotPasswordModal } from '@/components/forgot-password-modal';
+import { Loader2, AlertCircle } from "lucide-react"
 
 export function LoginForm({
   className,
@@ -17,15 +19,24 @@ export function LoginForm({
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+    
     try {
       await login(email, password, rememberMe);
-      // Redirigir al usuario a la página principal o a otra página
+      router.push('/');
     } catch (error) {
-      console.error('Error al iniciar sesión:', error);
+      const message = error instanceof Error ? error.message : 'Error al iniciar sesión';
+      setError(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,10 +54,27 @@ export function LoginForm({
             Ingresa con tu correo y contraseña
           </div>
         </div>
+        
+        {error && (
+          <div className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-500/15 border border-red-500/30 rounded-md">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+        
         <div className="grid gap-6">
           <div className="grid gap-2">
             <Label htmlFor="email">Correo</Label>
-            <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input 
+              id="email" 
+              type="email" 
+              placeholder="m@example.com" 
+              required 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
+              className={error ? "border-destructive/50" : ""}
+            />
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
@@ -59,7 +87,15 @@ export function LoginForm({
                 Olvidaste tu contraseña?
               </a>
             </div>
-            <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input 
+              id="password" 
+              type="password" 
+              required 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
+              className={error ? "border-destructive/50" : ""}
+            />
           </div>
           <div className="flex items-center space-x-2">
             <div className="relative">
@@ -68,6 +104,7 @@ export function LoginForm({
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
+                disabled={isLoading}
                 className="peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground cursor-pointer"
               />
               {rememberMe && (
@@ -84,8 +121,19 @@ export function LoginForm({
               Recordarme
             </Label>
           </div>
-          <Button type="submit" className="w-full cursor-pointer hover:bg-primary/90 transition-colors">
-            Ingresar
+          <Button 
+            type="submit" 
+            className="w-full cursor-pointer hover:bg-primary/90 transition-colors"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Ingresando...
+              </>
+            ) : (
+              'Ingresar'
+            )}
           </Button>
         </div>
         <div className="text-center text-sm">

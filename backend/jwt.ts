@@ -3,7 +3,7 @@ import config from './env';
 import { Request, Response } from 'express';
 import User from './models/User';
 
-interface TokenPayload {
+export interface TokenPayload {
     _id: string;
     user: string;
     email: string;
@@ -22,7 +22,7 @@ export function generateRefreshToken(user: object): string {
     return jwt.sign(user, config.REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
 }
 
-export async function validateToken(req: Request, res: Response, next: Function) {
+export async function validateToken(req: Request, res: Response, next: Function, isResetPassword: boolean = false) {
     const accessToken = req.header('Authorization')?.replace('Bearer ', '');
     if (!accessToken) {
         return res.status(401).json({ message: 'Acceso denegado, token no enviado' });
@@ -30,6 +30,10 @@ export async function validateToken(req: Request, res: Response, next: Function)
 
     try {
         const decoded = jwt.verify(accessToken, config.SECRET) as TokenPayload;
+        if (isResetPassword) {
+            return next(decoded);
+        }
+
         const userId = req.body.userId || req.params.userId;
 
         if (!userId) {

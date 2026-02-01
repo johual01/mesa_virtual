@@ -2,6 +2,7 @@ import { generateAccessToken, generateRefreshToken, validateToken } from "../jwt
 import { sendMail } from "../mail";
 import {Request, Response, CookieOptions } from 'express';
 import User, { IUser } from '../models/User';
+import { TokenPayload } from "../jwt";
 
 export const login = async (req: Request, res: Response) => {
     if (!req.body.email || !req.body.password) {
@@ -109,12 +110,13 @@ export const forgotPassword = async (req: Request, res: Response) => {
 }
 
 export const resetPassword = async (req: Request, res: Response) => {
-    if (!req.body.password || !req.body.token) {
+    if (!req.body.password) {
         return res.status(400).json({ errMsg: 'Faltan datos' });
     }
 
+    let tokenDecoded;
     try {
-        await validateToken(req, res, () => {});
+        tokenDecoded = await validateToken(req, res, (decoded: TokenPayload) => { return decoded }, true);
         if (res.statusCode !== 200 && res.statusCode !== undefined) {
             return;
         }
@@ -123,14 +125,14 @@ export const resetPassword = async (req: Request, res: Response) => {
     }
 
     try {
-        const user = await User.findById(req.body.userId);
+        const user = await User.findById(tokenDecoded._id);
         if (!user) {
             return res.status(404).json({ errMsg: 'Usuario no encontrado' });
         }
 
         const encryptedPassword = await user.encryptPassword(req.body.password);
         const updatedUser = await User.findOneAndUpdate(
-            { _id: req.body.userId },
+            { _id: tokenDecoded._id },
             { $set: { password: encryptedPassword } },
             { new: true }
         );
@@ -141,6 +143,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
         res.status(200).json({ message: 'Contraseña actualizada correctamente' });
     } catch (error) {
+        console.log('Error al actualizar la contraseña:', error);
         res.status(500).json({ errMsg: 'Error al actualizar la contraseña' });
     }
 }
