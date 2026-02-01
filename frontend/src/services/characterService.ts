@@ -1,80 +1,150 @@
 import { apiService } from '@/lib/api';
-import { Character, CharacterSummary, CreateCharacterData, CharacterCreateInfo } from '@/types/character';
+import {
+  Character,
+  CharacterSummary,
+  CreateCharacterData,
+  CharacterCreateInfo,
+  CharacterState,
+  EditCharacterData,
+  LevelUpInfo,
+  LevelUpData,
+  SecondaryFeaturesResponse,
+  Inspiration,
+  AddModifierData
+} from '@/types/character';
+
+// Tipos de respuesta según documentación
+interface GetCharactersResponse {
+  characters: CharacterSummary[];
+}
+
+interface GetCharactersRequest {
+  origin: 'user' | 'campaign';
+  state?: CharacterState;
+  campaignId?: string;
+}
 
 export const characterService = {
-  // Obtener información para crear personaje (elementos, estados, clases, etc.)
+  /**
+   * GET /api/getCreateCharacterInfo
+   * Obtiene información necesaria para crear un personaje
+   */
   async getCreateCharacterInfo(): Promise<CharacterCreateInfo> {
-    return apiService.getWithBody<CharacterCreateInfo>('/api/getCreateCharacterInfo');
+    return apiService.get<CharacterCreateInfo>('/api/getCreateCharacterInfo');
   },
 
-  // Crear nuevo personaje
-  async createCharacter(data: CreateCharacterData): Promise<{ message: string; character: Character }> {
-    return apiService.post<{ message: string; character: Character }>('/api/createCharacter', data);
+  /**
+   * POST /api/createCharacter
+   * Crea un nuevo personaje
+   */
+  async createCharacter(data: CreateCharacterData): Promise<{ message: string; characterId: string }> {
+    return apiService.post<{ message: string; characterId: string }>('/api/createCharacter', data);
   },
 
-  // Obtener todos los personajes del usuario
-  async getCharacters(): Promise<{ characters: CharacterSummary[] }> {
-    return apiService.post<{ characters: CharacterSummary[] }>('/api/getCharacters');
+  /**
+   * POST /api/getCharacters
+   * Obtiene los personajes según el origen
+   */
+  async getCharacters(params: GetCharactersRequest = { origin: 'user' }): Promise<CharacterSummary[]> {
+    const response = await apiService.post<GetCharactersResponse>('/api/getCharacters', params);
+    return response.characters || response as unknown as CharacterSummary[];
   },
 
-  // Obtener detalles de un personaje específico
+  /**
+   * GET /api/getCharacter/:characterId
+   * Obtiene los datos completos de un personaje
+   */
   async getCharacter(characterId: string): Promise<Character> {
     return apiService.get<Character>(`/api/getCharacter/${characterId}`);
   },
 
-  // Editar personaje
-  async editCharacter(characterId: string, data: Partial<CreateCharacterData>): Promise<{ message: string; character: Character }> {
-    return apiService.patch<{ message: string; character: Character }>(`/api/editCharacter/${characterId}`, data);
+  /**
+   * PATCH /api/editCharacter/:characterId
+   * Edita un personaje existente
+   */
+  async editCharacter(characterId: string, data: EditCharacterData): Promise<{ message: string }> {
+    return apiService.patch<{ message: string }>(`/api/editCharacter/${characterId}`, data);
   },
 
-  // Eliminar personaje
+  /**
+   * DELETE /api/deleteCharacter/:characterId
+   * Elimina un personaje (soft delete)
+   */
   async deleteCharacter(characterId: string): Promise<{ message: string }> {
     return apiService.delete<{ message: string }>(`/api/deleteCharacter/${characterId}`);
   },
 
-  // Actualizar experiencia
+  /**
+   * PATCH /api/updateXP/:characterId
+   * Actualiza la experiencia del personaje
+   */
   async updateXP(characterId: string, xp: number): Promise<{ message: string }> {
     return apiService.patch<{ message: string }>(`/api/updateXP/${characterId}`, { xp });
   },
 
-  // Actualizar dinero
+  /**
+   * PATCH /api/updateMoney/:characterId
+   * Actualiza el dinero del personaje
+   */
   async updateMoney(characterId: string, money: number): Promise<{ message: string }> {
     return apiService.patch<{ message: string }>(`/api/updateMoney/${characterId}`, { money });
   },
 
-  // Subir nivel
-  async levelUp(characterId: string, data: unknown): Promise<{ message: string }> {
+  /**
+   * PATCH /api/updateInspiration/:characterId
+   * Actualiza la inspiración del personaje
+   */
+  async updateInspiration(characterId: string, inspiration: Inspiration): Promise<{ message: string }> {
+    return apiService.patch<{ message: string }>(`/api/updateInspiration/${characterId}`, { inspiration });
+  },
+
+  /**
+   * GET /api/getLevelUpInfo/:characterId
+   * Obtiene información para subir de nivel
+   */
+  async getLevelUpInfo(characterId: string): Promise<LevelUpInfo> {
+    return apiService.get<LevelUpInfo>(`/api/getLevelUpInfo/${characterId}`);
+  },
+
+  /**
+   * PATCH /api/levelUp/:characterId
+   * Sube de nivel al personaje
+   */
+  async levelUp(characterId: string, data: LevelUpData): Promise<{ message: string }> {
     return apiService.patch<{ message: string }>(`/api/levelUp/${characterId}`, data);
   },
 
-  // Obtener información para subir nivel
-  async getLevelUpInfo(characterId: string): Promise<unknown> {
-    return apiService.getWithBody(`/api/getLevelUpInfo/${characterId}`);
+  /**
+   * GET /api/getSecondaryFeatures/:characterId
+   * Obtiene las habilidades secundarias disponibles
+   */
+  async getSecondaryFeatures(characterId: string): Promise<SecondaryFeaturesResponse> {
+    return apiService.get<SecondaryFeaturesResponse>(`/api/getSecondaryFeatures/${characterId}`);
   },
 
-  // Obtener características secundarias
-  async getSecondaryFeatures(characterId: string): Promise<unknown> {
-    return apiService.getWithBody(`/api/getSecondaryFeatures/${characterId}`);
+  /**
+   * PATCH /api/updateSelectedSecondaryFeatures/:characterId
+   * Actualiza las habilidades secundarias seleccionadas
+   */
+  async updateSelectedSecondaryFeatures(characterId: string, selectedSecondaryFeatures: string[]): Promise<{ message: string }> {
+    return apiService.patch<{ message: string }>(`/api/updateSelectedSecondaryFeatures/${characterId}`, {
+      selectedSecondaryFeatures
+    });
   },
 
-  // INVENTARIO
-  // Obtener items por defecto y del personaje
-  async getDefaultItems(characterId: string): Promise<unknown> {
-    return apiService.get(`/api/getDefaultItems/${characterId}`);
+  /**
+   * PATCH /api/addCustomModifier/:characterId
+   * Añade un modificador personalizado al personaje
+   */
+  async addCustomModifier(characterId: string, data: AddModifierData): Promise<{ message: string }> {
+    return apiService.patch<{ message: string }>(`/api/addCustomModifier/${characterId}`, data);
   },
 
-  // Agregar item al inventario
-  async addItem(characterId: string, data: unknown): Promise<{ message: string }> {
-    return apiService.post<{ message: string }>(`/api/addItem/${characterId}`, data);
-  },
-
-  // Editar item del inventario
-  async editItem(characterId: string, itemId: string, data: unknown): Promise<{ message: string }> {
-    return apiService.patch<{ message: string }>(`/api/editItem/${characterId}/${itemId}`, data);
-  },
-
-  // Eliminar item del inventario
-  async deleteItem(characterId: string, itemId: string): Promise<{ message: string }> {
-    return apiService.delete<{ message: string }>(`/api/deleteItem/${characterId}/${itemId}`);
+  /**
+   * PATCH /api/removeCustomModifier/:characterId/:modifierId
+   * Elimina un modificador personalizado
+   */
+  async removeCustomModifier(characterId: string, modifierId: string): Promise<{ message: string }> {
+    return apiService.patch<{ message: string }>(`/api/removeCustomModifier/${characterId}/${modifierId}`);
   }
 };

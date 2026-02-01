@@ -1,13 +1,20 @@
 import { apiService } from '@/lib/api';
+import { UserProfile, AlterProfileData, AlterProfileResponse } from '@/types/profile';
 
 export const profileService = {
-  // Obtener perfil del usuario
-  async getProfile(userId: string): Promise<unknown> {
-    return apiService.get(`/api/getProfile/${userId}`);
+  /**
+   * GET /api/getProfile/:userId
+   * Obtiene el perfil del usuario
+   */
+  async getProfile(userId: string): Promise<UserProfile> {
+    return apiService.get<UserProfile>(`/api/getProfile/${userId}`);
   },
 
-  // Actualizar perfil del usuario
-  async alterProfile(userId: string, data: unknown): Promise<{ message: string }> {
-    return apiService.patch<{ message: string }>(`/api/alterProfile/${userId}`, data);
+  /**
+   * PATCH /api/alterProfile/:userId
+   * Modifica el perfil del usuario
+   */
+  async alterProfile(userId: string, data: AlterProfileData): Promise<AlterProfileResponse> {
+    return apiService.patch<AlterProfileResponse>(`/api/alterProfile/${userId}`, data);
   }
 };

@@ -117,6 +117,17 @@ class ApiService {
   async delete<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
+
+  // DELETE request with body
+  async deleteWithBody<T>(endpoint: string, data?: unknown): Promise<T> {
+    const userId = this.getUserId();
+    const bodyData = userId ? (data ? { ...data, userId } : { userId }) : data;
+    
+    return this.request<T>(endpoint, {
+      method: 'DELETE',
+      body: bodyData ? JSON.stringify(bodyData) : undefined,
+    });
+  }
 }
 
 export const apiService = new ApiService();
