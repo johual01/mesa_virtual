@@ -288,7 +288,7 @@ export const createCharacter = async (req: Request, res: Response) => {
         // Procesar imagen
         if (pictureRoute && pictureRoute.trim() !== '') {
             if (!pictureRoute.startsWith('http')) {
-                const savedImage = await saveImage(pictureRoute, user._id as Types.ObjectId, 'PROFILES');
+                const savedImage = await saveImage(pictureRoute, user._id as Types.ObjectId, 'CHARACTERS');
                 if (typeof savedImage === 'string') {
                     character.pictureRoute = savedImage;
                 } else {

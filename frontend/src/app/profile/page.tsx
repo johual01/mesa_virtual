@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/context/auth';
+import { useNotificationContext } from '@/context/notifications';
 import { profileService } from '@/services/profileService';
+import { UserProfile } from '@/types/profile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,16 +24,9 @@ import {
 } from 'lucide-react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
-interface UserProfile {
-  _id: string;
-  username: string;
-  email: string;
-  joinDate: string;
-  pictureRoute?: string;
-}
-
 export default function ProfilePage() {
   const { user } = useAuth();
+  const { success, error: notifyError, warning } = useNotificationContext();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,9 +40,9 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    contrasenaActual: '',
-    contrasena: '',
-    image: ''
+    currentPassword: '',
+    password: '',
+    imageUrl: ''
   });
 
   const loadProfile = useCallback(async () => {
@@ -58,15 +53,15 @@ export default function ProfilePage() {
     
     try {
       setIsLoading(true);
-      const profileData = await profileService.getProfile(user._id) as UserProfile;
+      const profileData = await profileService.getProfile(user._id);
       
       setProfile(profileData);
       setFormData({
         username: profileData.username,
         email: profileData.email,
-        contrasenaActual: '',
-        contrasena: '',
-        image: profileData.pictureRoute || ''
+        currentPassword: '',
+        password: '',
+        imageUrl: profileData.pictureRoute || ''
       });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
@@ -91,41 +86,47 @@ export default function ProfilePage() {
   const handleSave = async () => {
     if (!user?._id || !profile) return;
     
-    if (!formData.username || !formData.email || !formData.contrasenaActual) {
-      alert('Completa todos los campos obligatorios');
+    if (!formData.username || !formData.email || !formData.currentPassword) {
+      warning('Campos incompletos', 'Completa todos los campos obligatorios');
       return;
     }
 
     try {
       setSaving(true);
-      await profileService.alterProfile(user._id, {
+      const response = await profileService.alterProfile(user._id, {
         username: formData.username,
-        mail: formData.email,
-        contrasenaActual: formData.contrasenaActual,
-        contrasena: formData.contrasena,
-        image: formData.image
+        email: formData.email,
+        currentPassword: formData.currentPassword,
+        password: formData.password || undefined,
+        imageUrl: formData.imageUrl || undefined
       });
 
-      const updatedProfile = await profileService.getProfile(user._id) as UserProfile;
+      // Actualizar token si se devuelve uno nuevo
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+      }
+
+      const updatedProfile = await profileService.getProfile(user._id);
       setProfile(updatedProfile);
       setIsEditing(false);
       setFormData(prev => ({
         ...prev,
-        contrasenaActual: '',
-        contrasena: ''
+        currentPassword: '',
+        password: ''
       }));
-      alert('¡Perfil actualizado correctamente!');
+      success('¡Perfil actualizado!', 'Los cambios se han guardado correctamente');
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-      alert(`Error al actualizar: ${errorMessage}`);
+      notifyError('Error al actualizar', errorMessage);
     } finally {
       setSaving(false);
     }
   };
 
-  const formatJoinDate = (dateString: string) => {
+  const formatJoinDate = (date: Date | string) => {
     try {
-      return new Date(dateString).toLocaleDateString('es-ES', {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return dateObj.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -168,10 +169,10 @@ export default function ProfilePage() {
       await loadProfile();
       setImagePreview(null);
       setSelectedFile(null);
-      alert('¡Imagen actualizada correctamente!');
+      success('¡Imagen actualizada!', 'Tu foto de perfil se ha actualizado correctamente');
     } catch (err) {
       console.error('Error uploading image:', err);
-      alert('Error: No se pudo subir la imagen');
+      notifyError('Error', 'No se pudo subir la imagen');
     } finally {
       setSaving(false);
     }
@@ -343,8 +344,8 @@ export default function ProfilePage() {
                           <Input
                             id="currentPassword"
                             type={showCurrentPassword ? "text" : "password"}
-                            value={formData.contrasenaActual}
-                            onChange={(e) => handleInputChange('contrasenaActual', e.target.value)}
+                            value={formData.currentPassword}
+                            onChange={(e) => handleInputChange('currentPassword', e.target.value)}
                             placeholder="Ingresa tu contraseña actual"
                           />
                           <Button
@@ -369,8 +370,8 @@ export default function ProfilePage() {
                           <Input
                             id="newPassword"
                             type={showNewPassword ? "text" : "password"}
-                            value={formData.contrasena}
-                            onChange={(e) => handleInputChange('contrasena', e.target.value)}
+                            value={formData.password}
+                            onChange={(e) => handleInputChange('password', e.target.value)}
                             placeholder="Ingresa tu nueva contraseña"
                           />
                           <Button
@@ -407,9 +408,9 @@ export default function ProfilePage() {
                         setFormData({
                           username: profile.username,
                           email: profile.email,
-                          contrasenaActual: '',
-                          contrasena: '',
-                          image: profile.pictureRoute || ''
+                          currentPassword: '',
+                          password: '',
+                          imageUrl: profile.pictureRoute || ''
                         });
                       }}
                       className="gap-2"

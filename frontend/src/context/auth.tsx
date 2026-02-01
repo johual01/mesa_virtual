@@ -11,6 +11,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  isLoading: boolean;
   login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
   logout: () => void;
 }
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const logout = useCallback(async () => {
     try {
@@ -46,27 +48,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error('Error refreshing token:', error);
-      logout();
+      // No llamar logout aquí para evitar loop, solo limpiar
+      setUser(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      Cookies.remove('jwt');
     }
-  }, [logout]);
+  }, []);
 
   useEffect(() => {
-    // Intentar cargar usuario desde localStorage primero
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const savedUser = JSON.parse(userStr);
-        setUser(savedUser);
-      } catch (e) {
-        console.error('Error parsing saved user:', e);
+    const initAuth = async () => {
+      setIsLoading(true);
+      
+      // Intentar cargar usuario desde localStorage primero
+      const userStr = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+      
+      if (userStr && token) {
+        try {
+          const savedUser = JSON.parse(userStr);
+          setUser(savedUser);
+          
+          // Verificar si hay refresh token para renovar el access token
+          const refreshToken = Cookies.get('jwt');
+          if (refreshToken) {
+            await refreshAccessToken();
+          }
+        } catch (e) {
+          console.error('Error parsing saved user:', e);
+          setUser(null);
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+        }
+      } else {
+        // No hay sesión guardada, verificar si hay refresh token
+        const refreshToken = Cookies.get('jwt');
+        if (refreshToken) {
+          await refreshAccessToken();
+        }
       }
-    }
-
-    // Luego verificar refresh token
-    const refreshToken = Cookies.get('jwt');
-    if (refreshToken) {
-      refreshAccessToken();
-    }
+      
+      setIsLoading(false);
+    };
+    
+    initAuth();
   }, [refreshAccessToken]);
 
   const login = async (email: string, password: string, rememberMe: boolean) => {
@@ -85,7 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
