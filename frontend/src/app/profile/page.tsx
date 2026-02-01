@@ -19,7 +19,6 @@ import {
   EyeOff,
   Edit,
   X,
-  Upload,
   Camera
 } from 'lucide-react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -98,6 +97,7 @@ export default function ProfilePage() {
         email: formData.email,
         currentPassword: formData.currentPassword,
         password: formData.password || undefined,
+        image: selectedFile || undefined,
         imageUrl: formData.imageUrl || undefined
       });
 
@@ -109,10 +109,13 @@ export default function ProfilePage() {
       const updatedProfile = await profileService.getProfile(user._id);
       setProfile(updatedProfile);
       setIsEditing(false);
+      setImagePreview(null);
+      setSelectedFile(null);
       setFormData(prev => ({
         ...prev,
         currentPassword: '',
-        password: ''
+        password: '',
+        imageUrl: updatedProfile.pictureRoute || ''
       }));
       success('¡Perfil actualizado!', 'Los cambios se han guardado correctamente');
     } catch (err: unknown) {
@@ -143,38 +146,25 @@ export default function ProfilePage() {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validar tamaño máximo (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        notifyError('Archivo muy grande', 'La imagen no puede superar los 5MB');
+        return;
+      }
+      
+      // Validar tipo de archivo
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        notifyError('Tipo no permitido', 'Solo se permiten imágenes (jpeg, png, gif, webp)');
+        return;
+      }
+      
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const handleImageUpload = async () => {
-    if (!selectedFile || !user?._id) return;
-
-    try {
-      setSaving(true);
-      // Aquí iría la lógica para subir la imagen al servidor
-      // Por ahora usaremos un placeholder
-      const formData = new FormData();
-      formData.append('image', selectedFile);
-      
-      // Simulamos la subida de imagen
-      console.log('Uploading image...', selectedFile);
-      
-      // Actualizar el perfil con la nueva imagen
-      await loadProfile();
-      setImagePreview(null);
-      setSelectedFile(null);
-      success('¡Imagen actualizada!', 'Tu foto de perfil se ha actualizado correctamente');
-    } catch (err) {
-      console.error('Error uploading image:', err);
-      notifyError('Error', 'No se pudo subir la imagen');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -245,10 +235,9 @@ export default function ProfilePage() {
               </div>
               {imagePreview && isEditing && (
                 <div className="flex justify-center gap-2 mb-4">
-                  <Button size="sm" onClick={handleImageUpload} disabled={isSaving}>
-                    <Upload className="h-4 w-4 mr-1" />
-                    {isSaving ? 'Subiendo...' : 'Confirmar'}
-                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Nueva imagen seleccionada - se guardará al hacer clic en &quot;Guardar Cambios&quot;
+                  </span>
                   <Button 
                     size="sm" 
                     variant="outline" 
@@ -257,7 +246,7 @@ export default function ProfilePage() {
                       setSelectedFile(null);
                     }}
                   >
-                    Cancelar
+                    Quitar imagen
                   </Button>
                 </div>
               )}

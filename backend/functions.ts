@@ -20,7 +20,45 @@ interface formatImage {
     data: Buffer
 }
 
-export const saveImage = async (base64: string, userId: Types.ObjectId, bucketName: string = GENERIC_BUCKET_NAME) => {
+export interface UploadedFile {
+    buffer: Buffer;
+    mimetype: string;
+    originalname: string;
+    size: number;
+}
+
+/**
+ * Guarda una imagen en el bucket de MinIO
+ * @param file - Archivo subido via multer (buffer, mimetype, etc.)
+ * @param userId - ID del usuario que sube la imagen
+ * @param bucketName - Nombre del bucket donde guardar
+ * @returns URL de la imagen guardada o Error
+ */
+export const saveImage = async (file: UploadedFile, userId: Types.ObjectId, bucketName: string = GENERIC_BUCKET_NAME) => {
+    if (!file || !file.buffer) {
+        return new Error('No file provided');
+    }
+
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+        return new Error('Invalid file type. Only images are allowed.');
+    }
+
+    const extension = file.mimetype.split('/')[1];
+    const now = new Date();
+    const fileName = `${now.getTime()}.${extension}`;
+
+    await minioClient.putObject(bucketName, fileName, file.buffer, file.size, { "userId": userId.toString() });
+
+    const escritura = process.env.URL + 'dynamicFiles/' + BUCKET_KEY[bucketName] + '.' + fileName;
+    return escritura;
+}
+
+/**
+ * Guarda una imagen desde base64 (mantenido para compatibilidad)
+ * @deprecated Usar saveImage con archivo en su lugar
+ */
+export const saveImageFromBase64 = async (base64: string, userId: Types.ObjectId, bucketName: string = GENERIC_BUCKET_NAME) => {
     var matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     var response: formatImage = {
         type: "",
@@ -36,7 +74,7 @@ export const saveImage = async (base64: string, userId: Types.ObjectId, bucketNa
 
     const fileName = (now.getTime() + "." + response.type.split('/')[1])
 
-    await minioClient.putObject(bucketName, fileName, response.data, response.data.length, { "userId": userId });
+    await minioClient.putObject(bucketName, fileName, response.data, response.data.length, { "userId": userId.toString() });
 
     const escritura = process.env.URL + 'dynamicFiles/' + BUCKET_KEY[bucketName] + '.' + fileName;
     return escritura;
@@ -57,7 +95,7 @@ export const requestFile = async (req: Request, res: Response) => {
         res.write(result);
         res.end();
     } catch (e) {
-        res.send({msgError: "Error solicitando el archivo", error: e})
+        res.status(500).send({msgError: "Error solicitando el archivo", error: e})
     }
 }
 

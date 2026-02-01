@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { validateToken } from "../jwt";
+import { upload, handleMulterError } from "../multer";
 import * as Profile from "../controllers/profile.controller"
 import * as Campaign from "../controllers/campaign.controller"
 import * as Character from "../controllers/character"
@@ -11,13 +12,13 @@ const router = Router();
 
 // rutas del perfil
 router.get('/getProfile/:userId', validateToken, Profile.getProfile);
-router.patch('/alterProfile/:userId', validateToken, Profile.alterProfile);
+router.patch('/alterProfile/:userId', validateToken, upload.single('image'), handleMulterError, Profile.alterProfile);
 
 // rutas de las campañas
 router.post('/getCampaigns', validateToken, Campaign.getCampaigns);
-router.put('/createCampaign', validateToken, Campaign.createCampaign);
+router.put('/createCampaign', validateToken, upload.single('image'), handleMulterError, Campaign.createCampaign);
 router.get('/getCampaign/:userId/:campaignId', validateToken, Campaign.openCampaign);
-router.patch('/editCampaign/:campaignId', validateToken, Campaign.editCampaign);
+router.patch('/editCampaign/:campaignId', validateToken, upload.single('image'), handleMulterError, Campaign.editCampaign);
 router.post('/joinCampaign/:campaignId', validateToken, Campaign.joinCampaign);
 router.put('/addRegister/:campaignId', validateToken, Campaign.addRegister);
 router.patch('/updateRegister/:registerId', validateToken, Campaign.updateRegister);
@@ -27,10 +28,10 @@ router.post('/deleteCampaign/:campaignId', validateToken, Campaign.deleteCampaig
 
 // rutas del personaje
 router.get('/getCreateCharacterInfo', validateToken, Character.getCreateCharacterInfo);
-router.post('/createCharacter', validateToken, Character.createCharacter);
+router.post('/createCharacter', validateToken, upload.single('image'), handleMulterError, Character.createCharacter);
 router.post('/getCharacters', validateToken, Character.getCharacters);
 router.get('/getCharacter/:characterId', validateToken, Character.getCharacter);
-router.patch('/editCharacter/:characterId', validateToken, Character.editCharacter);
+router.patch('/editCharacter/:characterId', validateToken, upload.single('image'), handleMulterError, Character.editCharacter);
 router.delete('/deleteCharacter/:characterId', validateToken, Character.deleteCharacter);
 router.patch('/addCustomModifier/:characterId', validateToken, Character.addCustomModifier);
 router.patch('/removeCustomModifier/:characterId/:modifierId', validateToken, Character.removeCustomModifier);

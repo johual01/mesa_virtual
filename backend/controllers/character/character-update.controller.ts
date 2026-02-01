@@ -5,9 +5,14 @@ import Character, { state as characterState } from '../../models/Character';
 import CharacterDetail, { personaSecondaryAbilities } from '../../models/PersonaD20/CharacterDetail';
 import CharacterStatus from '../../models/PersonaD20/CharacterStatus';
 import { elements, personaStadistics } from '../../models/types';
-import { arraysEqual, saveImage } from '../../functions';
+import { arraysEqual, saveImage, UploadedFile } from '../../functions';
 
-export const editCharacter = async (req: Request, res: Response) => {
+// Extender Request para incluir el archivo de multer
+interface MulterRequest extends Request {
+    file?: Express.Multer.File;
+}
+
+export const editCharacter = async (req: MulterRequest, res: Response) => {
     try {
         const characterId = new Types.ObjectId(req.params.characterId);
         const character = await Character.findById(characterId);
@@ -82,18 +87,23 @@ export const editCharacter = async (req: Request, res: Response) => {
         character.backstory = backstory;
         character.state = state;
 
-        // Procesar imagen
-        if (pictureRoute && pictureRoute.trim() !== '') {
-            if (!pictureRoute.startsWith('http')) {
-                const savedImage = await saveImage(pictureRoute, userIdObj, 'PROFILES');
-                if (typeof savedImage === 'string') {
-                    character.pictureRoute = savedImage;
-                } else {
-                    return res.status(500).json({ errMsg: 'No se pudo guardar la imagen' });
-                }
+        // Procesar imagen si se proporciona un archivo
+        if (req.file) {
+            const uploadedFile: UploadedFile = {
+                buffer: req.file.buffer,
+                mimetype: req.file.mimetype,
+                originalname: req.file.originalname,
+                size: req.file.size
+            };
+            const savedImage = await saveImage(uploadedFile, userIdObj, 'PROFILES');
+            if (typeof savedImage === 'string') {
+                character.pictureRoute = savedImage;
             } else {
-                character.pictureRoute = pictureRoute;
+                return res.status(500).json({ errMsg: 'No se pudo guardar la imagen' });
             }
+        } else if (pictureRoute && pictureRoute.startsWith('http')) {
+            // Permitir URLs externas directamente
+            character.pictureRoute = pictureRoute;
         }
 
         characterDetail.persona = persona;

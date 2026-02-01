@@ -14,6 +14,7 @@ export interface AlterProfileData {
   currentPassword: string;
   password?: string;
   imageUrl?: string;
+  image?: File;
 }
 
 export interface AlterProfileResponse {

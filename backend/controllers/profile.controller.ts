@@ -1,6 +1,6 @@
 import {CookieOptions, Request, Response} from 'express';
 import User from '../models/User';
-import {saveImage} from '../functions';
+import {saveImage, UploadedFile} from '../functions';
 import { generateAccessToken, generateRefreshToken } from '../jwt';
 import { Types } from 'mongoose';
 
@@ -9,6 +9,11 @@ interface UpdateData {
     email: string;
     password?: string;
     pictureRoute?: string;
+}
+
+// Extender Request para incluir el archivo de multer
+interface MulterRequest extends Request {
+    file?: Express.Multer.File;
 }
 
 export const getProfile = async (req: Request, res: Response) => {
@@ -25,7 +30,7 @@ export const getProfile = async (req: Request, res: Response) => {
     }
 }
 
-export const alterProfile = async (req: Request, res: Response) => {
+export const alterProfile = async (req: MulterRequest, res: Response) => {
     try {
         if (!req.body.username || !req.body.email || !req.body.currentPassword) {
             return res.status(400).json({ errMsg: 'Faltan datos' });
@@ -52,19 +57,24 @@ export const alterProfile = async (req: Request, res: Response) => {
             updateData.password = encryptedPassword;
         }
 
-        // Procesar imagen si se proporciona
-        if (req.body.imageUrl && req.body.imageUrl.trim() !== '') {
-            if (!req.body.imageUrl.startsWith('http')) {
-                const savedImageUrl = await saveImage(req.body.imageUrl, user._id as Types.ObjectId, 'PROFILES');
-                
-                if (typeof savedImageUrl === 'string') {
-                    updateData.pictureRoute = savedImageUrl;
-                } else {
-                    return res.status(500).json({ errMsg: 'No se pudo guardar la imagen' });
-                }
+        // Procesar imagen si se proporciona un archivo
+        if (req.file) {
+            const uploadedFile: UploadedFile = {
+                buffer: req.file.buffer,
+                mimetype: req.file.mimetype,
+                originalname: req.file.originalname,
+                size: req.file.size
+            };
+            const savedImageUrl = await saveImage(uploadedFile, user._id as Types.ObjectId, 'profiles');
+            
+            if (typeof savedImageUrl === 'string') {
+                updateData.pictureRoute = savedImageUrl;
             } else {
-                updateData.pictureRoute = req.body.imageUrl;
+                return res.status(500).json({ errMsg: 'No se pudo guardar la imagen' });
             }
+        } else if (req.body.imageUrl && req.body.imageUrl.startsWith('http')) {
+            // Permitir URLs externas directamente
+            updateData.pictureRoute = req.body.imageUrl;
         }
 
         const updatedUser = await User.findByIdAndUpdate(

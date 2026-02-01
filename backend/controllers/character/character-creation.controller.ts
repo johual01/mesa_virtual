@@ -7,8 +7,13 @@ import CharacterStatus from '../../models/PersonaD20/CharacterStatus';
 import Campaign, { campaignState } from '../../models/Campaign';
 import Class from '../../models/PersonaD20/Class';
 import { elements, system as systems, personaStadistics } from '../../models/types';
-import { enumToArray, saveImage, arraysEqual } from '../../functions';
+import { enumToArray, saveImage, arraysEqual, UploadedFile } from '../../functions';
 import { rollMaxDiceString } from 'diceLogic';
+
+// Extender Request para incluir el archivo de multer
+interface MulterRequest extends Request {
+    file?: Express.Multer.File;
+}
 
 export const getCreateCharacterInfo = async (req: Request, res: Response) => {
     try {
@@ -37,7 +42,7 @@ export const getCreateCharacterInfo = async (req: Request, res: Response) => {
     }
 };
 
-export const createCharacter = async (req: Request, res: Response) => {
+export const createCharacter = async (req: MulterRequest, res: Response) => {
     try {
         const {
             userId,
@@ -285,18 +290,23 @@ export const createCharacter = async (req: Request, res: Response) => {
         const characterDetailDoc = new CharacterDetail(characterDetail);
         await characterDetailDoc.save();
 
-        // Procesar imagen
-        if (pictureRoute && pictureRoute.trim() !== '') {
-            if (!pictureRoute.startsWith('http')) {
-                const savedImage = await saveImage(pictureRoute, user._id as Types.ObjectId, 'CHARACTERS');
-                if (typeof savedImage === 'string') {
-                    character.pictureRoute = savedImage;
-                } else {
-                    return res.status(500).json({ errMsg: 'No se pudo guardar la imagen' });
-                }
+        // Procesar imagen si se proporciona un archivo
+        if (req.file) {
+            const uploadedFile: UploadedFile = {
+                buffer: req.file.buffer,
+                mimetype: req.file.mimetype,
+                originalname: req.file.originalname,
+                size: req.file.size
+            };
+            const savedImage = await saveImage(uploadedFile, user._id as Types.ObjectId, 'characters');
+            if (typeof savedImage === 'string') {
+                character.pictureRoute = savedImage;
             } else {
-                character.pictureRoute = pictureRoute;
+                return res.status(500).json({ errMsg: 'No se pudo guardar la imagen' });
             }
+        } else if (pictureRoute && pictureRoute.startsWith('http')) {
+            // Permitir URLs externas directamente
+            character.pictureRoute = pictureRoute;
         }
 
         character.characterData = characterDetailDoc._id;

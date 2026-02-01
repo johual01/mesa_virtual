@@ -1,5 +1,6 @@
 const BUCKET_KEY: { [key: string]: string } = {
-    'CLAVE': 'VALOR'
+    'profiles': 'profiles',
+    'characters': 'characters'
 }
 
 export {

@@ -1,12 +1,18 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_URL_API || 'http://localhost:3001';
 
 class ApiService {
-  private getAuthHeaders(): HeadersInit {
+  private getAuthHeaders(isFormData: boolean = false): HeadersInit {
     const token = localStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
+    const headers: HeadersInit = {
       ...(token && { Authorization: `Bearer ${token}` }),
     };
+    
+    // No incluir Content-Type para FormData, el browser lo establece automáticamente
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
+    return headers;
   }
 
   private getUserId(): string | null {
@@ -26,11 +32,12 @@ class ApiService {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    isFormData: boolean = false
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const config: RequestInit = {
-      headers: this.getAuthHeaders(),
+      headers: this.getAuthHeaders(isFormData),
       credentials: 'include',
       ...options,
     };
@@ -111,6 +118,51 @@ class ApiService {
       method: 'PATCH',
       body: bodyData ? JSON.stringify(bodyData) : undefined,
     });
+  }
+
+  // PATCH request with FormData (for file uploads)
+  async patchFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+    const userId = this.getUserId();
+    if (userId) {
+      formData.append('userId', userId);
+    }
+    
+    console.log('PATCH FormData Request:', { endpoint, userId }); // Debug log
+    
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
+      body: formData,
+    }, true);
+  }
+
+  // POST request with FormData (for file uploads)
+  async postFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+    const userId = this.getUserId();
+    if (userId) {
+      formData.append('userId', userId);
+    }
+    
+    console.log('POST FormData Request:', { endpoint, userId }); // Debug log
+    
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: formData,
+    }, true);
+  }
+
+  // PUT request with FormData (for file uploads)
+  async putFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+    const userId = this.getUserId();
+    if (userId) {
+      formData.append('userId', userId);
+    }
+    
+    console.log('PUT FormData Request:', { endpoint, userId }); // Debug log
+    
+    return this.request<T>(endpoint, {
+      method: 'PUT',
+      body: formData,
+    }, true);
   }
 
   // DELETE request

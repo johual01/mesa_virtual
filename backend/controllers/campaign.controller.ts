@@ -4,8 +4,13 @@ import Note, { noteState } from '../models/Note';
 import History, { referenceType, origin } from '../models/History';
 import { ICharacter } from '../models/Character';
 import { Types } from 'mongoose';
-import { saveImage } from '../functions';
+import { saveImage, UploadedFile } from '../functions';
 import { IUser } from '../models/User';
+
+// Extender Request para incluir el archivo de multer
+interface MulterRequest extends Request {
+    file?: Express.Multer.File;
+}
 
 export const getCampaigns = async (req: Request, res: Response) => {
     try {
@@ -35,7 +40,7 @@ export const getCampaigns = async (req: Request, res: Response) => {
     }
 }
 
-export const createCampaign = async (req: Request, res: Response) => {
+export const createCampaign = async (req: MulterRequest, res: Response) => {
     try {
         if (!req.body.name || !req.body.description) {
             return res.status(400).json({ errMsg: 'Faltan datos' });
@@ -44,15 +49,21 @@ export const createCampaign = async (req: Request, res: Response) => {
         const userId = new Types.ObjectId(req.body.userId);
         let imageUrl = '';
 
-        if (req.body.image) {
-            if (!req.body.image.startsWith('https://')) {
-                const savedImage = await saveImage(req.body.image, userId, 'profilePics');
-                if (typeof savedImage === 'string') {
-                    imageUrl = savedImage;
-                }
-            } else {
-                imageUrl = req.body.image;
+        // Procesar imagen si se proporciona un archivo
+        if (req.file) {
+            const uploadedFile: UploadedFile = {
+                buffer: req.file.buffer,
+                mimetype: req.file.mimetype,
+                originalname: req.file.originalname,
+                size: req.file.size
+            };
+            const savedImage = await saveImage(uploadedFile, userId, 'profilePics');
+            if (typeof savedImage === 'string') {
+                imageUrl = savedImage;
             }
+        } else if (req.body.imageUrl && req.body.imageUrl.startsWith('http')) {
+            // Permitir URLs externas directamente
+            imageUrl = req.body.imageUrl;
         }
 
         const campaignData = {
@@ -154,7 +165,7 @@ export const openCampaign = async (req: Request, res: Response) => {
     }
 }
 
-export const editCampaign = async (req: Request, res: Response) => {
+export const editCampaign = async (req: MulterRequest, res: Response) => {
     try {
         if (!req.body.name || !req.body.description) {
             return res.status(400).json({ errMsg: 'Faltan datos' });
@@ -169,15 +180,21 @@ export const editCampaign = async (req: Request, res: Response) => {
 
         let imageUrl = '';
 
-        if (req.body.image) {
-            if (!req.body.image.startsWith('https://')) {
-                const savedImage = await saveImage(req.body.image, new Types.ObjectId(req.body.userId), 'campaignPics');
-                if (typeof savedImage === 'string') {
-                    imageUrl = savedImage;
-                }
-            } else {
-                imageUrl = req.body.image;
+        // Procesar imagen si se proporciona un archivo
+        if (req.file) {
+            const uploadedFile: UploadedFile = {
+                buffer: req.file.buffer,
+                mimetype: req.file.mimetype,
+                originalname: req.file.originalname,
+                size: req.file.size
+            };
+            const savedImage = await saveImage(uploadedFile, new Types.ObjectId(req.body.userId), 'campaignPics');
+            if (typeof savedImage === 'string') {
+                imageUrl = savedImage;
             }
+        } else if (req.body.imageUrl && req.body.imageUrl.startsWith('http')) {
+            // Permitir URLs externas directamente
+            imageUrl = req.body.imageUrl;
         }
 
         const updateData = {
