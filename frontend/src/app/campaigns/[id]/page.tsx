@@ -5,20 +5,40 @@ import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { useCampaign } from "@/hooks/useCampaigns";
+import { campaignService } from "@/services/campaignService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Settings, Users, BookOpen, Plus, Loader2, Copy, Check, Link } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Settings, Users, BookOpen, Plus, Loader2, Copy, Check, Link, Edit, Trash2 } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNotificationContext } from "@/context/notifications";
+import { Note } from "@/types/campaign";
+
+interface NoteFormData {
+  title: string;
+  text: string;
+}
 
 export default function CampaignDetailPage() {
   const { user } = useAuth();
@@ -26,11 +46,24 @@ export default function CampaignDetailPage() {
   const params = useParams();
   const campaignId = params?.id as string;
   
-  const { campaign, loading, error } = useCampaign(campaignId);
-  const { success } = useNotificationContext();
+  const { campaign, loading, error, refetch } = useCampaign(campaignId);
+  const { success, error: notifyError } = useNotificationContext();
   const [isOwner, setIsOwner] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  
+  // Estados para notas
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [noteModalMode, setNoteModalMode] = useState<'create' | 'edit'>('create');
+  const [isPrivateNote, setIsPrivateNote] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [noteFormData, setNoteFormData] = useState<NoteFormData>({ title: '', text: '' });
+  const [isSavingNote, setIsSavingNote] = useState(false);
+  
+  // Estados para eliminar nota
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
+  const [isDeletingNote, setIsDeletingNote] = useState(false);
 
   const inviteLink = typeof window !== 'undefined' 
     ? `${window.location.origin}/campaigns/join/${campaignId}` 
@@ -45,6 +78,86 @@ export default function CampaignDetailPage() {
     } catch (err) {
       console.error('Error al copiar:', err);
     }
+  };
+
+  // Funciones para manejar notas
+  const openCreateNoteModal = (isPrivate: boolean) => {
+    setNoteModalMode('create');
+    setIsPrivateNote(isPrivate);
+    setEditingNote(null);
+    setNoteFormData({ title: '', text: '' });
+    setShowNoteModal(true);
+  };
+
+  const openEditNoteModal = (note: Note, isPrivate: boolean) => {
+    setNoteModalMode('edit');
+    setIsPrivateNote(isPrivate);
+    setEditingNote(note);
+    setNoteFormData({ title: note.title, text: note.text });
+    setShowNoteModal(true);
+  };
+
+  const handleSaveNote = async () => {
+    if (!noteFormData.title.trim() || !noteFormData.text.trim()) {
+      notifyError('Campos requeridos', 'El título y el contenido son obligatorios');
+      return;
+    }
+
+    setIsSavingNote(true);
+    try {
+      if (noteModalMode === 'create') {
+        await campaignService.addRegister(campaignId, {
+          title: noteFormData.title,
+          text: noteFormData.text,
+          isPrivate: isPrivateNote,
+        });
+        success('Nota creada', 'La nota se ha creado correctamente');
+      } else if (editingNote) {
+        await campaignService.updateRegister(editingNote._id, {
+          title: noteFormData.title,
+          text: noteFormData.text,
+          campaignId: campaignId,
+          isPrivate: isPrivateNote,
+        });
+        success('Nota actualizada', 'La nota se ha actualizado correctamente');
+      }
+      setShowNoteModal(false);
+      refetch?.();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al guardar la nota';
+      notifyError('Error', message);
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
+  const openDeleteDialog = (note: Note) => {
+    setNoteToDelete(note);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteNote = async () => {
+    if (!noteToDelete) return;
+
+    setIsDeletingNote(true);
+    try {
+      await campaignService.deleteRegister(noteToDelete._id, campaignId);
+      success('Nota eliminada', 'La nota se ha eliminado correctamente');
+      setShowDeleteDialog(false);
+      setNoteToDelete(null);
+      refetch?.();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al eliminar la nota';
+      notifyError('Error', message);
+    } finally {
+      setIsDeletingNote(false);
+    }
+  };
+
+  const canEditNote = (note: Note) => {
+    // El owner puede editar todas las notas, los demás solo las suyas
+    if (isOwner) return true;
+    return note.owner === user?._id;
   };
   
   // Establecer título dinámico basado en la campaña
@@ -187,22 +300,44 @@ export default function CampaignDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Notas Públicas</CardTitle>
-              {isOwner && (
-                <Button size="sm" variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nueva Nota
-                </Button>
-              )}
+              <Button size="sm" variant="outline" onClick={() => openCreateNoteModal(false)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Nota
+              </Button>
             </CardHeader>
             <CardContent>
               {campaign.publicEntries && campaign.publicEntries.length > 0 ? (
                 <div className="space-y-4">
-                  {campaign.publicEntries.map((note, index) => (
-                    <div key={index} className="border-l-4 border-blue-500 pl-4">
-                      <h4 className="font-semibold">Nota {index + 1}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {typeof note === 'string' ? note : note.title || 'Sin título'}
-                      </p>
+                  {campaign.publicEntries.map((note) => (
+                    <div key={note._id} className="border-l-4 border-blue-500 pl-4 group">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{note.title}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {note.text}
+                          </p>
+                        </div>
+                        {canEditNote(note) && (
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8"
+                              onClick={() => openEditNoteModal(note, false)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => openDeleteDialog(note)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -279,19 +414,41 @@ export default function CampaignDetailPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Notas Privadas</CardTitle>
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" onClick={() => openCreateNoteModal(true)}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </CardHeader>
               <CardContent>
                 {campaign.notes && campaign.notes.length > 0 ? (
                   <div className="space-y-3">
-                    {campaign.notes.map((note, index) => (
-                      <div key={index} className="border-l-4 border-orange-500 pl-4">
-                        <h4 className="font-semibold text-sm">Nota {index + 1}</h4>
-                        <p className="text-xs text-muted-foreground">
-                          {typeof note === 'string' ? note : note.title || 'Sin título'}
-                        </p>
+                    {campaign.notes.map((note) => (
+                      <div key={note._id} className="border-l-4 border-orange-500 pl-4 group">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-sm">{note.title}</h4>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {note.text}
+                            </p>
+                          </div>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              onClick={() => openEditNoteModal(note, true)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-destructive hover:text-destructive"
+                              onClick={() => openDeleteDialog(note)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -336,6 +493,77 @@ export default function CampaignDetailPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Crear/Editar Nota */}
+      <Dialog open={showNoteModal} onOpenChange={setShowNoteModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {noteModalMode === 'create' ? 'Nueva Nota' : 'Editar Nota'}
+              {isPrivateNote ? ' (Privada)' : ' (Pública)'}
+            </DialogTitle>
+            <DialogDescription>
+              {isPrivateNote 
+                ? 'Esta nota solo será visible para ti como propietario de la campaña.'
+                : 'Esta nota será visible para todos los participantes de la campaña.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="note-title">Título</Label>
+              <Input
+                id="note-title"
+                placeholder="Título de la nota"
+                value={noteFormData.title}
+                onChange={(e) => setNoteFormData(prev => ({ ...prev, title: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="note-text">Contenido</Label>
+              <Textarea
+                id="note-text"
+                placeholder="Escribe el contenido de la nota..."
+                rows={5}
+                value={noteFormData.text}
+                onChange={(e) => setNoteFormData(prev => ({ ...prev, text: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNoteModal(false)} disabled={isSavingNote}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveNote} disabled={isSavingNote}>
+              {isSavingNote && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {noteModalMode === 'create' ? 'Crear' : 'Guardar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de confirmación para eliminar nota */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar nota?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. La nota &quot;{noteToDelete?.title}&quot; será eliminada permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingNote}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteNote} 
+              disabled={isDeletingNote}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeletingNote && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
