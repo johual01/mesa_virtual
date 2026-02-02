@@ -35,7 +35,7 @@ const historySchema = new Schema({
         type: Schema.Types.ObjectId,
         required: true
     },
-    state: {
+    origin: {
         type: String,
         enum: origin,
         required: true,

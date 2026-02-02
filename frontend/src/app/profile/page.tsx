@@ -190,7 +190,7 @@ export default function ProfilePage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto py-8">
           <Card className="shadow-lg">
             <CardHeader className="text-center pb-6">

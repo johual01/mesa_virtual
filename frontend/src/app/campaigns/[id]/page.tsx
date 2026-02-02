@@ -8,8 +8,17 @@ import { useCampaign } from "@/hooks/useCampaigns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Settings, Users, BookOpen, Plus, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ArrowLeft, Settings, Users, BookOpen, Plus, Loader2, Copy, Check, Link } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useNotificationContext } from "@/context/notifications";
 
 export default function CampaignDetailPage() {
   const { user } = useAuth();
@@ -18,7 +27,25 @@ export default function CampaignDetailPage() {
   const campaignId = params?.id as string;
   
   const { campaign, loading, error } = useCampaign(campaignId);
+  const { success } = useNotificationContext();
   const [isOwner, setIsOwner] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const inviteLink = typeof window !== 'undefined' 
+    ? `${window.location.origin}/campaigns/join/${campaignId}` 
+    : '';
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      success('Link copiado', 'El link de invitación ha sido copiado al portapapeles');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Error al copiar:', err);
+    }
+  };
   
   // Establecer título dinámico basado en la campaña
   usePageTitle(campaign ? `${campaign.name} - Campaña` : "Campaña");
@@ -32,7 +59,7 @@ export default function CampaignDetailPage() {
     if (campaign && user) {
       // Verificar si el usuario es el dueño de la campaña
       const ownerId = typeof campaign.owner === 'string' ? campaign.owner : campaign.owner._id;
-      setIsOwner(ownerId === user.id);
+      setIsOwner(ownerId === user._id);
     }
   }, [user, campaign, router]);
 
@@ -234,8 +261,13 @@ export default function CampaignDetailPage() {
               )}
               
               {isOwner && (
-                <Button variant="outline" size="sm" className="w-full mt-3">
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full mt-3"
+                  onClick={() => setShowInviteModal(true)}
+                >
+                  <Link className="h-4 w-4 mr-2" />
                   Invitar Jugador
                 </Button>
               )}
@@ -271,35 +303,39 @@ export default function CampaignDetailPage() {
               </CardContent>
             </Card>
           )}
-
-          {/* Estadísticas */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Estadísticas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm">Sesiones:</span>
-                <span className="text-sm font-semibold">
-                  {campaign.history?.length || 0}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Creada:</span>
-                <span className="text-sm font-semibold">
-                  {new Date(campaign.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Actualizada:</span>
-                <span className="text-sm font-semibold">
-                  {new Date(campaign.updatedAt).toLocaleDateString()}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
+
+      {/* Modal de Invitación */}
+      <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Invitar Jugador</DialogTitle>
+            <DialogDescription>
+              Comparte este link con el jugador que quieras invitar a la campaña.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Input 
+                value={inviteLink} 
+                readOnly 
+                className="flex-1"
+              />
+              <Button onClick={handleCopyLink} variant="outline">
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              El jugador deberá tener una cuenta e iniciar sesión para unirse a la campaña.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
