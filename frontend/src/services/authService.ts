@@ -10,11 +10,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_URL_API || 'http://localhost:3001';
 
 export const authService = {
   /**
-   * POST /login/login
+   * POST /auth/login
    * Inicia sesión de usuario
    */
   async login(data: LoginData): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/login/login`, {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,11 +32,11 @@ export const authService = {
   },
 
   /**
-   * POST /login/signup
+   * POST /auth/signup
    * Registra un nuevo usuario
    */
   async signup(data: SignupData): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/login/signup`, {
+    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -54,11 +54,11 @@ export const authService = {
   },
 
   /**
-   * GET /login/refresh
+   * GET /auth/refresh
    * Renueva el access token usando el refresh token de la cookie
    */
   async refresh(): Promise<RefreshResponse> {
-    const response = await fetch(`${API_BASE_URL}/login/refresh`, {
+    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: 'GET',
       credentials: 'include',
     });
@@ -71,11 +71,11 @@ export const authService = {
   },
 
   /**
-   * GET /login/logout
+   * GET /auth/logout
    * Cierra la sesión eliminando la cookie del refresh token
    */
   async logout(): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE_URL}/login/logout`, {
+    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
       method: 'GET',
       credentials: 'include',
     });
@@ -88,12 +88,12 @@ export const authService = {
   },
 
   /**
-   * POST /login/forgot-password
+   * POST /auth/forgot-password
    * Envía un correo de recuperación de contraseña
    * Nota: Por seguridad, siempre devuelve 200 aunque el email no exista
    */
   async forgotPassword(email: string): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE_URL}/login/forgot-password`, {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -110,11 +110,11 @@ export const authService = {
   },
 
   /**
-   * POST /login/reset-password
+   * POST /auth/reset-password
    * Restablece la contraseña usando el token de recuperación
    */
   async resetPassword(data: ResetPasswordData): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE_URL}/login/reset-password`, {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -4,50 +4,71 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookOpen, Plus } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { 
+  Users, 
+  BookOpen, 
+  Plus, 
+  Swords, 
+  Shield, 
+  ArrowRight,
+  User
+} from "lucide-react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 function DashboardContent() {
   const { user } = useAuth();
   const router = useRouter();
   
-  // Establecer título dinámico de la página
   usePageTitle("Dashboard");
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Bienvenido, {user?.user}
+          ¡Bienvenido, {user?.user}!
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Gestiona tus campañas y personajes desde tu mesa virtual
+          Tu aventura te espera. Gestiona tus campañas y personajes.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      {/* Main Cards Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Card de Campañas */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Campañas</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Swords className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Campañas</CardTitle>
+                  <CardDescription>
+                    Lidera o únete a aventuras épicas
+                  </CardDescription>
+                </div>
+              </div>
+              <Users className="h-5 w-5 text-muted-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Mis Campañas</div>
-            <p className="text-xs text-muted-foreground">
-              Gestiona y participa en campañas
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Crea mundos únicos, invita a tus amigos y vive historias inolvidables como Game Master o jugador.
             </p>
-            <div className="mt-4 space-y-2">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button 
-                className="w-full" 
+                className="flex-1"
                 onClick={() => router.push('/campaigns')}
               >
                 Ver Campañas
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
               <Button 
                 variant="outline" 
-                className="w-full"
+                className="flex-1"
                 onClick={() => router.push('/campaigns/create')}
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -58,26 +79,38 @@ function DashboardContent() {
         </Card>
 
         {/* Card de Personajes */}
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Personajes</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Personajes</CardTitle>
+                  <CardDescription>
+                    Dale vida a tus héroes y villanos
+                  </CardDescription>
+                </div>
+              </div>
+              <BookOpen className="h-5 w-5 text-muted-foreground" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Mis Fichas</div>
-            <p className="text-xs text-muted-foreground">
-              Crea y edita tus personajes
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Crea fichas detalladas con estadísticas, habilidades, inventario y toda la historia de tus personajes.
             </p>
-            <div className="mt-4 space-y-2">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button 
-                className="w-full"
+                className="flex-1"
                 onClick={() => router.push('/characters')}
               >
                 Ver Personajes
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
               <Button 
                 variant="outline" 
-                className="w-full"
+                className="flex-1"
                 onClick={() => router.push('/characters/create')}
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -86,51 +119,48 @@ function DashboardContent() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Card de Accesos Rápidos */}
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Accesos Rápidos</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start"
-              onClick={() => router.push('/campaigns')}
-            >
-              📋 Mis Campañas Activas
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start"
-              onClick={() => router.push('/characters')}
-            >
-              ⚔️ Personajes Activos
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start"
-              onClick={() => router.push('/profile')}
-            >
-              👤 Mi Perfil
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Sección de actividad reciente (opcional) */}
+      {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Actividad Reciente</CardTitle>
-          <CardDescription>
-            Últimas actualizaciones en tus campañas y personajes
-          </CardDescription>
+          <CardTitle className="text-lg">Accesos Rápidos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No hay actividad reciente</p>
-            <p className="text-sm">Empieza creando una campaña o personaje</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex flex-col items-center gap-3"
+              onClick={() => router.push('/campaigns')}
+            >
+              <Swords className="h-6 w-6" />
+              <div className="text-center">
+                <p className="font-medium">Mis Campañas</p>
+                <p className="text-xs text-muted-foreground">Ver todas tus campañas</p>
+              </div>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex flex-col items-center gap-3"
+              onClick={() => router.push('/characters')}
+            >
+              <Shield className="h-6 w-6" />
+              <div className="text-center">
+                <p className="font-medium">Mis Personajes</p>
+                <p className="text-xs text-muted-foreground">Gestionar fichas de personajes</p>
+              </div>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex flex-col items-center gap-3"
+              onClick={() => router.push('/profile')}
+            >
+              <User className="h-6 w-6" />
+              <div className="text-center">
+                <p className="font-medium">Mi Perfil</p>
+                <p className="text-xs text-muted-foreground">Configurar tu cuenta</p>
+              </div>
+            </Button>
           </div>
         </CardContent>
       </Card>
