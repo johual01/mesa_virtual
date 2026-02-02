@@ -101,7 +101,7 @@ export default function EditCampaignPage() {
         image: formData.image || undefined,
       });
       success('Campaña actualizada', 'Los cambios se han guardado correctamente');
-      refetch?.();
+      router.push(`/campaigns/${campaignId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al guardar los cambios';
       notifyError('Error', message);

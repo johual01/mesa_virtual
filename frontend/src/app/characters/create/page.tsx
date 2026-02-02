@@ -64,9 +64,9 @@ export default function CreateCharacterPage() {
     setError(null);
 
     try {
-      await characterService.createCharacter(formData);
+      const response = await characterService.createCharacter(formData);
       success('Personaje creado', 'El personaje se ha creado exitosamente');
-      router.push('/characters');
+      router.push(`/characters/${response.characterId}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al crear personaje';
       setError(errorMessage);
