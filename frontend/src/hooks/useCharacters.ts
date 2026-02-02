@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { characterService } from '@/services/characterService';
 import { CharacterSummary, Character, CharacterCreateInfo, CharacterState } from '@/types/character';
 
@@ -13,7 +13,7 @@ export const useCharacters = (options: UseCharactersOptions = { origin: 'user' }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCharacters = async () => {
+  const fetchCharacters = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -28,11 +28,11 @@ export const useCharacters = (options: UseCharactersOptions = { origin: 'user' }
     } finally {
       setLoading(false);
     }
-  };
+  }, [options.origin, options.state, options.campaignId]);
 
   useEffect(() => {
     fetchCharacters();
-  }, [options.origin, options.state, options.campaignId]);
+  }, [fetchCharacters]);
 
   return {
     characters,

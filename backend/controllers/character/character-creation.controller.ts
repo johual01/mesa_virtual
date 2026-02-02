@@ -9,6 +9,7 @@ import Class from '../../models/PersonaD20/Class';
 import { elements, system as systems, personaStadistics } from '../../models/types';
 import { enumToArray, saveImage, arraysEqual, UploadedFile } from '../../functions';
 import { rollMaxDiceString } from 'diceLogic';
+import { allTranslations } from '../../translations';
 
 // Extender Request para incluir el archivo de multer
 interface MulterRequest extends Request {
@@ -35,7 +36,8 @@ export const getCreateCharacterInfo = async (req: Request, res: Response) => {
             states: arrayStates,
             secondaryAbilities: arraySecondaryAbilities,
             campaigns,
-            classes
+            classes,
+            translations: allTranslations
         });
     } catch (e) {
         res.status(500).json({ errMsg: 'Error al obtener información de creación', error: e });
@@ -223,7 +225,7 @@ export const createCharacter = async (req: MulterRequest, res: Response) => {
                 streetwise: {
                     statistic: personaStadistics.INSTINCTS,
                     bonus: 0,
-                    isProficient: false
+                    isProficient: proficency.includes(personaSecondaryAbilities.Streetwise)
                 },
                 willpower: {
                     statistic: personaStadistics.COURAGE,

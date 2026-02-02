@@ -441,6 +441,12 @@ export interface CharacterCreateInfo {
     name: string;
   }>;
   classes: PersonaClass[];
+  translations: {
+    elements: Record<string, string>;
+    states: Record<string, string>;
+    secondaryAbilities: Record<string, string>;
+    statistics: Record<string, string>;
+  };
 }
 
 export interface LevelUpInfo {

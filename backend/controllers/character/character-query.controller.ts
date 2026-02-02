@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import Character, { state as characterState } from '../../models/Character';
-import CharacterDetail, { ICharacterPersonaDetail } from '../../models/PersonaD20/CharacterDetail';
+import { ICharacterPersonaDetail } from '../../models/PersonaD20/CharacterDetail';
 import CharacterStatus from '../../models/PersonaD20/CharacterStatus';
 import Campaign from '../../models/Campaign';
 import { IPersonaClass } from '../../models/PersonaD20/Class';
@@ -108,7 +108,6 @@ export const getCharacter = async (req: Request, res: Response) => {
         }
 
         const characterActualLevels = characterClass.levels.filter((e) => e.level < characterData.level);
-        const characterActualLevel = characterClass.levels.find((e) => e.level === characterData.level);
         const stadisticBonifiers = {
             courage: calculateBonification(characterData.stadistics.courage),
             dexterity: calculateBonification(characterData.stadistics.dexterity),

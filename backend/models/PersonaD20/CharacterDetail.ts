@@ -1,5 +1,4 @@
 import {Schema, model, Document, Types } from 'mongoose';
-import { ISpell } from '../Spell';
 import { IPersonaClass } from './Class';
 import { IPersonaSubclass } from './Subclass';
 import { IModifier, elements, personaStadistics } from '../types';
