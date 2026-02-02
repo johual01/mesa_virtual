@@ -157,7 +157,8 @@ export default function CampaignDetailPage() {
   const canEditNote = (note: Note) => {
     // El owner puede editar todas las notas, los demás solo las suyas
     if (isOwner) return true;
-    return note.owner === user?._id;
+    const userId = user?._id || user?.id;
+    return note.owner === userId;
   };
   
   // Establecer título dinámico basado en la campaña
@@ -172,7 +173,8 @@ export default function CampaignDetailPage() {
     if (campaign && user) {
       // Verificar si el usuario es el dueño de la campaña
       const ownerId = typeof campaign.owner === 'string' ? campaign.owner : campaign.owner._id;
-      setIsOwner(ownerId === user._id);
+      const userId = user._id || user.id;
+      setIsOwner(ownerId === userId);
     }
   }, [user, campaign, router]);
 
