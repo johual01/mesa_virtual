@@ -7,7 +7,7 @@ db.characterClass.insertOne({
     name: 'Shapeshifter',
     description: 'Cambiaformas que puede adoptar tres formas espirituales distintas: guardián defensivo, depredador ágil o gobernante místico.',
     HPDice: '1d8',
-    salvations: ['courage', 'wisdom'],
+    salvations: ['courage', 'instincts'],
 });
 
 // Insertar los hechizos de Shapeshifter
@@ -199,11 +199,11 @@ db.spell.insertMany([
                         bonus: { type: 'extra_reaction', value: 1 }
                     },
                     {
-                        save: 'intelligence',
+                        save: 'knowledge',
                         bonus: { type: 'ap_recovery', value: '2d4' }
                     },
                     {
-                        save: 'wisdom',
+                        save: 'instincts',
                         bonus: { type: 'advantage', applyTo: 'next_attack' }
                     },
                     {
@@ -1259,7 +1259,7 @@ db.characterClass.updateOne(
 );
 
 // Insertar las subclases
-db.subclass.insertMany([
+db.personasubclasses.insertMany([
     // Subclase: Bulwark Spirit
     {
         name: 'Bulwark Spirit',

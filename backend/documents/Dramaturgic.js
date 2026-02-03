@@ -183,7 +183,7 @@ db.spells.insertMany([
                 movementType: 'push',
                 distance: 'full_movement',
                 target: 'same_enemy',
-                saveType: 'wisdom',
+                saveType: 'instincts',
                 saveDC: 'spell_save_dc',
                 condition: 'uses_reaction'
             }
@@ -595,7 +595,7 @@ db.spells.insertMany([
                 type: 'status_effect',
                 statusType: 'cone_of_shame',
                 target: 'single_enemy_melee',
-                saveType: 'wisdom',
+                saveType: 'instincts',
                 saveDC: 'spell_save_dc',
                 duration: {
                     type: 'temporal',
@@ -1848,7 +1848,7 @@ db.characterClass.updateOne(
 );
 
 // Insertar las subclases
-db.subclass.insertMany([
+db.personasubclasses.insertMany([
     // Subclase: Monologue
     {
         name: 'Monologue',
@@ -2732,7 +2732,7 @@ db.subclass.insertMany([
                                         type: 'status_effect',
                                         statusType: 'surprised',
                                         target: 'marked_enemy',
-                                        saveType: 'intelligence',
+                                        saveType: 'knowledge',
                                         saveDC: 'spell_save_dc',
                                         duration: {
                                             type: 'temporal',

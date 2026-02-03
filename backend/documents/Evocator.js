@@ -6,7 +6,7 @@ db.characterClass.insertOne({
     _id: characterClassId,
     name: 'Evocator',
     HPDice: '1d6',
-    salvations: ['intelligence', 'wisdom']
+    salvations: ['knowledge', 'instincts']
 });
 
 // Insertar los hechizos de Evocator
@@ -510,7 +510,7 @@ db.spells.insertMany([
                 description: 'Reemplaza bonificador con inteligencia',
                 target: 'self',
                 applyTo: 'weapon',
-                newModifier: 'intelligence'
+                newModifier: 'knowledge'
             },
             {
                 value: 1,
@@ -1316,7 +1316,7 @@ db.spells.insertMany([
                 description: 'Reemplaza bonificadores con inteligencia',
                 target: 'self',
                 applyTo: 'two_weapons',
-                newModifier: 'intelligence'
+                newModifier: 'knowledge'
             },
             {
                 value: 1,
@@ -2051,7 +2051,7 @@ db.characterClass.updateOne(
 );
 
 // Insertar las subclases
-db.subclass.insertMany([
+db.personasubclasses.insertMany([
     // Subclase: Control
     {
         name: 'Control',

@@ -7,7 +7,7 @@ db.characterClass.insertOne({
     name: 'Shadow Hunter',
     description: 'Cazador experto en combate físico, concentración y marcado de objetivos.',
     HPDice: '2d4',
-    salvations: ['dexterity', 'wisdom'],
+    salvations: ['dexterity', 'instincts'],
 });
 
 // Insertar los hechizos de Shadow Hunter
@@ -1487,7 +1487,7 @@ db.characterClass.updateOne(
 );
 
 // Insertar las subclases
-db.subclass.insertMany([
+db.personasubclasses.insertMany([
     // Subclase: Juggler
     {
         name: 'Juggler',

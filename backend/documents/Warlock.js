@@ -7,7 +7,7 @@ db.characterClass.insertOne({
     name: 'Warlock',
     description: 'Lanzador oscuro que manipula sombras y marca enemigos para sacrificios.',
     HPDice: '1d8',
-    salvations: ['intelligence', 'charisma'],
+    salvations: ['knowledge', 'charisma'],
 });
 
 // Insertar los hechizos de Warlock
@@ -542,7 +542,7 @@ db.spell.insertMany([
             {
                 type: 'spiritual_weapon',
                 weaponCount: 1,
-                modifier: 'intelligence',
+                modifier: 'knowledge',
                 attackAsPartOfSpell: true,
                 ignoreRange: true,
                 target: 'self'
@@ -1468,7 +1468,7 @@ db.spell.insertMany([
             {
                 type: 'spiritual_weapon',
                 weaponCount: 2,
-                modifier: 'intelligence',
+                modifier: 'knowledge',
                 attackAsPartOfSpell: true,
                 ignoreRange: true,
                 target: 'self'
@@ -1708,7 +1708,7 @@ const reflejoDeSombraFeature = {
     trigger: 'in_forma_sombria',
     mechanics: {
         reflectDamage: {
-            save: 'intelligence',
+            save: 'knowledge',
             dc: '{spellcasting_attack}',
             damageAmount: 'same_as_taken'
         },
@@ -1968,7 +1968,7 @@ db.characterClass.updateOne(
 // Subclases de Warlock
 
 // DOMINION
-db.subclass.insertMany([
+db.personasubclasses.insertMany([
     {
         _id: new ObjectId(),
         name: 'Dominion',

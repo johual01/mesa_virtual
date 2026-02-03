@@ -411,7 +411,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                 }
             },
             secondaryAbilities: characterData.secondaryAbilities,
-            backstory: character.backstory,
+            background: character.backstory,
             features: {
                 classFeatures: characterActualLevels.reduce((features, level) => {
                     features.push(...level.features);

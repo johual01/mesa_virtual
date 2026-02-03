@@ -4,7 +4,7 @@ const characterClass = await db.personaclasses.insertOne({
     name: 'Commander',
     description: 'Líder táctico que potencia a sus aliados y coordina el campo de batalla',
     HPDice: '1d8',
-    salvations: ['dexterity', 'intelligence'],
+    salvations: ['dexterity', 'knowledge'],
     resourceType: 'Morale Points',
     levels: []
 })
@@ -2103,7 +2103,7 @@ const pacifierAdditionalSpells = await db.spells.insertMany([
 const subclasses = subclass.insertedIds;
 
 // Ahora actualizamos la clase con los niveles completos
-await db.class.updateOne(
+await db.personaclasses.updateOne(
     { _id: characterClassId },
     { $set: {
         levels: [

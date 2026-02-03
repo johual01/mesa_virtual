@@ -1,7 +1,7 @@
 const { ObjectId } = require('mongodb');
 
 // Primero creamos la clase para tener su ID
-const characterClass = await db.class.insertOne({
+const characterClass = await db.personaclasses.insertOne({
     name: 'Revenant',
     description: 'Pum te pego',
     HPDice: '2d4',
@@ -1132,7 +1132,7 @@ const listSpells = await db.spells.insertMany([
 
 const spells = listSpells.insertedIds;
 
-await db.class.updateOne(
+await db.personaclasses.updateOne(
     { _id: characterClassId },
     { $set: {
         levels: [
@@ -2035,7 +2035,7 @@ await db.class.updateOne(
     initialResourcePoolValue: 0
 }})
 
-const subclass = await db.subclass.insertMany([
+const subclass = await db.personasubclasses.insertMany([
     {
         name: 'Berseker',
         description: 'Pum te pego más fuerte',

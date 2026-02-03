@@ -1,11 +1,11 @@
 const { ObjectId } = require('mongodb');
 
 // Primero creamos la clase para tener su ID
-const characterClass = await db.class.insertOne({
+const characterClass = await db.personaclasses.insertOne({
     name: 'Connector',
     description: 'Canalizador de ánimas que mezcla energías espirituales para crear hechizos personalizados y apoyar a sus aliados',
     HPDice: '1d6',
-    salvations: ['wisdom', 'charisma'],
+    salvations: ['instincts', 'charisma'],
     levels: [] // Lo llenaremos después
 })
 
@@ -2562,7 +2562,7 @@ const amplificacionDeAuraFeature = {
 };
 
 // Ahora construimos el array de levels
-await db.class.updateOne(
+await db.personaclasses.updateOne(
     { _id: characterClassId },
     { $set: {
         levels: [
@@ -2759,7 +2759,7 @@ await db.class.updateOne(
 )
 
 // Ahora creamos las subclases
-const subclasses = await db.subclass.insertMany([
+const subclasses = await db.personasubclasses.insertMany([
     // Subclase: Vigilant
     {
         name: 'Vigilant',
@@ -3496,7 +3496,7 @@ const equilibrioEspiritualFeature = {
                         {
                             type: 'interrupt_action',
                             target: 'enemy',
-                            salvationType: 'intelligence'
+                            salvationType: 'knowledge'
                         }
                     ],
                     state: 'ACTIVE'

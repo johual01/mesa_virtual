@@ -14,7 +14,7 @@ export const obtainSecondaryFeatures = (
     level: number, 
     featureId: Types.ObjectId
 ) => {
-    const subclassFeatures = (characterDetail.class.subclass as IPersonaSubclass)?.levels?.find(e => e.level < level)?.features;
+    const subclassFeatures = (characterDetail.subclass as IPersonaSubclass)?.levels?.find(e => e.level < level)?.features;
     return characterClass.levels
         .flatMap(el => el.features)
         .concat(subclassFeatures || [])
@@ -41,13 +41,13 @@ export const getLevelUpInfo = async (req: Request, res: Response) => {
 
         const characterDetail = await CharacterDetail
             .findById(character.characterData)
-            .populate([{ path: 'class.type', populate: 'levels.features' }, { path: 'class.subclass', populate: 'levels.features' }]);
+            .populate([{ path: 'class', populate: 'levels.features' }, { path: 'subclass', populate: 'levels.features' }]);
 
         if (!characterDetail) {
             return res.status(404).json({ errMsg: 'Detalle del personaje no encontrado' });
         }
 
-        const characterClass = characterDetail.class.type as IPersonaClass;
+        const characterClass = characterDetail.class as IPersonaClass;
         const actualLevel = characterDetail.level;
         const nextLevel = actualLevel + 1;
         const nextLevelData = characterClass.levels.find(e => e.level === nextLevel);
@@ -68,8 +68,8 @@ export const getLevelUpInfo = async (req: Request, res: Response) => {
             shouldChooseStatImprovement: nextLevelData.gainStatIncrease,
         };
 
-        if (characterDetail.class.subclass) {
-            const subclass = await Subclass.findById(characterDetail.class.subclass);
+        if (characterDetail.subclass) {
+            const subclass = await Subclass.findById(characterDetail.subclass);
             if (!subclass) {
                 return res.status(404).json({ errMsg: 'Subclase no encontrada' });
             }
@@ -126,7 +126,7 @@ export const levelUp = async (req: Request, res: Response) => {
             return res.status(404).json({ errMsg: 'Detalle del personaje no encontrado' });
         }
 
-        const characterClass = await Class.findById(characterDetail.class.type);
+        const characterClass = await Class.findById(characterDetail.class);
         if (!characterClass) {
             return res.status(404).json({ errMsg: 'Clase no encontrada' });
         }
@@ -179,8 +179,8 @@ export const levelUp = async (req: Request, res: Response) => {
             if (modifiers.length > 0) modifiers.push(...permanentModifiers);
         }
 
-        if (characterDetail.class.subclass) {
-            const subclass = await Subclass.findById(characterDetail.class.subclass);
+        if (characterDetail.subclass) {
+            const subclass = await Subclass.findById(characterDetail.subclass);
             if (!subclass) {
                 return res.status(404).json({ errMsg: 'Subclase no encontrada' });
             }
@@ -313,7 +313,7 @@ export const levelUp = async (req: Request, res: Response) => {
             if (!subclass) {
                 return res.status(404).json({ errMsg: 'Subclase no encontrada' });
             }
-            characterDetail.class.subclass = selectedSubclass;
+            characterDetail.subclass = selectedSubclass;
         }
 
         if (nextLevelData.gainSecondaryAffinity) {
@@ -397,7 +397,7 @@ export const getSecondaryFeatures = async (req: Request, res: Response) => {
             return res.status(404).json({ errMsg: 'Detalle del personaje no encontrado' });
         }
 
-        const characterClass = await Class.findById(characterDetail.class.type);
+        const characterClass = await Class.findById(characterDetail.class);
         if (!characterClass) {
             return res.status(404).json({ errMsg: 'Clase no encontrada' });
         }
@@ -462,7 +462,7 @@ export const updateSelectedSecondaryFeatures = async (req: Request, res: Respons
             return res.status(404).json({ errMsg: 'Detalle del personaje no encontrado' });
         }
 
-        const characterClass = await Class.findById(characterDetail.class.type);
+        const characterClass = await Class.findById(characterDetail.class);
         if (!characterClass) {
             return res.status(404).json({ errMsg: 'Clase no encontrada' });
         }

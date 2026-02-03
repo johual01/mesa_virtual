@@ -1299,7 +1299,7 @@ db.characterClass.updateOne(
 // ============================================
 // ASSASSIN - Subclase de Asesino
 // ============================================
-db.subclass.insertMany([
+db.personasubclasses.insertMany([
     {
         _id: new ObjectId(),
         name: 'Assassin',

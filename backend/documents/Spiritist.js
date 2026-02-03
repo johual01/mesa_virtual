@@ -7,7 +7,7 @@ db.characterClass.insertOne({
     name: 'Spiritist',
     description: 'Canalizador espiritual con auras de combate y golpes de espíritu que potencian aliados.',
     HPDice: '1d6',
-    salvations: ['courage', 'intelligence'],
+    salvations: ['courage', 'knowledge'],
 });
 
 // Insertar los hechizos de Spiritist
@@ -1872,7 +1872,7 @@ db.characterClass.updateOne(
 // ============================================
 // ENERGIZER - Subclase de Soporte y Curación
 // ============================================
-db.subclass.insertMany([
+db.personasubclasses.insertMany([
     {
         _id: new ObjectId(),
         name: 'Energizer',
