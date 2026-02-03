@@ -32,7 +32,7 @@ interface CampaignFormData {
 }
 
 export default function EditCampaignPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const campaignId = params?.id as string;
@@ -61,7 +61,7 @@ export default function EditCampaignPage() {
 
   // Verificar que el usuario es el owner
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push('/login');
       return;
     }
@@ -81,7 +81,7 @@ export default function EditCampaignPage() {
         image: campaign.image || '',
       });
     }
-  }, [user, campaign, router, campaignId]);
+  }, [user, authLoading, campaign, router, campaignId]);
 
   const handleInputChange = (field: keyof CampaignFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

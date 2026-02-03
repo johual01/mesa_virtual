@@ -1,6 +1,6 @@
 const { ObjectId } = require('mongodb');
 
-const characterClass = await db.class.insertOne({
+const characterClass = await db.personaclasses.insertOne({
     name: 'Commander',
     description: 'Líder táctico que potencia a sus aliados y coordina el campo de batalla',
     HPDice: '1d8',
@@ -1207,7 +1207,7 @@ const listSpells = await db.spells.insertMany([
 
 const spells = listSpells.insertedIds;
 
-const subclass = await db.subclass.insertMany([
+const subclass = await db.personasubclasses.insertMany([
     {
         name: 'Leader',
         description: 'Especialista en potenciar y renovar a los aliados en combate',

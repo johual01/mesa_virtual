@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectOption } from "@/components/ui/select";
 import { ImageUploader } from "@/components/ImageUploader";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Minus } from "lucide-react";
 import { CharacterState, System, CreateCharacterData, Element, Stadistics } from "@/types/character";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
@@ -21,7 +21,7 @@ export default function CreateCharacterPage() {
   // Establecer título dinámico de la página
   usePageTitle("Crear Personaje");
   
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { createInfo, loading: infoLoading } = useCharacterCreateInfo();
   const { success, error: notifyError } = useNotificationContext();
@@ -48,11 +48,11 @@ export default function CreateCharacterPage() {
     persona: "",
     money: 0,
     stadistics: {
-      courage: 1,
-      dexterity: 1,
-      instincts: 1,
-      knowledge: 1,
-      charisma: 1
+      courage: 10,
+      dexterity: 10,
+      instincts: 10,
+      knowledge: 10,
+      charisma: 10
     },
     proficency: [],
     element: Element.FIRE,
@@ -61,10 +61,10 @@ export default function CreateCharacterPage() {
   const [campaignId, setCampaignId] = useState<string>("");
 
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push('/login');
     }
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,6 +133,17 @@ export default function CreateCharacterPage() {
     }));
   };
 
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Verificando autenticación...</span>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return null;
   }
@@ -149,9 +160,9 @@ export default function CreateCharacterPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-6">
         <Button
           variant="ghost"
           size="sm"
@@ -167,6 +178,8 @@ export default function CreateCharacterPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Layout principal en dos columnas para pantallas grandes */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -176,40 +189,36 @@ export default function CreateCharacterPage() {
 
         {/* Información Básica */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle>Información Básica</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Nombre */}
-              <div className="space-y-2">
-                <Label htmlFor="name">Nombre del Personaje *</Label>
+          <CardContent className="space-y-3">
+            {/* Nombre - ancho completo */}
+            <div className="space-y-1">
+              <Label htmlFor="name" className="text-xs">Nombre del Personaje *</Label>
+              <Input
+                id="name"
+                placeholder="Ej: Aeliana Moonshadow"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                required
+              />
+            </div>
+
+            {/* Persona y Estado */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="persona" className="text-xs">Nombre de la Persona *</Label>
                 <Input
-                  id="name"
-                  placeholder="Ej: Aeliana Moonshadow"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  id="persona"
+                  placeholder="Ej: Arsene, Izanagi..."
+                  value={formData.persona}
+                  onChange={(e) => handleInputChange('persona', e.target.value)}
                   required
                 />
               </div>
-
-              {/* Sistema */}
-              <div className="space-y-2">
-                <Label htmlFor="system">Sistema de Juego *</Label>
-                <Select
-                  id="system"
-                  value={formData.system}
-                  onChange={(e) => handleInputChange('system', e.target.value)}
-                  required
-                  disabled
-                >
-                  <SelectOption value={System.PERSONAD20}>Persona D20</SelectOption>
-                </Select>
-              </div>
-
-              {/* Estado */}
-              <div className="space-y-2">
-                <Label htmlFor="state">Estado *</Label>
+              <div className="space-y-1">
+                <Label htmlFor="state" className="text-xs">Estado *</Label>
                 <Select
                   id="state"
                   value={formData.state}
@@ -225,52 +234,35 @@ export default function CreateCharacterPage() {
                     ))}
                 </Select>
               </div>
+            </div>
 
-              {/* Clase */}
-              <div className="space-y-2">
-                <Label htmlFor="characterClass">Clase *</Label>
-                <Select
-                  id="characterClass"
-                  value={formData.characterClass}
-                  onChange={(e) => handleInputChange('characterClass', e.target.value)}
-                  required
-                >
-                  <SelectOption value="">Selecciona una clase</SelectOption>
-                  {createInfo?.classes.map((cls) => (
-                    <SelectOption key={cls._id} value={cls._id}>
-                      {cls.name}
-                    </SelectOption>
-                  ))}
-                </Select>
-              </div>
+            {/* Clase - ancho completo con descripción */}
+            <div className="space-y-1">
+              <Label htmlFor="characterClass" className="text-xs">Clase *</Label>
+              <Select
+                id="characterClass"
+                value={formData.characterClass}
+                onChange={(e) => handleInputChange('characterClass', e.target.value)}
+                required
+              >
+                <SelectOption value="">Selecciona una clase</SelectOption>
+                {createInfo?.classes.map((cls) => (
+                  <SelectOption key={cls._id} value={cls._id}>
+                    {cls.name}
+                  </SelectOption>
+                ))}
+              </Select>
+              {formData.characterClass && createInfo?.classes.find(c => c._id === formData.characterClass)?.description && (
+                <p className="text-xs text-muted-foreground mt-2 p-3 bg-muted/50 rounded">
+                  {createInfo?.classes.find(c => c._id === formData.characterClass)?.description}
+                </p>
+              )}
+            </div>
 
-              {/* Persona */}
-              <div className="space-y-2">
-                <Label htmlFor="persona">Nombre de la Persona *</Label>
-                <Input
-                  id="persona"
-                  placeholder="Ej: Arsene, Izanagi..."
-                  value={formData.persona}
-                  onChange={(e) => handleInputChange('persona', e.target.value)}
-                  required
-                />
-              </div>
-
-              {/* Dinero */}
-              <div className="space-y-2">
-                <Label htmlFor="money">Dinero Inicial</Label>
-                <Input
-                  id="money"
-                  type="number"
-                  min="0"
-                  value={formData.money}
-                  onChange={(e) => handleInputChange('money', parseInt(e.target.value) || 0)}
-                />
-              </div>
-
-              {/* Campaña */}
-              <div className="space-y-2">
-                <Label htmlFor="campaignId">Campaña (Opcional)</Label>
+            {/* Campaña y Dinero */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="campaignId" className="text-xs">Campaña (Opcional)</Label>
                 <Select
                   id="campaignId"
                   value={campaignId}
@@ -284,6 +276,16 @@ export default function CreateCharacterPage() {
                   ))}
                 </Select>
               </div>
+              <div className="space-y-1">
+                <Label htmlFor="money" className="text-xs">Dinero Inicial</Label>
+                <Input
+                  id="money"
+                  type="number"
+                  min="0"
+                  value={formData.money}
+                  onChange={(e) => handleInputChange('money', parseInt(e.target.value) || 0)}
+                />
+              </div>
             </div>
 
             {/* Imagen */}
@@ -296,242 +298,167 @@ export default function CreateCharacterPage() {
           </CardContent>
         </Card>
 
-        {/* Estadísticas */}
+        {/* Estadísticas, Afinidades y Proficiencias */}
         <Card>
-          <CardHeader>
-            <CardTitle>Estadísticas</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle>Estadísticas y Afinidades</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="courage">Coraje</Label>
-                <Input
-                  id="courage"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.stadistics.courage}
-                  onChange={(e) => handleInputChange('stadistics.courage', e.target.value)}
-                />
+            {/* Stats */}
+            <div className="space-y-2">
+              {[
+                { key: 'courage', name: 'Coraje', abbr: 'COR', description: 'Valentía y determinación' },
+                { key: 'dexterity', name: 'Destreza', abbr: 'DES', description: 'Agilidad y coordinación' },
+                { key: 'instincts', name: 'Instintos', abbr: 'INS', description: 'Percepción y reflejos' },
+                { key: 'knowledge', name: 'Conocimiento', abbr: 'CON', description: 'Intelecto y memoria' },
+                { key: 'charisma', name: 'Carisma', abbr: 'CAR', description: 'Presencia social' },
+              ].map((stat) => {
+                const value = formData.stadistics[stat.key as keyof Stadistics];
+                const canIncrease = value < 20;
+                const canDecrease = value > 1;
+                const modifier = Math.floor((value - 10) / 2);
+
+                return (
+                  <div 
+                    key={stat.key} 
+                    className="flex items-center gap-3 p-2 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">
+                      {stat.abbr}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm">{stat.name}</div>
+                      <div className="text-xs text-muted-foreground truncate">{stat.description}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-7 w-7"
+                        disabled={!canDecrease}
+                        onClick={() => handleInputChange(`stadistics.${stat.key}`, value - 1)}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <div className="w-8 text-center text-lg font-bold">
+                        {value}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-7 w-7"
+                        disabled={!canIncrease}
+                        onClick={() => handleInputChange(`stadistics.${stat.key}`, value + 1)}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                      <div className={`w-10 text-center font-bold text-sm ${modifier >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+                        {modifier >= 0 ? `+${modifier}` : modifier}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Afinidades y Proficiencias */}
+            <div className="border-t pt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="element" className="text-xs">Elemento *</Label>
+                  <Select
+                    id="element"
+                    value={formData.element}
+                    onChange={(e) => handleInputChange('element', e.target.value)}
+                    required
+                  >
+                    {createInfo?.elements.map((el) => (
+                      <SelectOption key={el} value={el}>
+                        {createInfo?.translations?.elements?.[el] || el}
+                      </SelectOption>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="weakness" className="text-xs">Debilidad *</Label>
+                  <Select
+                    id="weakness"
+                    value={formData.weakness}
+                    onChange={(e) => handleInputChange('weakness', e.target.value)}
+                    required
+                  >
+                    {createInfo?.elements.map((el) => (
+                      <SelectOption key={el} value={el}>
+                        {createInfo?.translations?.elements?.[el] || el}
+                      </SelectOption>
+                    ))}
+                  </Select>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="dexterity">Destreza</Label>
-                <Input
-                  id="dexterity"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.stadistics.dexterity}
-                  onChange={(e) => handleInputChange('stadistics.dexterity', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="instincts">Instintos</Label>
-                <Input
-                  id="instincts"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.stadistics.instincts}
-                  onChange={(e) => handleInputChange('stadistics.instincts', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="knowledge">Conocimiento</Label>
-                <Input
-                  id="knowledge"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.stadistics.knowledge}
-                  onChange={(e) => handleInputChange('stadistics.knowledge', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="charisma">Carisma</Label>
-                <Input
-                  id="charisma"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.stadistics.charisma}
-                  onChange={(e) => handleInputChange('stadistics.charisma', e.target.value)}
-                />
+              <div className="space-y-1">
+                <Label className="text-xs">Proficiencias ({formData.proficency.length}/2)</Label>
+                <div className="flex flex-wrap gap-2">
+                  {createInfo?.secondaryAbilities.map((ability) => {
+                    const isSelected = formData.proficency.includes(ability);
+                    const isDisabled = !isSelected && formData.proficency.length >= 2;
+                    const label = createInfo?.translations?.secondaryAbilities?.[ability] || ability;
+                    
+                    return (
+                      <button
+                        key={ability}
+                        type="button"
+                        disabled={isDisabled}
+                        onClick={() => handleProficiencyChange(ability, !isSelected)}
+                        className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                          isSelected 
+                            ? 'bg-primary text-primary-foreground border-primary' 
+                            : isDisabled
+                              ? 'bg-muted text-muted-foreground border-muted cursor-not-allowed opacity-50'
+                              : 'bg-background hover:bg-accent border-input'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
+        </div> {/* Fin del grid de dos columnas */}
 
-        {/* Elementos y Debilidades */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Afinidad Elemental</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="element">Elemento Principal *</Label>
-                <Select
-                  id="element"
-                  value={formData.element}
-                  onChange={(e) => handleInputChange('element', e.target.value)}
-                  required
-                >
-                  {createInfo?.elements.map((el) => (
-                    <SelectOption key={el} value={el}>
-                      {createInfo?.translations?.elements?.[el] || el}
-                    </SelectOption>
-                  ))}
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="weakness">Debilidad *</Label>
-                <Select
-                  id="weakness"
-                  value={formData.weakness}
-                  onChange={(e) => handleInputChange('weakness', e.target.value)}
-                  required
-                >
-                  {createInfo?.elements.map((el) => (
-                    <SelectOption key={el} value={el}>
-                      {createInfo?.translations?.elements?.[el] || el}
-                    </SelectOption>
-                  ))}
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Proficiencias */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Proficiencias</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {createInfo?.secondaryAbilities.map((ability) => (
-                <label key={ability} className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.proficency.includes(ability)}
-                    onChange={(e) => handleProficiencyChange(ability, e.target.checked)}
-                    className="rounded border-gray-300"
-                  />
-                  <span className="text-sm">{createInfo?.translations?.secondaryAbilities?.[ability] || ability}</span>
-                </label>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Historia del Personaje */}
+        {/* Historia del Personaje - Ocupa todo el ancho */}
         <Card>
           <CardHeader>
             <CardTitle>Historia del Personaje</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Historia */}
-              <div className="space-y-2">
-                <Label htmlFor="history">Historia</Label>
-                <Textarea
-                  id="history"
-                  placeholder="La historia de fondo de tu personaje..."
-                  value={formData.backstory.history}
-                  onChange={(e) => handleInputChange('backstory.history', e.target.value)}
-                  className="min-h-[100px]"
-                />
-              </div>
-
-              {/* Personalidad */}
-              <div className="space-y-2">
-                <Label htmlFor="personality">Personalidad</Label>
-                <Textarea
-                  id="personality"
-                  placeholder="Cómo se comporta tu personaje..."
-                  value={formData.backstory.personality}
-                  onChange={(e) => handleInputChange('backstory.personality', e.target.value)}
-                  className="min-h-[100px]"
-                />
-              </div>
-
-              {/* Apariencia */}
-              <div className="space-y-2">
-                <Label htmlFor="appearance">Apariencia</Label>
-                <Textarea
-                  id="appearance"
-                  placeholder="Descripción física del personaje..."
-                  value={formData.backstory.appearance}
-                  onChange={(e) => handleInputChange('backstory.appearance', e.target.value)}
-                />
-              </div>
-
-              {/* Rasgos */}
-              <div className="space-y-2">
-                <Label htmlFor="traits">Rasgos</Label>
-                <Textarea
-                  id="traits"
-                  placeholder="Rasgos distintivos del personaje..."
-                  value={formData.backstory.traits}
-                  onChange={(e) => handleInputChange('backstory.traits', e.target.value)}
-                />
-              </div>
-
-              {/* Defectos */}
-              <div className="space-y-2">
-                <Label htmlFor="defects">Defectos</Label>
-                <Textarea
-                  id="defects"
-                  placeholder="Debilidades o defectos del personaje..."
-                  value={formData.backstory.defects}
-                  onChange={(e) => handleInputChange('backstory.defects', e.target.value)}
-                />
-              </div>
-
-              {/* Ideales */}
-              <div className="space-y-2">
-                <Label htmlFor="ideals">Ideales</Label>
-                <Textarea
-                  id="ideals"
-                  placeholder="Qué principios guían a tu personaje..."
-                  value={formData.backstory.ideals}
-                  onChange={(e) => handleInputChange('backstory.ideals', e.target.value)}
-                />
-              </div>
-
-              {/* Sueños */}
-              <div className="space-y-2">
-                <Label htmlFor="dreams">Sueños/Objetivos</Label>
-                <Textarea
-                  id="dreams"
-                  placeholder="Qué espera lograr tu personaje..."
-                  value={formData.backstory.dreams}
-                  onChange={(e) => handleInputChange('backstory.dreams', e.target.value)}
-                />
-              </div>
-
-              {/* Vínculos */}
-              <div className="space-y-2">
-                <Label htmlFor="bonds">Vínculos</Label>
-                <Textarea
-                  id="bonds"
-                  placeholder="Conexiones importantes del personaje..."
-                  value={formData.backstory.bonds}
-                  onChange={(e) => handleInputChange('backstory.bonds', e.target.value)}
-                />
-              </div>
-
-              {/* Trauma */}
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="trauma">Traumas/Miedos</Label>
-                <Textarea
-                  id="trauma"
-                  placeholder="Experiencias traumáticas o miedos del personaje..."
-                  value={formData.backstory.trauma}
-                  onChange={(e) => handleInputChange('backstory.trauma', e.target.value)}
-                />
-              </div>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {[
+                { key: 'history', label: 'Historia', placeholder: 'La historia de fondo de tu personaje...' },
+                { key: 'personality', label: 'Personalidad', placeholder: 'Cómo se comporta tu personaje...' },
+                { key: 'appearance', label: 'Apariencia', placeholder: 'Descripción física del personaje...' },
+                { key: 'traits', label: 'Rasgos', placeholder: 'Rasgos distintivos del personaje...' },
+                { key: 'defects', label: 'Defectos', placeholder: 'Debilidades o defectos del personaje...' },
+                { key: 'ideals', label: 'Ideales', placeholder: 'Qué principios guían a tu personaje...' },
+                { key: 'dreams', label: 'Sueños/Objetivos', placeholder: 'Qué espera lograr tu personaje...' },
+                { key: 'bonds', label: 'Vínculos', placeholder: 'Conexiones importantes del personaje...' },
+                { key: 'trauma', label: 'Traumas/Miedos', placeholder: 'Experiencias traumáticas o miedos...' },
+              ].map((field) => (
+                <div key={field.key} className="space-y-2">
+                  <Label htmlFor={field.key}>{field.label}</Label>
+                  <Textarea
+                    id={field.key}
+                    placeholder={field.placeholder}
+                    value={formData.backstory[field.key as keyof typeof formData.backstory]}
+                    onChange={(e) => handleInputChange(`backstory.${field.key}`, e.target.value)}
+                    className="h-24 resize-none"
+                  />
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

@@ -45,8 +45,24 @@ export default function RootLayout({
         <meta name="author" content="Mesa Virtual Team" />
         <meta name="keywords" content="rol de mesa, D&D, dungeons and dragons, persona d20, rpg, gestión de campañas, fichas de personaje" />
         <title>Mesa Virtual - Tu plataforma de rol de mesa</title>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
-      <body>
+      <body className="bg-background text-foreground">
         <AuthProvider>
           <NotificationProvider>
             <ThemeProvider
@@ -54,6 +70,7 @@ export default function RootLayout({
               defaultTheme="system"
               enableSystem
               disableTransitionOnChange
+              storageKey="theme"
             >
               <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", maxHeight: "100vh" }}>
                 <Navbar />

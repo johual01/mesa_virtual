@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotificationContext } from "@/context/notifications";
@@ -18,7 +18,7 @@ export default function CreateCampaignPage() {
   // Establecer título dinámico de la página
   usePageTitle("Crear Campaña");
   
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { success, error: notifyError } = useNotificationContext();
   const [loading, setLoading] = useState(false);
@@ -30,6 +30,12 @@ export default function CreateCampaignPage() {
     notes: [] as string[],
     publicEntries: [] as string[]
   });
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,9 +67,15 @@ export default function CreateCampaignPage() {
     }));
   };
 
-  if (!user) {
-    router.push('/login');
-    return null;
+  if (authLoading || !user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Verificando autenticación...</span>
+        </div>
+      </div>
+    );
   }
 
   return (

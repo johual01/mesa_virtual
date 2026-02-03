@@ -102,10 +102,29 @@ export const requestFile = async (req: Request, res: Response) => {
 
 const stringIsNumber = (value: string | number) => isNaN(Number(value)) === false;
 
-export function enumToArray(enumme: any) {
-    return Object.keys(enumme)
-        .filter(stringIsNumber)
-        .map(key => enumme[key]);
+/**
+ * Convierte un enum a un array de sus valores.
+ * Funciona tanto con enums numéricos como con string enums.
+ */
+export function enumToArray<T extends Record<string, string | number>>(enumObj: T): (T[keyof T])[] {
+    const keys = Object.keys(enumObj);
+    
+    // Para enums numéricos, TypeScript genera keys tanto para nombres como valores
+    // Ej: { 0: 'A', 1: 'B', A: 0, B: 1 }
+    // Para string enums solo genera los nombres como keys
+    // Ej: { A: 'valueA', B: 'valueB' }
+    
+    const hasNumericKeys = keys.some(key => stringIsNumber(key));
+    
+    if (hasNumericKeys) {
+        // Enum numérico: filtrar solo los valores (excluir las keys numéricas reversas)
+        return keys
+            .filter(key => !stringIsNumber(key))
+            .map(key => enumObj[key as keyof T]) as (T[keyof T])[];
+    } else {
+        // String enum: retornar todos los valores
+        return Object.values(enumObj) as (T[keyof T])[];
+    }
 }
 
 export function arraysEqual<T>(arr1: T[], arr2: T[]): boolean {

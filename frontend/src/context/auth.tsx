@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const refreshAccessToken = useCallback(async () => {
+  const refreshAccessToken = useCallback(async (): Promise<boolean> => {
     try {
       const data = await authService.refresh();
       localStorage.setItem('token', data.token);
@@ -46,13 +46,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const savedUser = JSON.parse(userStr);
         setUser(savedUser);
       }
+      return true;
     } catch (error) {
       console.error('Error refreshing token:', error);
-      // No llamar logout aquí para evitar loop, solo limpiar
-      setUser(null);
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-      Cookies.remove('jwt');
+      return false;
     }
   }, []);
 
@@ -69,10 +66,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const savedUser = JSON.parse(userStr);
           setUser(savedUser);
           
-          // Verificar si hay refresh token para renovar el access token
+          // Intentar renovar el token en segundo plano, pero no fallar si no se puede
           const refreshToken = Cookies.get('jwt');
           if (refreshToken) {
-            await refreshAccessToken();
+            const refreshed = await refreshAccessToken();
+            if (!refreshed) {
+              // Si el refresh falla pero tenemos token local, mantener la sesión
+              // El token local puede seguir siendo válido
+              console.log('Refresh failed, using cached session');
+            }
           }
         } catch (e) {
           console.error('Error parsing saved user:', e);
@@ -84,7 +86,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // No hay sesión guardada, verificar si hay refresh token
         const refreshToken = Cookies.get('jwt');
         if (refreshToken) {
-          await refreshAccessToken();
+          const refreshed = await refreshAccessToken();
+          if (!refreshed) {
+            // Limpiar cookie inválida
+            Cookies.remove('jwt');
+          }
         }
       }
       

@@ -37,7 +37,7 @@ const getSystemLabel = (system: System) => {
 };
 
 export default function CharacterDetailPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const characterId = params?.id as string;
@@ -49,7 +49,7 @@ export default function CharacterDetailPage() {
   usePageTitle(character ? `${character.name} - Personaje` : "Personaje");
 
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push('/login');
       return;
     }
@@ -59,10 +59,17 @@ export default function CharacterDetailPage() {
       const playerId = typeof character.player === 'string' ? character.player : character.player;
       setIsOwner(playerId === user.id);
     }
-  }, [user, character, router]);
+  }, [user, authLoading, character, router]);
 
-  if (!user) {
-    return null;
+  if (authLoading || !user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Verificando autenticación...</span>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {

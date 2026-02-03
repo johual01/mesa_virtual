@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,7 +9,7 @@ import { useCharacters } from "@/hooks/useCharacters";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, Settings, Loader2, Skull, User } from "lucide-react";
+import { Plus, Eye, Settings, Loader2, Skull, User, Dices } from "lucide-react";
 import { CharacterState, System } from "@/types/character";
 
 const getStateVariant = (state: CharacterState) => {
@@ -36,8 +36,6 @@ const getStateIcon = (state: CharacterState) => {
 
 const getSystemLabel = (system: System) => {
   switch (system) {
-    case System.DND5E:
-      return "D&D 5E";
     case System.PERSONAD20:
       return "Persona D20";
     default:
@@ -46,21 +44,29 @@ const getSystemLabel = (system: System) => {
 };
 
 export default function CharactersPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { characters, loading, error, refetch } = useCharacters();
+  const [showSystemModal, setShowSystemModal] = useState(false);
   
   // Establecer título dinámico de la página
   usePageTitle("Mis Personajes");
 
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push('/login');
     }
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
-  if (!user) {
-    return null;
+  if (authLoading || !user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Verificando autenticación...</span>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
@@ -97,11 +103,48 @@ export default function CharactersPage() {
             Gestiona las fichas de tus personajes
           </p>
         </div>
-        <Button onClick={() => router.push('/characters/create')}>
+        <Button onClick={() => setShowSystemModal(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Personaje
         </Button>
       </div>
+
+      {/* Modal de selección de sistema */}
+      {showSystemModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div 
+            className="absolute inset-0 bg-black/50" 
+            onClick={() => setShowSystemModal(false)}
+          />
+          <Card className="relative z-10 w-full max-w-md mx-4 animate-in fade-in zoom-in duration-200">
+            <CardHeader>
+              <CardTitle className="text-center">Selecciona el Sistema de Juego</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowSystemModal(false);
+                  router.push('/characters/create?system=PERSONAD20');
+                }}
+                className="w-full p-4 rounded-lg border-2 border-primary bg-primary/5 hover:bg-primary/10 transition-colors text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Dices className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <div className="font-semibold">Persona D20</div>
+                    <div className="text-sm text-muted-foreground">Sistema basado en la saga Persona</div>
+                  </div>
+                </div>
+              </button>
+              <p className="text-xs text-center text-muted-foreground pt-2">
+                Más sistemas próximamente
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Lista de Personajes */}
       {characters.length === 0 ? (
@@ -112,7 +155,7 @@ export default function CharactersPage() {
             <p className="text-muted-foreground mb-4">
               Crea tu primer personaje para empezar a jugar
             </p>
-            <Button onClick={() => router.push('/characters/create')}>
+            <Button onClick={() => setShowSystemModal(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Crear Primer Personaje
             </Button>
@@ -153,11 +196,6 @@ export default function CharactersPage() {
                       {getSystemLabel(character.system)}
                     </Badge>
                   </div>
-                  {character.campaign && (
-                    <div className="text-sm text-muted-foreground">
-                      📋 {character.campaign.name}
-                    </div>
-                  )}
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
@@ -194,15 +232,6 @@ export default function CharactersPage() {
                 {characters.filter(c => c.state === CharacterState.ACTIVE).length}
               </div>
               <p className="text-sm text-muted-foreground">Personajes Activos</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-blue-600">
-                {characters.filter(c => c.system === System.DND5E).length}
-              </div>
-              <p className="text-sm text-muted-foreground">D&D 5E</p>
             </CardContent>
           </Card>
           
