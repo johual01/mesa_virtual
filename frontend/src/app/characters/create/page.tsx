@@ -27,7 +27,6 @@ export default function CreateCharacterPage() {
   const { success, error: notifyError } = useNotificationContext();
   
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreateCharacterData>({
     name: "",
     system: System.PERSONAD20,
@@ -69,20 +68,23 @@ export default function CreateCharacterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      setError("El nombre es obligatorio");
+      notifyError("Campo requerido", "El nombre es obligatorio");
       return;
     }
     if (!formData.characterClass) {
-      setError("La clase es obligatoria");
+      notifyError("Campo requerido", "La clase es obligatoria");
       return;
     }
     if (!formData.persona.trim()) {
-      setError("El nombre de la Persona es obligatorio");
+      notifyError("Campo requerido", "El nombre de la Persona es obligatorio");
+      return;
+    }
+    if (formData.proficency.length === 0) {
+      notifyError("Campo requerido", "Debes seleccionar al menos una proficiencia");
       return;
     }
 
     setLoading(true);
-    setError(null);
 
     try {
       const response = await characterService.createCharacter(formData);
@@ -90,7 +92,6 @@ export default function CreateCharacterPage() {
       router.push(`/characters/${response.characterId}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al crear personaje';
-      setError(errorMessage);
       notifyError('Error', errorMessage);
     } finally {
       setLoading(false);
@@ -180,12 +181,6 @@ export default function CreateCharacterPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Layout principal en dos columnas para pantallas grandes */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
 
         {/* Información Básica */}
         <Card>

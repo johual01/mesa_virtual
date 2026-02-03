@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCampaigns } from "@/hooks/useCampaigns";
+import { useNotificationContext } from "@/context/notifications";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +16,17 @@ export default function CampaignsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { campaigns, loading, error, refetch } = useCampaigns();
+  const { error: notifyError } = useNotificationContext();
   
   // Establecer título dinámico de la página
   usePageTitle("Mis Campañas");
+
+  // Mostrar error como toast cuando ocurra
+  useEffect(() => {
+    if (error) {
+      notifyError('Error', error);
+    }
+  }, [error, notifyError]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -42,17 +51,6 @@ export default function CampaignsPage() {
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin" />
           <span className="ml-2">Cargando campañas...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Button onClick={refetch}>Reintentar</Button>
         </div>
       </div>
     );

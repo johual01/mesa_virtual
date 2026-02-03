@@ -164,6 +164,14 @@ export default function CampaignDetailPage() {
   // Establecer título dinámico basado en la campaña
   usePageTitle(campaign ? `${campaign.name} - Campaña` : "Campaña");
 
+  // Mostrar error como toast y redirigir
+  useEffect(() => {
+    if (error) {
+      notifyError('Error', error);
+      router.push('/campaigns');
+    }
+  }, [error, notifyError, router]);
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
@@ -200,17 +208,21 @@ export default function CampaignDetailPage() {
     );
   }
 
-  if (error || !campaign) {
+  if (!campaign && !loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || 'Campaña no encontrada'}</p>
+          <p className="text-muted-foreground mb-4">Campaña no encontrada</p>
           <Button onClick={() => router.push('/campaigns')}>
             Volver a Campañas
           </Button>
         </div>
       </div>
     );
+  }
+
+  if (!campaign) {
+    return null;
   }
 
   return (

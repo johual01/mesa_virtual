@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Settings, User, Loader2, Edit } from "lucide-react";
 import { CharacterState, System } from "@/types/character";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useNotificationContext } from "@/context/notifications";
 
 const getStateVariant = (state: CharacterState) => {
   switch (state) {
@@ -43,10 +44,19 @@ export default function CharacterDetailPage() {
   const characterId = params?.id as string;
   
   const { character, loading, error } = useCharacter(characterId);
+  const { error: notifyError } = useNotificationContext();
   const [isOwner, setIsOwner] = useState(false);
   
   // Establecer título dinámico basado en el personaje
   usePageTitle(character ? `${character.name} - Personaje` : "Personaje");
+
+  // Mostrar error como toast y redirigir
+  useEffect(() => {
+    if (error) {
+      notifyError('Error', error);
+      router.push('/characters');
+    }
+  }, [error, notifyError, router]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -83,17 +93,21 @@ export default function CharacterDetailPage() {
     );
   }
 
-  if (error || !character) {
+  if (!character && !loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || 'Personaje no encontrado'}</p>
+          <p className="text-muted-foreground mb-4">Personaje no encontrado</p>
           <Button onClick={() => router.push('/characters')}>
             Volver a Personajes
           </Button>
         </div>
       </div>
     );
+  }
+
+  if (!character) {
+    return null;
   }
 
   return (

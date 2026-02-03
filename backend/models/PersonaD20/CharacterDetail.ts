@@ -36,10 +36,8 @@ interface StatisticDetail {
 
 
 export interface ICharacterPersonaDetail {
-    class: {
-        type: Types.ObjectId | IPersonaClass,
-        subclass?: Types.ObjectId | IPersonaSubclass
-    },
+    class: Types.ObjectId | IPersonaClass,
+    subclass: Types.ObjectId | IPersonaSubclass,
     persona: string,
     experience: number,
     level: number,
@@ -139,11 +137,11 @@ export interface ICharacterPersonaDetailDocument extends ICharacterPersonaDetail
 const characterPersonaDetailSchema = new Schema({
     class: {
         type: Schema.Types.ObjectId,
-        ref: 'Class'
+        ref: 'PersonaClass'
     },
     subclass: {
         type: Schema.Types.ObjectId,
-        ref: 'Subclass'
+        ref: 'PersonaSubclass'
     },
     persona: {
         type: String,
@@ -337,6 +335,14 @@ const characterPersonaDetailSchema = new Schema({
             launchModifiers: {
                 type: [Object],
                 required: true
+            },
+            healingModifiers: {
+                type: [Object],
+                default: []
+            },
+            damageModifiers: {
+                type: [Object],
+                default: []
             }
         },
         actions: {

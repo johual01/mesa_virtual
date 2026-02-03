@@ -4,8 +4,9 @@ import Character, { state as characterState } from '../../models/Character';
 import { ICharacterPersonaDetail } from '../../models/PersonaD20/CharacterDetail';
 import CharacterStatus from '../../models/PersonaD20/CharacterStatus';
 import Campaign from '../../models/Campaign';
-import { IPersonaClass } from '../../models/PersonaD20/Class';
-import { IPersonaSubclass } from '../../models/PersonaD20/Subclass';
+import CharacterPersonaDetail from '../../models/PersonaD20/CharacterDetail';
+import CharacterClass, { IPersonaClass } from '../../models/PersonaD20/Class';
+import CharacterSubclass, { IPersonaSubclass } from '../../models/PersonaD20/Subclass';
 import { personaStadistics, IFeature, IModifier } from '../../models/types';
 import { reduceModifiers } from '../../functions';
 import { calculateBonification } from 'diceLogic';
@@ -15,12 +16,69 @@ import Spell from '../../models/Spell';
 
 // Función auxiliar para marcar modificadores inactivos
 const markInactiveModifiers = (modifiers: IModifier[], inactiveFeatures?: Types.ObjectId[]) => {
+    if (!modifiers) return;
     if (!inactiveFeatures) return;
     modifiers.forEach(m => {
         if (m.featureId && inactiveFeatures.some(f => f.toString() === m.featureId?.toString())) {
             m.state = 'INACTIVE';
         }
     });
+};
+
+// Función para normalizar combatData y asegurar que todos los arrays existen
+const normalizeCombatData = (characterData: ICharacterPersonaDetail) => {
+    const cd = characterData.combatData;
+    
+    // HP
+    cd.HP = cd.HP || { modifiers: [] };
+    cd.HP.modifiers = cd.HP.modifiers || [];
+    
+    // Defense
+    cd.defense = cd.defense || { defenseModifiers: [], magicDefenseModifiers: [] };
+    cd.defense.defenseModifiers = cd.defense.defenseModifiers || [];
+    cd.defense.magicDefenseModifiers = cd.defense.magicDefenseModifiers || [];
+    
+    // Speed
+    cd.speed = cd.speed || { initiativeModifiers: [], speedModifiers: [] };
+    cd.speed.initiativeModifiers = cd.speed.initiativeModifiers || [];
+    cd.speed.speedModifiers = cd.speed.speedModifiers || [];
+    
+    // Magic
+    cd.magic = cd.magic || { APModifiers: [], saveModifiers: [], launchModifiers: [], healingModifiers: [], damageModifiers: [] };
+    cd.magic.APModifiers = cd.magic.APModifiers || [];
+    cd.magic.saveModifiers = cd.magic.saveModifiers || [];
+    cd.magic.launchModifiers = cd.magic.launchModifiers || [];
+    cd.magic.healingModifiers = cd.magic.healingModifiers || [];
+    cd.magic.damageModifiers = cd.magic.damageModifiers || [];
+    
+    // Actions
+    cd.actions = cd.actions || { actionModifiers: [], bonusActionModifiers: [], reactionModifiers: [] };
+    cd.actions.actionModifiers = cd.actions.actionModifiers || [];
+    cd.actions.bonusActionModifiers = cd.actions.bonusActionModifiers || [];
+    cd.actions.reactionModifiers = cd.actions.reactionModifiers || [];
+    
+    // Critical
+    cd.critical = cd.critical || { criticalModifiers: [], criticalFailModifiers: [], criticalOnFisicalAttackModifiers: [], criticalOnMagicAttackModifiers: [], criticalOnAttackModifiers: [] };
+    cd.critical.criticalModifiers = cd.critical.criticalModifiers || [];
+    cd.critical.criticalFailModifiers = cd.critical.criticalFailModifiers || [];
+    cd.critical.criticalOnFisicalAttackModifiers = cd.critical.criticalOnFisicalAttackModifiers || [];
+    cd.critical.criticalOnMagicAttackModifiers = cd.critical.criticalOnMagicAttackModifiers || [];
+    cd.critical.criticalOnAttackModifiers = cd.critical.criticalOnAttackModifiers || [];
+    
+    // Attack
+    cd.attack = cd.attack || { attackModifiers: [], fisicalAttackModifiers: [], rangeAttackModifiers: [], meleeAttackModifiers: [] };
+    cd.attack.attackModifiers = cd.attack.attackModifiers || [];
+    cd.attack.fisicalAttackModifiers = cd.attack.fisicalAttackModifiers || [];
+    cd.attack.rangeAttackModifiers = cd.attack.rangeAttackModifiers || [];
+    cd.attack.meleeAttackModifiers = cd.attack.meleeAttackModifiers || [];
+    
+    // Damage
+    cd.damage = cd.damage || { damageModifiers: [], fisicalDamageModifiers: [], rangeDamageModifiers: [], meleeDamageModifiers: [], criticalDamageModifiers: [] };
+    cd.damage.damageModifiers = cd.damage.damageModifiers || [];
+    cd.damage.fisicalDamageModifiers = cd.damage.fisicalDamageModifiers || [];
+    cd.damage.rangeDamageModifiers = cd.damage.rangeDamageModifiers || [];
+    cd.damage.meleeDamageModifiers = cd.damage.meleeDamageModifiers || [];
+    cd.damage.criticalDamageModifiers = cd.damage.criticalDamageModifiers || [];
 };
 
 export const getCharacters = async (req: Request, res: Response) => {
@@ -75,15 +133,21 @@ export const getCharacter = async (req: Request, res: Response) => {
     try {
         const characterId = new Types.ObjectId(req.params.characterId);
         const character = await Character.findById(characterId)
-            .populate({ path: 'characterData', populate: ['class.type', 'class.subclass'] });
 
         if (!character) {
             return res.status(404).json({ errMsg: 'Personaje no encontrado' });
         }
 
-        const characterData = character.characterData as ICharacterPersonaDetail;
-        const characterClass = characterData?.class?.type as IPersonaClass;
-        const subclass = characterData?.class?.subclass as IPersonaSubclass;
+        const characterData = await CharacterPersonaDetail.findById(character.characterData) as ICharacterPersonaDetail;
+        if (!characterData) {
+            return res.status(404).json({ errMsg: 'Información del personaje no encontrada' });
+        }
+        
+        // Normalizar combatData para personajes antiguos que no tienen todos los arrays
+        normalizeCombatData(characterData);
+        
+        const characterClass = await CharacterClass.findById(characterData?.class) as IPersonaClass;
+        const subclass = await CharacterSubclass.findById(characterData?.subclass) as IPersonaSubclass;
         const customFeatures = await CustomFeature.find({ character: characterId, state: { $ne: 'DELETED' } });
         const characterInventory = await CharacterEquipment.find({ character: characterId, state: { $ne: 'DELETED'} });
         const characterStatus = await CharacterStatus.findOne({ characterId })
@@ -347,7 +411,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                 }
             },
             secondaryAbilities: characterData.secondaryAbilities,
-            background: character.backstory,
+            backstory: character.backstory,
             features: {
                 classFeatures: characterActualLevels.reduce((features, level) => {
                     features.push(...level.features);
@@ -484,6 +548,7 @@ export const getCharacter = async (req: Request, res: Response) => {
             },
         });
     } catch (e) {
+        console.error(e);
         res.status(500).json({ errMsg: 'Error al obtener personaje', error: e });
     }
 };

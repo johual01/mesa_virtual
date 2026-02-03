@@ -8,8 +8,9 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import React, { useState } from 'react';
 import { useAuth } from '@/context/auth';
+import { useNotificationContext } from '@/context/notifications';
 import { ForgotPasswordModal } from '@/components/forgot-password-modal';
-import { Loader2, AlertCircle } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 export function LoginForm({
   className,
@@ -20,13 +21,12 @@ export function LoginForm({
   const [rememberMe, setRememberMe] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
+  const { error: notifyError } = useNotificationContext();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setIsLoading(true);
     
     try {
@@ -34,7 +34,7 @@ export function LoginForm({
       router.push('/');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al iniciar sesión';
-      setError(message);
+      notifyError('Error de autenticación', message);
     } finally {
       setIsLoading(false);
     }
@@ -55,13 +55,6 @@ export function LoginForm({
           </div>
         </div>
         
-        {error && (
-          <div className="flex items-center gap-2 p-3 text-sm text-red-400 bg-red-500/15 border border-red-500/30 rounded-md">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-        
         <div className="grid gap-6">
           <div className="grid gap-2">
             <Label htmlFor="email">Correo</Label>
@@ -73,7 +66,6 @@ export function LoginForm({
               value={email} 
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
-              className={error ? "border-destructive/50" : ""}
             />
           </div>
           <div className="grid gap-2">
@@ -94,7 +86,6 @@ export function LoginForm({
               value={password} 
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
-              className={error ? "border-destructive/50" : ""}
             />
           </div>
           <div className="flex items-center space-x-2">

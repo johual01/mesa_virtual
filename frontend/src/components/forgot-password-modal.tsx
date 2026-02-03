@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authService } from "@/services/authService"
+import { useNotificationContext } from "@/context/notifications"
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export function ForgotPasswordModal({ isOpen, onClose, defaultEmail = '' }: Forg
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const { error: notifyError, success: notifySuccess } = useNotificationContext();
 
   // Reset state when modal opens
   useEffect(() => {
@@ -42,9 +44,11 @@ export function ForgotPasswordModal({ isOpen, onClose, defaultEmail = '' }: Forg
     try {
       const data = await authService.forgotPassword(email);
 
-      setMessage(data.message || 'Se ha enviado un correo para recuperar la contraseña');
+      const successMessage = data.message || 'Se ha enviado un correo para recuperar la contraseña';
+      setMessage(successMessage);
       setIsSuccess(true);
       setEmail('');
+      notifySuccess('Correo enviado', successMessage);
       
       // Auto close after 3 seconds on success
       setTimeout(() => {
@@ -53,7 +57,8 @@ export function ForgotPasswordModal({ isOpen, onClose, defaultEmail = '' }: Forg
 
     } catch (error) {
       console.error('Error al recuperar contraseña:', error);
-      setMessage(error instanceof Error ? error.message : 'Error al enviar el correo de recuperación');
+      const errorMessage = error instanceof Error ? error.message : 'Error al enviar el correo de recuperación';
+      notifyError('Error', errorMessage);
       setIsSuccess(false);
     } finally {
       setIsLoading(false);
@@ -93,12 +98,6 @@ export function ForgotPasswordModal({ isOpen, onClose, defaultEmail = '' }: Forg
                 Te enviaremos un enlace para restablecer tu contraseña.
               </p>
             </div>
-
-            {message && !isSuccess && (
-              <div className="text-sm p-3 rounded-md bg-red-500/15 text-red-400 border border-red-500/30">
-                {message}
-              </div>
-            )}
 
             <div className="flex gap-2 pt-2">
               <Button

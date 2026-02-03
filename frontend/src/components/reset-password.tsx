@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from "@/services/authService"
+import { useNotificationContext } from "@/context/notifications"
 
 interface ResetPasswordProps {
   onSuccess?: () => void;
@@ -19,6 +20,7 @@ export function ResetPassword({ onSuccess, onError }: ResetPasswordProps) {
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [token, setToken] = useState('');
+  const { error: notifyError, success: notifySuccess } = useNotificationContext();
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -36,12 +38,12 @@ export function ResetPassword({ onSuccess, onError }: ResetPasswordProps) {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      setMessage('Las contraseñas no coinciden');
+      notifyError('Error de validación', 'Las contraseñas no coinciden');
       return;
     }
 
     if (password.length < 6) {
-      setMessage('La contraseña debe tener al menos 6 caracteres');
+      notifyError('Error de validación', 'La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
@@ -51,8 +53,10 @@ export function ResetPassword({ onSuccess, onError }: ResetPasswordProps) {
     try {
       const data = await authService.resetPassword({ password, token });
 
-      setMessage(data.message || 'Contraseña actualizada correctamente');
+      const successMessage = data.message || 'Contraseña actualizada correctamente';
+      setMessage(successMessage);
       setIsSuccess(true);
+      notifySuccess('¡Éxito!', successMessage);
       onSuccess?.();
       
       // Redirect to login after 3 seconds
@@ -63,7 +67,7 @@ export function ResetPassword({ onSuccess, onError }: ResetPasswordProps) {
     } catch (error) {
       console.error('Error al restablecer contraseña:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error al actualizar la contraseña';
-      setMessage(errorMessage);
+      notifyError('Error', errorMessage);
       onError?.(errorMessage);
       setIsSuccess(false);
     } finally {
@@ -120,12 +124,6 @@ export function ResetPassword({ onSuccess, onError }: ResetPasswordProps) {
               disabled={isLoading}
             />
           </div>
-
-          {message && !isSuccess && (
-            <div className="text-sm p-3 rounded bg-destructive/10 text-destructive">
-              {message}
-            </div>
-          )}
 
           <div className="space-y-2">
             <Button

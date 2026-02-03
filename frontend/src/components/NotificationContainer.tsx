@@ -1,5 +1,5 @@
 import React from 'react';
-import { Notification, useNotifications } from '@/hooks/useNotifications';
+import { Notification } from '@/hooks/useNotifications';
 import { X, CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -27,24 +27,24 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
   const getBgColor = () => {
     switch (notification.type) {
       case 'success':
-        return 'bg-green-50 border-green-200';
+        return 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800';
       case 'error':
-        return 'bg-red-50 border-red-200';
+        return 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800';
       case 'warning':
-        return 'bg-yellow-50 border-yellow-200';
+        return 'bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800';
       case 'info':
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800';
       default:
-        return 'bg-gray-50 border-gray-200';
+        return 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700';
     }
   };
 
   return (
-    <div className={`border rounded-lg p-4 mb-3 ${getBgColor()} transition-all duration-300 ease-in-out`}>
+    <div className={`border rounded-lg p-4 mb-3 shadow-lg ${getBgColor()} transition-all duration-300 ease-in-out animate-in slide-in-from-right`}>
       <div className="flex items-start gap-3">
         {getIcon()}
         <div className="flex-1">
-          <h4 className="font-semibold text-sm">{notification.title}</h4>
+          <h4 className="font-semibold text-sm text-foreground">{notification.title}</h4>
           {notification.message && (
             <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
           )}
@@ -62,9 +62,15 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
   );
 };
 
-export const NotificationContainer: React.FC = () => {
-  const { notifications, removeNotification } = useNotifications();
+interface NotificationContainerProps {
+  notifications: Notification[];
+  removeNotification: (id: string) => void;
+}
 
+export const NotificationContainer: React.FC<NotificationContainerProps> = ({ 
+  notifications, 
+  removeNotification 
+}) => {
   if (notifications.length === 0) {
     return null;
   }

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCharacters } from "@/hooks/useCharacters";
+import { useNotificationContext } from "@/context/notifications";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -46,8 +47,16 @@ const getSystemLabel = (system: System) => {
 export default function CharactersPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const { characters, loading, error, refetch } = useCharacters();
+  const { characters, loading, error } = useCharacters();
+  const { error: notifyError } = useNotificationContext();
   const [showSystemModal, setShowSystemModal] = useState(false);
+
+  // Mostrar error como toast cuando ocurra
+  useEffect(() => {
+    if (error) {
+      notifyError('Error', error);
+    }
+  }, [error, notifyError]);
   
   // Establecer título dinámico de la página
   usePageTitle("Mis Personajes");
@@ -75,17 +84,6 @@ export default function CharactersPage() {
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin" />
           <span className="ml-2">Cargando personajes...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Button onClick={refetch}>Reintentar</Button>
         </div>
       </div>
     );
@@ -220,29 +218,6 @@ export default function CharactersPage() {
               </CardContent>
             </Card>
           ))}
-        </div>
-      )}
-
-      {/* Filtros y estadísticas */}
-      {characters.length > 0 && (
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-green-600">
-                {characters.filter(c => c.state === CharacterState.ACTIVE).length}
-              </div>
-              <p className="text-sm text-muted-foreground">Personajes Activos</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="text-center">
-            <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-purple-600">
-                {characters.filter(c => c.system === System.PERSONAD20).length}
-              </div>
-              <p className="text-sm text-muted-foreground">Persona D20</p>
-            </CardContent>
-          </Card>
         </div>
       )}
     </div>

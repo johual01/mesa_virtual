@@ -84,7 +84,10 @@ export const createCharacter = async (req: MulterRequest, res: Response) => {
             return res.status(400).json({ errMsg: 'Estado inválido' });
         }
 
-        if (!arraysEqual(Object.keys(stadistics), Object.keys(personaStadistics))) {
+        // Validar que las estadísticas contengan todas las keys requeridas (los values del enum)
+        const requiredStats = Object.values(personaStadistics);
+        const providedStats = Object.keys(stadistics);
+        if (!arraysEqual(providedStats.sort(), requiredStats.sort())) {
             return res.status(400).json({ errMsg: 'Faltan estadísticas' });
         }
 
@@ -122,9 +125,7 @@ export const createCharacter = async (req: MulterRequest, res: Response) => {
         };
 
         const characterDetail: any = {
-            class: {
-                type: characterClassObjectId,
-            },
+            class: characterClassObjectId,
             persona,
             experience: 0,
             level: 1,

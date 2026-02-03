@@ -7,12 +7,15 @@ type NotificationContextType = ReturnType<typeof useNotifications>;
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
-  const notifications = useNotifications();
+  const notificationState = useNotifications();
 
   return (
-    <NotificationContext.Provider value={notifications}>
+    <NotificationContext.Provider value={notificationState}>
       {children}
-      <NotificationContainer />
+      <NotificationContainer 
+        notifications={notificationState.notifications} 
+        removeNotification={notificationState.removeNotification} 
+      />
     </NotificationContext.Provider>
   );
 };
