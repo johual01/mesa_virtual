@@ -400,7 +400,6 @@ export interface CreateCharacterData {
   state: CharacterState;
   backstory: Backstory;
   image?: File;
-  imageUrl?: string;
   characterClass: string;
   persona: string;
   money: number;
@@ -415,7 +414,6 @@ export interface EditCharacterData {
   state: CharacterState;
   backstory: Backstory;
   image?: File;
-  imageUrl?: string;
   persona: string;
   money: number;
   stadistics: Stadistics;

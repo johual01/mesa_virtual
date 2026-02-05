@@ -63,7 +63,6 @@ export interface CreateCampaignData {
   name: string;
   description: string;
   image?: File;
-  imageUrl?: string;
   notes?: string[];
   publicEntries?: string[];
 }

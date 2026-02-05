@@ -48,7 +48,7 @@ export default function EditCharacterPage() {
       bonds: "",
       trauma: "",
     },
-    pictureRoute: "",
+    previewUrl: "",
     persona: "",
     money: 0,
     stadistics: {
@@ -95,7 +95,7 @@ export default function EditCharacterPage() {
           bonds: "",
           trauma: "",
         },
-        pictureRoute: character.pictureRoute || "",
+        previewUrl: character.pictureRoute || "",
         persona: character.persona,
         money: character.money,
         stadistics: {
@@ -114,6 +114,9 @@ export default function EditCharacterPage() {
 
   const handleFileChange = (file: File | null) => {
     setImageFile(file);
+    if (file) {
+      setFormData(prev => ({ ...prev, previewUrl: URL.createObjectURL(file) }));
+    }
   };
 
   const handleInputChange = (field: string, value: string | number) => {
@@ -165,9 +168,7 @@ export default function EditCharacterPage() {
         proficency: formData.proficency,
         element: formData.element,
         weakness: formData.weakness,
-        // Si hay archivo de imagen, usarlo; si no, usar URL
         image: imageFile || undefined,
-        imageUrl: !imageFile && formData.pictureRoute ? formData.pictureRoute : undefined,
       };
       await characterService.editCharacter(characterId, editData);
       notifySuccess("Personaje actualizado", "Los cambios se guardaron correctamente.");

@@ -29,7 +29,6 @@ import { ImageUploader } from "@/components/ImageUploader";
 interface CampaignFormData {
   name: string;
   description: string;
-  imageUrl: string;
 }
 
 export default function EditCampaignPage() {
@@ -44,9 +43,9 @@ export default function EditCampaignPage() {
   const [formData, setFormData] = useState<CampaignFormData>({
     name: '',
     description: '',
-    imageUrl: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
   
   // Estados para eliminar campaña
@@ -88,8 +87,11 @@ export default function EditCampaignPage() {
       setFormData({
         name: campaign.name || '',
         description: campaign.description || '',
-        imageUrl: campaign.image || '',
       });
+      // Cargar imagen existente como preview
+      if (campaign.image) {
+        setPreviewUrl(campaign.image);
+      }
     }
   }, [user, authLoading, campaign, router, campaignId]);
 
@@ -99,6 +101,9 @@ export default function EditCampaignPage() {
 
   const handleFileChange = (file: File | null) => {
     setImageFile(file);
+    if (file) {
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   const handleSave = async () => {
@@ -113,7 +118,6 @@ export default function EditCampaignPage() {
         name: formData.name,
         description: formData.description,
         image: imageFile || undefined,
-        imageUrl: !imageFile && formData.imageUrl ? formData.imageUrl : undefined,
       });
       success('Campaña actualizada', 'Los cambios se han guardado correctamente');
       router.push(`/campaigns/${campaignId}`);
@@ -250,10 +254,9 @@ export default function EditCampaignPage() {
               <div className="space-y-2">
                 <ImageUploader
                   label="Imagen de Portada"
-                  value={formData.imageUrl}
-                  onChange={(value) => handleInputChange('imageUrl', value)}
+                  value={previewUrl}
+                  onChange={setPreviewUrl}
                   onFileChange={handleFileChange}
-                  placeholder="https://ejemplo.com/imagen.jpg"
                 />
               </div>
               

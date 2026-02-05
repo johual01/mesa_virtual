@@ -39,8 +39,6 @@ export const campaignService = {
     // Si hay un archivo de imagen, agregarlo al FormData
     if (data.image) {
       formData.append('image', data.image);
-    } else if (data.imageUrl && data.imageUrl.startsWith('http')) {
-      formData.append('imageUrl', data.imageUrl);
     }
     
     return apiService.putFormData<CampaignMutationResponse>('/api/createCampaign', formData);
@@ -82,8 +80,6 @@ export const campaignService = {
     // Si hay un archivo de imagen, agregarlo al FormData
     if (data.image) {
       formData.append('image', data.image);
-    } else if (data.imageUrl && data.imageUrl.startsWith('http')) {
-      formData.append('imageUrl', data.imageUrl);
     }
     
     return apiService.patchFormData<CampaignMutationResponse>(`/api/editCampaign/${campaignId}`, formData);

@@ -36,8 +36,7 @@ export default function CreateCharacterPage() {
       bonds: "",
       trauma: ""
     },
-    pictureRoute: "",
-    imageFile: null,
+    previewUrl: "",
     characterClass: "",
     persona: "",
     money: 0,
@@ -94,9 +93,7 @@ export default function CreateCharacterPage() {
         proficency: formData.proficency,
         element: formData.element,
         weakness: formData.weakness,
-        // Si hay archivo de imagen, usarlo; si no, usar URL
         image: imageFile || undefined,
-        imageUrl: !imageFile && formData.pictureRoute ? formData.pictureRoute : undefined,
       };
       const response = await characterService.createCharacter(createData);
       success('Personaje creado', 'El personaje se ha creado exitosamente');
@@ -138,6 +135,11 @@ export default function CreateCharacterPage() {
 
   const handleFileChange = (file: File | null) => {
     setImageFile(file);
+    if (file) {
+      setFormData(prev => ({ ...prev, previewUrl: URL.createObjectURL(file) }));
+    } else {
+      setFormData(prev => ({ ...prev, previewUrl: '' }));
+    }
   };
 
   const handleProficiencyChange = (ability: string, checked: boolean) => {

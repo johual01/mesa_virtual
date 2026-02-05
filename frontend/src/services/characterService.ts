@@ -55,8 +55,6 @@ export const characterService = {
     // Si hay un archivo de imagen, agregarlo al FormData
     if (data.image) {
       formData.append('image', data.image);
-    } else if (data.imageUrl && data.imageUrl.startsWith('http')) {
-      formData.append('pictureRoute', data.imageUrl);
     }
     
     return apiService.postFormData<{ message: string; characterId: string }>('/api/createCharacter', formData);
@@ -98,8 +96,6 @@ export const characterService = {
     // Si hay un archivo de imagen, agregarlo al FormData
     if (data.image) {
       formData.append('image', data.image);
-    } else if (data.imageUrl && data.imageUrl.startsWith('http')) {
-      formData.append('pictureRoute', data.imageUrl);
     }
     
     return apiService.patchFormData<{ message: string }>(`/api/editCharacter/${characterId}`, formData);

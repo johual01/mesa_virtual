@@ -24,8 +24,7 @@ export interface CharacterFormData {
     bonds: string;
     trauma: string;
   };
-  pictureRoute: string;
-  imageFile?: File | null;
+  previewUrl: string;
   persona: string;
   money: number;
   stadistics: Stadistics;
@@ -227,10 +226,9 @@ export function CharacterForm({
             {/* Imagen */}
             <ImageUploader
               label="Imagen del Personaje"
-              value={formData.pictureRoute || ""}
-              onChange={(value) => onChange('pictureRoute', value)}
+              value={formData.previewUrl || ""}
+              onChange={(value) => onChange('previewUrl', value)}
               onFileChange={onFileChange}
-              placeholder="https://ejemplo.com/personaje.jpg"
             />
           </CardContent>
         </Card>
