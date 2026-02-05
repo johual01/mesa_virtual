@@ -84,7 +84,6 @@ export const createCharacter = async (req: MulterRequest, res: Response) => {
             return res.status(400).json({ errMsg: 'Estado inválido' });
         }
 
-        // Validar que las estadísticas contengan todas las keys requeridas (los values del enum)
         const requiredStats = Object.values(personaStadistics);
         const providedStats = Object.keys(stadistics);
         if (!arraysEqual(providedStats.sort(), requiredStats.sort())) {

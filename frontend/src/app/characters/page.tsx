@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,8 +10,13 @@ import { useNotificationContext } from "@/context/notifications";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, Settings, Loader2, Skull, User, Dices } from "lucide-react";
-import { CharacterState, System } from "@/types/character";
+import { 
+  Collapsible, 
+  CollapsibleContent, 
+  CollapsibleTrigger 
+} from "@/components/ui/collapsible";
+import { Plus, Eye, Settings, Loader2, Skull, User, Dices, ChevronDown, ChevronRight, Moon } from "lucide-react";
+import { CharacterState, System, CharacterSummary } from "@/types/character";
 
 const getStateVariant = (state: CharacterState) => {
   switch (state) {
@@ -50,6 +55,17 @@ export default function CharactersPage() {
   const { characters, loading, error } = useCharacters();
   const { error: notifyError } = useNotificationContext();
   const [showSystemModal, setShowSystemModal] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
+
+  // Separar personajes activos de inactivos/muertos
+  const { activeCharacters, inactiveCharacters } = useMemo(() => {
+    const active = characters.filter(c => c.state === CharacterState.ACTIVE);
+    const inactive = characters.filter(c => 
+      c.state === CharacterState.DEAD || 
+      c.state === CharacterState.INACTIVE
+    );
+    return { activeCharacters: active, inactiveCharacters: inactive };
+  }, [characters]);
 
   // Mostrar error como toast cuando ocurra
   useEffect(() => {
@@ -160,66 +176,118 @@ export default function CharactersPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {characters.map((character) => (
-            <Card key={character._id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                {character.pictureRoute && (
-                  <div className="relative w-full h-32 mb-3 rounded-md overflow-hidden">
-                    <Image
-                      src={character.pictureRoute}
-                      alt={character.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <CardTitle className="line-clamp-1">{character.name}</CardTitle>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge 
-                      variant={getStateVariant(character.state) as "default" | "secondary" | "destructive" | "outline"}
-                      className="text-xs"
-                    >
-                      {getStateIcon(character.state)}
-                      <span className="ml-1">
-                        {character.state === CharacterState.ACTIVE && "Activo"}
-                        {character.state === CharacterState.DEAD && "Muerto"}
-                        {character.state === CharacterState.INACTIVE && "Inactivo"}
-                        {character.state === CharacterState.DELETED && "Eliminado"}
-                        {character.state === CharacterState.NON_PLAYER && "NPC"}
-                      </span>
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {getSystemLabel(character.system)}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex gap-2">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => router.push(`/characters/${character._id}`)}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Ver
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.push(`/characters/${character._id}/edit`)}
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-8">
+          {/* Personajes Activos */}
+          <section>
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <User className="h-5 w-5 text-green-500" />
+              Personajes Activos
+              <Badge variant="secondary" className="ml-2">
+                {activeCharacters.length}
+              </Badge>
+            </h2>
+            {activeCharacters.length === 0 ? (
+              <Card className="text-center py-8">
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    No tienes personajes activos
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <CharacterGrid characters={activeCharacters} router={router} />
+            )}
+          </section>
+
+          {/* Personajes Inactivos/Muertos - Sección Expandible */}
+          {inactiveCharacters.length > 0 && (
+            <Collapsible open={showInactive} onOpenChange={setShowInactive}>
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center gap-2 text-lg font-semibold text-muted-foreground hover:text-foreground transition-colors w-full text-left py-2">
+                  {showInactive ? (
+                    <ChevronDown className="h-5 w-5" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5" />
+                  )}
+                  <Moon className="h-5 w-5" />
+                  Personajes Inactivos y Muertos
+                  <Badge variant="outline" className="ml-2">
+                    {inactiveCharacters.length}
+                  </Badge>
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4">
+                <CharacterGrid characters={inactiveCharacters} router={router} />
+              </CollapsibleContent>
+            </Collapsible>
+          )}
         </div>
       )}
+    </div>
+  );
+}
+
+// Componente para la grilla de personajes (evita duplicación)
+function CharacterGrid({ characters, router }: { characters: CharacterSummary[], router: ReturnType<typeof useRouter> }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {characters.map((character) => (
+        <Card key={character._id} className="hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
+            {character.pictureRoute && (
+              <div className="relative w-full h-32 mb-3 rounded-md overflow-hidden">
+                <Image
+                  src={character.pictureRoute}
+                  alt={character.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <CardTitle className="line-clamp-1">{character.name}</CardTitle>
+              <div className="flex flex-wrap gap-2">
+                <Badge 
+                  variant={getStateVariant(character.state) as "default" | "secondary" | "destructive" | "outline"}
+                  className="text-xs"
+                >
+                  {getStateIcon(character.state)}
+                  <span className="ml-1">
+                    {character.state === CharacterState.ACTIVE && "Activo"}
+                    {character.state === CharacterState.DEAD && "Muerto"}
+                    {character.state === CharacterState.INACTIVE && "Inactivo"}
+                    {character.state === CharacterState.DELETED && "Eliminado"}
+                    {character.state === CharacterState.NON_PLAYER && "NPC"}
+                  </span>
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {getSystemLabel(character.system)}
+                </Badge>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                className="flex-1"
+                onClick={() => router.push(`/characters/${character._id}`)}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                Ver
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/characters/${character._id}/edit`)}
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

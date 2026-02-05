@@ -52,7 +52,8 @@ export const useCharacter = (characterId: string | null) => {
       setLoading(true);
       setError(null);
       const response = await characterService.getCharacter(id);
-      setCharacter(response);
+      // Asegurar que el personaje tenga el _id asignado
+      setCharacter({ ...response, _id: id });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar personaje');
     } finally {

@@ -37,12 +37,11 @@ export const editCharacter = async (req: MulterRequest, res: Response) => {
             persona,
             money,
             stadistics,
-            proficency,
             element,
             weakness,
         } = req.body;
 
-        if (!name || !state || !persona || money === undefined || !element || !backstory || !stadistics || !proficency || !weakness) {
+        if (!name || !state || !persona || money === undefined || !element || !backstory || !stadistics || !weakness) {
             return res.status(400).json({ errMsg: 'Faltan campos obligatorios' });
         }
 
@@ -58,17 +57,14 @@ export const editCharacter = async (req: MulterRequest, res: Response) => {
             return res.status(400).json({ errMsg: 'Estado inválido' });
         }
 
-        if (!arraysEqual(Object.keys(stadistics), Object.keys(personaStadistics))) {
+        const requiredStats = Object.values(personaStadistics);
+        const providedStats = Object.keys(stadistics);
+        if (!arraysEqual(providedStats.sort(), requiredStats.sort())) {
             return res.status(400).json({ errMsg: 'Faltan estadísticas' });
         }
 
         if (typeof money !== 'number') {
             return res.status(400).json({ errMsg: 'El dinero debe ser un número' });
-        }
-
-        const invalidProficency = proficency.some((p: any) => !Object.values(personaSecondaryAbilities).includes(p));
-        if (proficency.length === 0 || invalidProficency) {
-            return res.status(400).json({ errMsg: 'Habilidades de proficiencia inválidas' });
         }
 
         const user = await User.findById(req.body.userId);
@@ -109,26 +105,6 @@ export const editCharacter = async (req: MulterRequest, res: Response) => {
         characterDetail.persona = persona;
         characterDetail.money = money;
         characterDetail.stadistics = stadistics;
-        characterDetail.secondaryAbilities.acrobatics.isProficient = proficency.includes(personaSecondaryAbilities.Acrobatics);
-        characterDetail.secondaryAbilities.art.isProficient = proficency.includes(personaSecondaryAbilities.Art);
-        characterDetail.secondaryAbilities.athletics.isProficient = proficency.includes(personaSecondaryAbilities.Athletics);
-        characterDetail.secondaryAbilities.consciousness.isProficient = proficency.includes(personaSecondaryAbilities.Consciousness);
-        characterDetail.secondaryAbilities.empathy.isProficient = proficency.includes(personaSecondaryAbilities.Empathy);
-        characterDetail.secondaryAbilities.expression.isProficient = proficency.includes(personaSecondaryAbilities.Expression);
-        characterDetail.secondaryAbilities.folklore.isProficient = proficency.includes(personaSecondaryAbilities.Folklore);
-        characterDetail.secondaryAbilities.handcraft.isProficient = proficency.includes(personaSecondaryAbilities.Handcraft);
-        characterDetail.secondaryAbilities.investigation.isProficient = proficency.includes(personaSecondaryAbilities.Investigation);
-        characterDetail.secondaryAbilities.meditation.isProficient = proficency.includes(personaSecondaryAbilities.Meditation);
-        characterDetail.secondaryAbilities.mysticism.isProficient = proficency.includes(personaSecondaryAbilities.Mysticism);
-        characterDetail.secondaryAbilities.orientation.isProficient = proficency.includes(personaSecondaryAbilities.Orientation);
-        characterDetail.secondaryAbilities.quibble.isProficient = proficency.includes(personaSecondaryAbilities.Quibble);
-        characterDetail.secondaryAbilities.reflexes.isProficient = proficency.includes(personaSecondaryAbilities.Reflexes);
-        characterDetail.secondaryAbilities.speed.isProficient = proficency.includes(personaSecondaryAbilities.Speed);
-        characterDetail.secondaryAbilities.stealth.isProficient = proficency.includes(personaSecondaryAbilities.Stealth);
-        characterDetail.secondaryAbilities.strength.isProficient = proficency.includes(personaSecondaryAbilities.Strength);
-        characterDetail.secondaryAbilities.technology.isProficient = proficency.includes(personaSecondaryAbilities.Technology);
-        characterDetail.secondaryAbilities.streetwise.isProficient = proficency.includes(personaSecondaryAbilities.Streetwise);
-        characterDetail.secondaryAbilities.willpower.isProficient = proficency.includes(personaSecondaryAbilities.Willpower);
         characterDetail.markModified('secondaryAbilities');
         characterDetail.combatData.elements.affinity = element;
         characterDetail.combatData.elements.weakness = [ weakness ];

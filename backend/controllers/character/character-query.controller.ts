@@ -383,6 +383,8 @@ export const getCharacter = async (req: Request, res: Response) => {
             experience: characterData.experience,
             money: characterData.money,
             proficency: characterData.proficency,
+            element: characterData.combatData.elements?.affinity,
+            weakness: characterData.combatData.elements?.weakness?.[0],
             stats: {
                 courage: {
                     value: characterData.stadistics.courage,

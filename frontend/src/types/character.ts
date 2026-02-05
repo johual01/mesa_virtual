@@ -316,6 +316,8 @@ export interface Character {
   experience: number;
   money: number;
   proficency: number;
+  element?: Element;
+  weakness?: Element;
   stats: {
     courage: StatValue;
     dexterity: StatValue;

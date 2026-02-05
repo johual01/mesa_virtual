@@ -7,7 +7,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCharacter } from "@/hooks/useCharacters";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { 
   Edit, 
   Loader2, 
@@ -16,17 +27,13 @@ import {
   Scroll,
   Package,
   Sparkles,
-  ChevronUp,
-  Share2,
-  Copy,
-  RotateCcw,
-  Printer,
-  List
+  ArrowUp
 } from "lucide-react";
-import { CharacterState } from "@/types/character";
+import { CharacterState, Inspiration } from "@/types/character";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNotificationContext } from "@/context/notifications";
 import { InfoTab, BackstoryTab, FeaturesTab, EquipmentTab, SpellsTab } from "@/components/character-detail";
+import { characterService } from "@/services/characterService";
 
 const getStateVariant = (state: CharacterState) => {
   switch (state) {
@@ -58,10 +65,21 @@ export default function CharacterDetailPage() {
   const params = useParams();
   const characterId = params?.id as string;
   
-  const { character, loading, error } = useCharacter(characterId);
-  const { error: notifyError } = useNotificationContext();
+  const { character, loading, error, refetch } = useCharacter(characterId);
+  const { error: notifyError, success: notifySuccess } = useNotificationContext();
   const [isOwner, setIsOwner] = useState(false);
   const [activeTab, setActiveTab] = useState("info");
+  const [xpValue, setXpValue] = useState<number>(0);
+  const [inspirationValue, setInspirationValue] = useState<Inspiration>({
+    reroll: false,
+    bonus: 0,
+    critic: false,
+    automaticSuccess: false
+  });
+  const [isSavingXp, setIsSavingXp] = useState(false);
+  const [isSavingInspiration, setIsSavingInspiration] = useState(false);
+  const [isXpModalOpen, setIsXpModalOpen] = useState(false);
+  const [isInspirationModalOpen, setIsInspirationModalOpen] = useState(false);
   
   // Establecer título dinámico basado en el personaje
   usePageTitle(character ? `${character.name} - Personaje` : "Personaje");
@@ -84,8 +102,49 @@ export default function CharacterDetailPage() {
       // El personaje pertenece al usuario actual si coincide el ID
       // Por ahora asumimos que si puede ver el personaje, puede editarlo
       setIsOwner(true);
+      setXpValue(character.experience ?? 0);
+      setInspirationValue(character.inspiration ?? {
+        reroll: false,
+        bonus: 0,
+        critic: false,
+        automaticSuccess: false
+      });
     }
   }, [user, authLoading, character, router]);
+
+  const handleUpdateXp = async () => {
+    if (!character || !character._id) {
+      return;
+    }
+    try {
+      setIsSavingXp(true);
+      await characterService.updateXP(character._id, xpValue);
+      notifySuccess("XP actualizada", "Se guardó la experiencia correctamente.");
+      await refetch?.();
+      setIsXpModalOpen(false);
+    } catch (err) {
+      notifyError("Error", err instanceof Error ? err.message : "No se pudo actualizar la XP.");
+    } finally {
+      setIsSavingXp(false);
+    }
+  };
+
+  const handleUpdateInspiration = async () => {
+    if (!character || !character._id) {
+      return;
+    }
+    try {
+      setIsSavingInspiration(true);
+      await characterService.updateInspiration(character._id, inspirationValue);
+      notifySuccess("Inspiración actualizada", "Se guardó la inspiración correctamente.");
+      await refetch?.();
+      setIsInspirationModalOpen(false);
+    } catch (err) {
+      notifyError("Error", err instanceof Error ? err.message : "No se pudo actualizar la inspiración.");
+    } finally {
+      setIsSavingInspiration(false);
+    }
+  };
 
   if (authLoading || !user) {
     return (
@@ -136,15 +195,16 @@ export default function CharacterDetailPage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>PERSONAD20</span>
               <span>/</span>
-              <span>PERSONAJES</span>
+              <button 
+                onClick={() => router.push('/characters')}
+                className="hover:text-foreground transition-colors"
+              >
+                PERSONAJES
+              </button>
               <span>/</span>
               <span className="text-foreground uppercase">{character.name}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => router.push('/characters')}>
-                <List className="h-4 w-4 mr-1" />
-                Listado
-              </Button>
               {isOwner && (
                 <Button variant="default" size="sm" onClick={() => router.push(`/characters/${characterId}/edit`)}>
                   <Edit className="h-4 w-4 mr-1" />
@@ -197,22 +257,184 @@ export default function CharacterDetailPage() {
               </div>
             </div>
 
-            {/* Acciones rápidas */}
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" title="Ir arriba">
-                <ChevronUp className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" title="Compartir">
-                <Share2 className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" title="Copiar">
-                <Copy className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" title="Reiniciar">
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" title="Imprimir">
-                <Printer className="h-4 w-4" />
+            {/* Barra superior: XP e inspiración - Compacta */}
+            <div className="flex items-center gap-2">
+              {/* XP Display */}
+              <Dialog open={isXpModalOpen} onOpenChange={setIsXpModalOpen}>
+                <DialogTrigger asChild>
+                  <button 
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!isOwner}
+                  >
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <div className="text-left">
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-none text-center">EXPERIENCIA</p>
+                      <p className="text-lg font-bold leading-none mt-1.5 text-center">{character.experience?.toLocaleString() || 0}</p>
+                    </div>
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Actualizar Experiencia</DialogTitle>
+                    <DialogDescription>
+                      Modifica los puntos de experiencia del personaje.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="xp">Puntos de Experiencia</Label>
+                      <Input
+                        id="xp"
+                        type="number"
+                        value={xpValue}
+                        onChange={(e) => setXpValue(Number(e.target.value) || 0)}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsXpModalOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleUpdateXp} disabled={isSavingXp}>
+                      {isSavingXp ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Guardando...
+                        </>
+                      ) : (
+                        "Guardar"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Inspiración Display */}
+              <Dialog open={isInspirationModalOpen} onOpenChange={setIsInspirationModalOpen}>
+                <DialogTrigger asChild>
+                  <button 
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!isOwner}
+                  >
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    <div className="text-left">
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-none text-center">INSPIRACIÓN</p>
+                      <div className="flex items-center gap-1 mt-2 justify-center">
+                        {character.inspiration?.bonus ? (
+                          <Badge variant="secondary" className="h-5 text-xs px-1.5">+{character.inspiration.bonus}</Badge>
+                        ) : null}
+                        {character.inspiration?.reroll && (
+                          <Badge variant="secondary" className="h-5 text-xs px-1.5">V</Badge>
+                        )}
+                        {character.inspiration?.automaticSuccess && (
+                          <Badge variant="secondary" className="h-5 text-xs px-1.5">E.A.</Badge>
+                        )}
+                        {character.inspiration?.critic && (
+                          <Badge variant="secondary" className="h-5 text-xs px-1.5">C.A.</Badge>
+                        )}
+                        {!character.inspiration?.bonus && !character.inspiration?.reroll && 
+                         !character.inspiration?.critic && !character.inspiration?.automaticSuccess && (
+                          <span className="text-sm text-muted-foreground">Ninguna</span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Actualizar Inspiración</DialogTitle>
+                    <DialogDescription>
+                      Configura los modificadores de inspiración del personaje.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="bonus">Bonificador</Label>
+                      <Input
+                        id="bonus"
+                        type="number"
+                        value={inspirationValue.bonus}
+                        onChange={(e) => setInspirationValue({
+                          ...inspirationValue,
+                          bonus: Number(e.target.value) || 0
+                        })}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label>Otras Inspiraciones</Label>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                          <span className="text-sm">Ventaja</span>
+                          <Button
+                            size="sm"
+                            variant={inspirationValue.reroll ? "default" : "outline"}
+                            onClick={() => setInspirationValue({
+                              ...inspirationValue,
+                              reroll: !inspirationValue.reroll
+                            })}
+                          >
+                            {inspirationValue.reroll ? "Activado" : "Desactivado"}
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                          <span className="text-sm">Éxito automático</span>
+                          <Button
+                            size="sm"
+                            variant={inspirationValue.automaticSuccess ? "default" : "outline"}
+                            onClick={() => setInspirationValue({
+                              ...inspirationValue,
+                              automaticSuccess: !inspirationValue.automaticSuccess
+                            })}
+                          >
+                            {inspirationValue.automaticSuccess ? "Activado" : "Desactivado"}
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                          <span className="text-sm">Crítico automático</span>
+                          <Button
+                            size="sm"
+                            variant={inspirationValue.critic ? "default" : "outline"}
+                            onClick={() => setInspirationValue({
+                              ...inspirationValue,
+                              critic: !inspirationValue.critic
+                            })}
+                          >
+                            {inspirationValue.critic ? "Activado" : "Desactivado"}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsInspirationModalOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleUpdateInspiration} disabled={isSavingInspiration}>
+                      {isSavingInspiration ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Guardando...
+                        </>
+                      ) : (
+                        "Guardar"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Botón Subir de Nivel */}
+              <Button 
+                variant="default" 
+                size="default"
+                disabled={!isOwner}
+                onClick={() => router.push(`/characters/${characterId}/level-up`)}
+                className="h-[58px] px-4 flex flex-col gap-0.5"
+              >
+                <ArrowUp className="h-4 w-4" />
+                <span className="text-xs">Subir de nivel</span>
               </Button>
             </div>
           </div>
