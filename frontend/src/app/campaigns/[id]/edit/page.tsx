@@ -24,11 +24,12 @@ import { ArrowLeft, Loader2, Save, Trash2, UserMinus, Users } from "lucide-react
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNotificationContext } from "@/context/notifications";
 import { User } from "@/types/campaign";
+import { ImageUploader } from "@/components/ImageUploader";
 
 interface CampaignFormData {
   name: string;
   description: string;
-  image: string;
+  imageUrl: string;
 }
 
 export default function EditCampaignPage() {
@@ -43,8 +44,9 @@ export default function EditCampaignPage() {
   const [formData, setFormData] = useState<CampaignFormData>({
     name: '',
     description: '',
-    image: '',
+    imageUrl: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   
   // Estados para eliminar campaña
@@ -86,13 +88,17 @@ export default function EditCampaignPage() {
       setFormData({
         name: campaign.name || '',
         description: campaign.description || '',
-        image: campaign.image || '',
+        imageUrl: campaign.image || '',
       });
     }
   }, [user, authLoading, campaign, router, campaignId]);
 
   const handleInputChange = (field: keyof CampaignFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileChange = (file: File | null) => {
+    setImageFile(file);
   };
 
   const handleSave = async () => {
@@ -106,7 +112,8 @@ export default function EditCampaignPage() {
       await campaignService.editCampaign(campaignId, {
         name: formData.name,
         description: formData.description,
-        image: formData.image || undefined,
+        image: imageFile || undefined,
+        imageUrl: !imageFile && formData.imageUrl ? formData.imageUrl : undefined,
       });
       success('Campaña actualizada', 'Los cambios se han guardado correctamente');
       router.push(`/campaigns/${campaignId}`);
@@ -241,12 +248,12 @@ export default function EditCampaignPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="image">URL de Imagen</Label>
-                <Input
-                  id="image"
+                <ImageUploader
+                  label="Imagen de Portada"
+                  value={formData.imageUrl}
+                  onChange={(value) => handleInputChange('imageUrl', value)}
+                  onFileChange={handleFileChange}
                   placeholder="https://ejemplo.com/imagen.jpg"
-                  value={formData.image}
-                  onChange={(e) => handleInputChange('image', e.target.value)}
                 />
               </div>
               

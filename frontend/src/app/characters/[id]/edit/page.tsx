@@ -33,6 +33,7 @@ export default function EditCharacterPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<CharacterFormData>({
     name: "",
     state: CharacterState.ACTIVE,
@@ -111,6 +112,10 @@ export default function EditCharacterPage() {
     }
   }, [character]);
 
+  const handleFileChange = (file: File | null) => {
+    setImageFile(file);
+  };
+
   const handleInputChange = (field: string, value: string | number) => {
     if (field.startsWith('backstory.')) {
       const backstoryField = field.replace('backstory.', '');
@@ -154,13 +159,15 @@ export default function EditCharacterPage() {
         name: formData.name,
         state: formData.state,
         backstory: formData.backstory,
-        pictureRoute: formData.pictureRoute,
         persona: formData.persona,
         money: formData.money,
         stadistics: formData.stadistics,
         proficency: formData.proficency,
         element: formData.element,
         weakness: formData.weakness,
+        // Si hay archivo de imagen, usarlo; si no, usar URL
+        image: imageFile || undefined,
+        imageUrl: !imageFile && formData.pictureRoute ? formData.pictureRoute : undefined,
       };
       await characterService.editCharacter(characterId, editData);
       notifySuccess("Personaje actualizado", "Los cambios se guardaron correctamente.");
@@ -259,6 +266,7 @@ export default function EditCharacterPage() {
         onSubmit={handleSubmit}
         onCancel={() => router.push(`/characters/${characterId}`)}
         onChange={handleInputChange}
+        onFileChange={handleFileChange}
         readOnlyClass={character.class}
       />
 

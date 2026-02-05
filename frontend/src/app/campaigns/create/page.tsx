@@ -23,10 +23,11 @@ export default function CreateCampaignPage() {
   const { success, error: notifyError } = useNotificationContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    image: "",
+    imageUrl: "",
     notes: [] as string[],
     publicEntries: [] as string[]
   });
@@ -48,7 +49,14 @@ export default function CreateCampaignPage() {
     setError(null);
 
     try {
-      await campaignService.createCampaign(formData);
+      await campaignService.createCampaign({
+        name: formData.name,
+        description: formData.description,
+        notes: formData.notes,
+        publicEntries: formData.publicEntries,
+        image: imageFile || undefined,
+        imageUrl: !imageFile && formData.imageUrl ? formData.imageUrl : undefined,
+      });
       success('Campaña creada', 'La campaña se ha creado exitosamente');
       router.push('/campaigns');
     } catch (err) {
@@ -65,6 +73,10 @@ export default function CreateCampaignPage() {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleFileChange = (file: File | null) => {
+    setImageFile(file);
   };
 
   if (authLoading || !user) {
@@ -137,8 +149,9 @@ export default function CreateCampaignPage() {
             {/* Imagen */}
             <ImageUploader
               label="Imagen de Portada"
-              value={formData.image}
-              onChange={(value) => handleInputChange('image', value)}
+              value={formData.imageUrl}
+              onChange={(value) => handleInputChange('imageUrl', value)}
+              onFileChange={handleFileChange}
               placeholder="https://ejemplo.com/imagen.jpg"
             />
 

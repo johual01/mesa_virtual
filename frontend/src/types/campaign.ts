@@ -62,7 +62,8 @@ export interface CampaignSummary {
 export interface CreateCampaignData {
   name: string;
   description: string;
-  image?: string;
+  image?: File;
+  imageUrl?: string;
   notes?: string[];
   publicEntries?: string[];
 }

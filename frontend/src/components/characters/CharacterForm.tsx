@@ -25,6 +25,7 @@ export interface CharacterFormData {
     trauma: string;
   };
   pictureRoute: string;
+  imageFile?: File | null;
   persona: string;
   money: number;
   stadistics: Stadistics;
@@ -43,6 +44,7 @@ interface CharacterFormProps {
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
   onChange: (field: string, value: string | number) => void;
+  onFileChange?: (file: File | null) => void;
   onProficiencyChange?: (ability: string, checked: boolean) => void;
   // Para modo edición - mostrar valores solo lectura
   readOnlyClass?: string;
@@ -79,6 +81,7 @@ export function CharacterForm({
   onSubmit,
   onCancel,
   onChange,
+  onFileChange,
   onProficiencyChange,
   readOnlyClass,
   campaignId,
@@ -226,6 +229,7 @@ export function CharacterForm({
               label="Imagen del Personaje"
               value={formData.pictureRoute || ""}
               onChange={(value) => onChange('pictureRoute', value)}
+              onFileChange={onFileChange}
               placeholder="https://ejemplo.com/personaje.jpg"
             />
           </CardContent>

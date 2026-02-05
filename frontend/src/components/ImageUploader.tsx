@@ -6,8 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 
 interface ImageUploaderProps {
+  /** URL para mostrar (preview o URL externa) */
   value: string;
+  /** Callback para cambios de URL (para URLs externas) */
   onChange: (value: string) => void;
+  /** Callback para cuando se selecciona un archivo */
+  onFileChange?: (file: File | null) => void;
   label?: string;
   placeholder?: string;
   previewClassName?: string;
@@ -16,32 +20,63 @@ interface ImageUploaderProps {
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
   value,
   onChange,
+  onFileChange,
   label = "Imagen",
   placeholder = "https://ejemplo.com/imagen.jpg",
   previewClassName = "w-full h-48"
 }) => {
   const [imageError, setImageError] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // La URL a mostrar: previewUrl (del archivo local) o value (URL externa)
+  const displayUrl = previewUrl || value;
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Aquí puedes implementar la lógica de subida de archivo
-      // Por ahora, solo simulamos con URL.createObjectURL
+      // Crear URL para preview local
       const url = URL.createObjectURL(file);
-      onChange(url);
+      setPreviewUrl(url);
       setImageError(false);
+      
+      // Notificar al padre sobre el archivo seleccionado
+      if (onFileChange) {
+        onFileChange(file);
+      }
+      // Limpiar la URL externa si había una
+      onChange('');
     }
   };
 
   const handleUrlChange = (url: string) => {
     onChange(url);
     setImageError(false);
+    // Si el usuario escribe una URL, limpiar el archivo local
+    if (url && previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl('');
+      if (onFileChange) {
+        onFileChange(null);
+      }
+    }
   };
 
   const clearImage = () => {
     onChange('');
     setImageError(false);
+    
+    // Limpiar preview local
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl('');
+    }
+    
+    // Notificar que se limpió el archivo
+    if (onFileChange) {
+      onFileChange(null);
+    }
+    
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -88,12 +123,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       />
 
       {/* Preview */}
-      {value && !imageError && (
+      {displayUrl && !imageError && (
         <div className="space-y-2">
           <Label>Vista Previa</Label>
           <div className={`relative rounded-md overflow-hidden border ${previewClassName}`}>
             <Image
-              src={value}
+              src={displayUrl}
               alt="Vista previa"
               fill
               className="object-cover"
@@ -104,7 +139,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       )}
 
       {/* Error state */}
-      {value && imageError && (
+      {displayUrl && imageError && (
         <div className="space-y-2">
           <Label>Vista Previa</Label>
           <div className={`relative rounded-md overflow-hidden border bg-muted flex items-center justify-center ${previewClassName}`}>

@@ -399,7 +399,8 @@ export interface CreateCharacterData {
   system: System;
   state: CharacterState;
   backstory: Backstory;
-  pictureRoute?: string;
+  image?: File;
+  imageUrl?: string;
   characterClass: string;
   persona: string;
   money: number;
@@ -413,7 +414,8 @@ export interface EditCharacterData {
   name: string;
   state: CharacterState;
   backstory: Backstory;
-  pictureRoute?: string;
+  image?: File;
+  imageUrl?: string;
   persona: string;
   money: number;
   stadistics: Stadistics;

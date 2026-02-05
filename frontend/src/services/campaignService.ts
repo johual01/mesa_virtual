@@ -21,10 +21,29 @@ export const campaignService = {
 
   /**
    * PUT /api/createCampaign
-   * Crea una nueva campaña
+   * Crea una nueva campaña usando FormData para soportar subida de imágenes
    */
   async createCampaign(data: CreateCampaignData): Promise<CampaignMutationResponse> {
-    return apiService.put<CampaignMutationResponse>('/api/createCampaign', data);
+    const formData = new FormData();
+    
+    formData.append('name', data.name);
+    formData.append('description', data.description);
+    
+    if (data.notes) {
+      formData.append('notes', JSON.stringify(data.notes));
+    }
+    if (data.publicEntries) {
+      formData.append('publicEntries', JSON.stringify(data.publicEntries));
+    }
+    
+    // Si hay un archivo de imagen, agregarlo al FormData
+    if (data.image) {
+      formData.append('image', data.image);
+    } else if (data.imageUrl && data.imageUrl.startsWith('http')) {
+      formData.append('imageUrl', data.imageUrl);
+    }
+    
+    return apiService.putFormData<CampaignMutationResponse>('/api/createCampaign', formData);
   },
 
   /**
@@ -45,10 +64,29 @@ export const campaignService = {
 
   /**
    * PATCH /api/editCampaign/:campaignId
-   * Edita una campaña existente
+   * Edita una campaña existente usando FormData para soportar subida de imágenes
    */
   async editCampaign(campaignId: string, data: CreateCampaignData): Promise<CampaignMutationResponse> {
-    return apiService.patch<CampaignMutationResponse>(`/api/editCampaign/${campaignId}`, data);
+    const formData = new FormData();
+    
+    formData.append('name', data.name);
+    formData.append('description', data.description);
+    
+    if (data.notes) {
+      formData.append('notes', JSON.stringify(data.notes));
+    }
+    if (data.publicEntries) {
+      formData.append('publicEntries', JSON.stringify(data.publicEntries));
+    }
+    
+    // Si hay un archivo de imagen, agregarlo al FormData
+    if (data.image) {
+      formData.append('image', data.image);
+    } else if (data.imageUrl && data.imageUrl.startsWith('http')) {
+      formData.append('imageUrl', data.imageUrl);
+    }
+    
+    return apiService.patchFormData<CampaignMutationResponse>(`/api/editCampaign/${campaignId}`, formData);
   },
 
   /**

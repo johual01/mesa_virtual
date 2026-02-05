@@ -35,10 +35,31 @@ export const characterService = {
 
   /**
    * POST /api/createCharacter
-   * Crea un nuevo personaje
+   * Crea un nuevo personaje usando FormData para soportar subida de imágenes
    */
   async createCharacter(data: CreateCharacterData): Promise<{ message: string; characterId: string }> {
-    return apiService.post<{ message: string; characterId: string }>('/api/createCharacter', data);
+    const formData = new FormData();
+    
+    formData.append('name', data.name);
+    formData.append('system', data.system);
+    formData.append('state', data.state);
+    formData.append('backstory', JSON.stringify(data.backstory));
+    formData.append('characterClass', data.characterClass);
+    formData.append('persona', data.persona);
+    formData.append('money', String(data.money));
+    formData.append('stadistics', JSON.stringify(data.stadistics));
+    formData.append('proficency', JSON.stringify(data.proficency));
+    formData.append('element', data.element);
+    formData.append('weakness', data.weakness);
+    
+    // Si hay un archivo de imagen, agregarlo al FormData
+    if (data.image) {
+      formData.append('image', data.image);
+    } else if (data.imageUrl && data.imageUrl.startsWith('http')) {
+      formData.append('pictureRoute', data.imageUrl);
+    }
+    
+    return apiService.postFormData<{ message: string; characterId: string }>('/api/createCharacter', formData);
   },
 
   /**
@@ -60,10 +81,28 @@ export const characterService = {
 
   /**
    * PATCH /api/editCharacter/:characterId
-   * Edita un personaje existente
+   * Edita un personaje existente usando FormData para soportar subida de imágenes
    */
   async editCharacter(characterId: string, data: EditCharacterData): Promise<{ message: string }> {
-    return apiService.patch<{ message: string }>(`/api/editCharacter/${characterId}`, data);
+    const formData = new FormData();
+    
+    formData.append('name', data.name);
+    formData.append('state', data.state);
+    formData.append('backstory', JSON.stringify(data.backstory));
+    formData.append('persona', data.persona);
+    formData.append('money', String(data.money));
+    formData.append('stadistics', JSON.stringify(data.stadistics));
+    formData.append('element', data.element);
+    formData.append('weakness', data.weakness);
+    
+    // Si hay un archivo de imagen, agregarlo al FormData
+    if (data.image) {
+      formData.append('image', data.image);
+    } else if (data.imageUrl && data.imageUrl.startsWith('http')) {
+      formData.append('pictureRoute', data.imageUrl);
+    }
+    
+    return apiService.patchFormData<{ message: string }>(`/api/editCharacter/${characterId}`, formData);
   },
 
   /**

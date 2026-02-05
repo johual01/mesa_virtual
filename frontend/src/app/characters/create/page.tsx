@@ -21,6 +21,7 @@ export default function CreateCharacterPage() {
   const { success, error: notifyError } = useNotificationContext();
   
   const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<CharacterFormData>({
     name: "",
     state: CharacterState.ACTIVE,
@@ -36,6 +37,7 @@ export default function CreateCharacterPage() {
       trauma: ""
     },
     pictureRoute: "",
+    imageFile: null,
     characterClass: "",
     persona: "",
     money: 0,
@@ -81,9 +83,20 @@ export default function CreateCharacterPage() {
 
     try {
       const createData: CreateCharacterData = {
-        ...formData,
+        name: formData.name,
         system: System.PERSONAD20,
+        state: formData.state,
+        backstory: formData.backstory,
         characterClass: formData.characterClass!,
+        persona: formData.persona,
+        money: formData.money,
+        stadistics: formData.stadistics,
+        proficency: formData.proficency,
+        element: formData.element,
+        weakness: formData.weakness,
+        // Si hay archivo de imagen, usarlo; si no, usar URL
+        image: imageFile || undefined,
+        imageUrl: !imageFile && formData.pictureRoute ? formData.pictureRoute : undefined,
       };
       const response = await characterService.createCharacter(createData);
       success('Personaje creado', 'El personaje se ha creado exitosamente');
@@ -121,6 +134,10 @@ export default function CreateCharacterPage() {
         [field]: value
       }));
     }
+  };
+
+  const handleFileChange = (file: File | null) => {
+    setImageFile(file);
   };
 
   const handleProficiencyChange = (ability: string, checked: boolean) => {
@@ -184,6 +201,7 @@ export default function CreateCharacterPage() {
         onSubmit={handleSubmit}
         onCancel={() => router.back()}
         onChange={handleInputChange}
+        onFileChange={handleFileChange}
         onProficiencyChange={handleProficiencyChange}
         campaignId={campaignId}
         onCampaignChange={setCampaignId}
