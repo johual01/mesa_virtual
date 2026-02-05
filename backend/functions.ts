@@ -47,7 +47,10 @@ export const saveImage = async (file: UploadedFile, userId: Types.ObjectId, buck
     const now = new Date();
     const fileName = String(now.getTime());
 
-    await minioClient.putObject(bucketName, fileName, file.buffer, file.size, { "userId": userId.toString() });
+    await minioClient.putObject(bucketName, fileName, file.buffer, file.size, { 
+        "userId": userId.toString(),
+        "Content-Type": file.mimetype 
+    });
 
     const escritura = process.env.URL + 'dynamicFiles/' + BUCKET_KEY[bucketName] + '.' + fileName;
     return escritura;
@@ -91,11 +94,37 @@ export const requestFile = async (req: Request, res: Response) => {
         if (typeof id != "string") {
             return res.status(400).send({msgError: "ID de archivo inválido"});
         }
-        const result = await readFile(id);  
         
-        res.write(result);
-        res.end();
+        const bucket = id.split('.')[0];
+        const realKey = id.split('.')[1];
+        
+        if (!bucket || !realKey) {
+            return res.status(400).send({msgError: "Formato de ID inválido"});
+        }
+        
+        // Obtener metadatos para el Content-Type
+        try {
+            const stat = await minioClient.statObject(bucket, realKey);
+            const contentType = stat.metaData?.['content-type'] || 'image/jpeg';
+            res.setHeader('Content-Type', contentType);
+        } catch {
+            // Si no se pueden obtener metadatos, usar un default
+            res.setHeader('Content-Type', 'image/jpeg');
+        }
+        
+        const stream = await minioClient.getObject(bucket, realKey);
+        
+        // Pipe del stream al response
+        stream.pipe(res);
+        
+        stream.on('error', (err) => {
+            console.error('Error streaming file:', err);
+            if (!res.headersSent) {
+                res.status(500).send({msgError: "Error leyendo el archivo", error: err});
+            }
+        });
     } catch (e) {
+        console.error('Error requesting file:', e);
         res.status(500).send({msgError: "Error solicitando el archivo", error: e})
     }
 }

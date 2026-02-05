@@ -57,7 +57,7 @@ export const createCampaign = async (req: MulterRequest, res: Response) => {
                 originalname: req.file.originalname,
                 size: req.file.size
             };
-            const savedImage = await saveImage(uploadedFile, userId, 'profilePics');
+            const savedImage = await saveImage(uploadedFile, userId, 'campaigns');
             if (typeof savedImage === 'string') {
                 imageUrl = savedImage;
             }
@@ -188,7 +188,7 @@ export const editCampaign = async (req: MulterRequest, res: Response) => {
                 originalname: req.file.originalname,
                 size: req.file.size
             };
-            const savedImage = await saveImage(uploadedFile, new Types.ObjectId(req.body.userId), 'campaignPics');
+            const savedImage = await saveImage(uploadedFile, new Types.ObjectId(req.body.userId), 'campaigns');
             if (typeof savedImage === 'string') {
                 imageUrl = savedImage;
             }

@@ -5,6 +5,7 @@ import CharacterDetail, { ICharacterPersonaDetail } from '../../models/PersonaD2
 import CharacterStatus from '../../models/PersonaD20/CharacterStatus';
 import Class, { IPersonaClass } from '../../models/PersonaD20/Class';
 import Subclass, { IPersonaSubclass } from '../../models/PersonaD20/Subclass';
+import Spell from '../../models/Spell';
 import { IModifier, useTypes, IFeature } from '../../models/types';
 
 // Función auxiliar para obtener habilidades secundarias
@@ -35,10 +36,6 @@ export const getLevelUpInfo = async (req: Request, res: Response) => {
             return res.status(400).json({ errMsg: 'El personaje está eliminado' });
         }
 
-        if (character.player.toString() !== req.body.userId) {
-            return res.status(403).json({ errMsg: 'No tienes permisos para editar este personaje' });
-        }
-
         const characterDetail = await CharacterDetail
             .findById(character.characterData)
             .populate([{ path: 'class', populate: 'levels.features' }, { path: 'subclass', populate: 'levels.features' }]);
@@ -56,11 +53,15 @@ export const getLevelUpInfo = async (req: Request, res: Response) => {
             return res.status(400).json({ errMsg: 'Nivel máximo alcanzado' });
         }
 
+        // Obtener los hechizos del nivel con sus datos completos
+        const spellIds = nextLevelData.spells || [];
+        const spells = spellIds.length > 0 ? await Spell.find({ _id: { $in: spellIds } }) : [];
+
         const response: any = {
             level: nextLevel,
             HPDice: characterClass.HPDice,
             features: nextLevelData.features,
-            spells: nextLevelData.spells,
+            spells: spells,
             subclassFeatures: [],
             shouldChooseSubclass: nextLevelData.selectSubclass,
             shouldChooseSecondaryFeatures: (nextLevelData.knownSecondaryFeatures && nextLevelData.knownSecondaryFeatures > 0),

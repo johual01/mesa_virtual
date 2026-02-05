@@ -91,7 +91,7 @@ export const editCharacter = async (req: MulterRequest, res: Response) => {
                 originalname: req.file.originalname,
                 size: req.file.size
             };
-            const savedImage = await saveImage(uploadedFile, userIdObj, 'PROFILES');
+            const savedImage = await saveImage(uploadedFile, userIdObj, 'characters');
             if (typeof savedImage === 'string') {
                 character.pictureRoute = savedImage;
             } else {

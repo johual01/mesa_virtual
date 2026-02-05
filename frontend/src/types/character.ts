@@ -428,10 +428,16 @@ export interface PersonaClass {
   description: string;
 }
 
+export interface SubclassLevel {
+  level: number;
+  features: Feature[];
+}
+
 export interface PersonaSubclass {
   _id: string;
   name: string;
   description: string;
+  levels: SubclassLevel[];
 }
 
 export interface CharacterCreateInfo {

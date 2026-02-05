@@ -34,6 +34,9 @@ export async function validateToken(req: Request, res: Response, next: Function,
             return next(decoded);
         }
 
+        console.log('validateToken - Decoded token:', decoded); // Debug log
+        console.log('validateToken - Request body userId:', req.body.userId); // Debug log
+        console.log('validateToken - Request params userId:', req.params.userId); // Debug log
         const userId = req.body.userId || req.params.userId;
 
         if (!userId) {

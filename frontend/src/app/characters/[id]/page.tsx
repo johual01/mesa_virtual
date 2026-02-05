@@ -206,10 +206,22 @@ export default function CharacterDetailPage() {
             </div>
             <div className="flex items-center gap-2">
               {isOwner && (
-                <Button variant="default" size="sm" onClick={() => router.push(`/characters/${characterId}/edit`)}>
-                  <Edit className="h-4 w-4 mr-1" />
-                  Editar
-                </Button>
+                <>
+                  {character.level < 20 && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => router.push(`/characters/${characterId}/level-up`)}
+                    >
+                      <ArrowUp className="h-4 w-4 mr-1" />
+                      Subir de Nivel
+                    </Button>
+                  )}
+                  <Button variant="default" size="sm" onClick={() => router.push(`/characters/${characterId}/edit`)}>
+                    <Edit className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -426,16 +438,18 @@ export default function CharacterDetailPage() {
               </Dialog>
 
               {/* Botón Subir de Nivel */}
-              <Button 
-                variant="default" 
-                size="default"
-                disabled={!isOwner}
-                onClick={() => router.push(`/characters/${characterId}/level-up`)}
-                className="h-[58px] px-4 flex flex-col gap-0.5"
-              >
-                <ArrowUp className="h-4 w-4" />
-                <span className="text-xs">Subir de nivel</span>
-              </Button>
+              {character.level < 20 && (
+                <Button 
+                  variant="default" 
+                  size="default"
+                  disabled={!isOwner}
+                  onClick={() => router.push(`/characters/${characterId}/level-up`)}
+                  className="h-[58px] px-4 flex flex-col gap-0.5"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                  <span className="text-xs">Subir de nivel</span>
+                </Button>
+              )}
             </div>
           </div>
         </div>
