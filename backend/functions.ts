@@ -169,11 +169,11 @@ export function arraysEqual<T>(arr1: T[], arr2: T[]): boolean {
 }
 
 export function reduceModifiers(array: IModifier[], data: any) {
-    return array.filter((mod, index, self) => 
+    return array.filter((mod, index, self) =>
         index === self.findIndex((m) => (
-            m.etiquette === mod.etiquette && 
+            m.etiquette === mod.etiquette &&
             (
-                (typeof m.value === 'number' ? m.value : data[m.value]) >= 
+                (typeof m.value === 'number' ? m.value : data[m.value]) >=
                 (typeof mod.value === 'number' ? mod.value : data[mod.value])
             )
         ))
@@ -182,4 +182,48 @@ export function reduceModifiers(array: IModifier[], data: any) {
         const value = typeof mod.value === 'number' ?  + mod.value : mod.value === 'advantage' ? 0 : data[mod.value];
         return acc + value;
     }, 0)
+}
+
+/**
+ * Parsea un campo de Multer que puede venir como string JSON o como el tipo esperado.
+ * Útil para campos de multipart/form-data que envían objetos/arrays como strings.
+ * @param value - El valor del campo (puede ser string JSON o el tipo T)
+ * @returns El valor parseado como tipo T, o undefined si falla el parseo
+ */
+export function parseMulterField<T>(value: unknown): T | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+
+    if (typeof value === 'string') {
+        try {
+            return JSON.parse(value) as T;
+        } catch {
+            return undefined;
+        }
+    }
+
+    return value as T;
+}
+
+/**
+ * Parsea un campo numérico de Multer que puede venir como string.
+ * @param value - El valor del campo (puede ser string o number)
+ * @returns El valor como número, o undefined si no es válido
+ */
+export function parseMulterNumber(value: unknown): number | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+
+    if (typeof value === 'number') {
+        return value;
+    }
+
+    if (typeof value === 'string') {
+        const parsed = Number(value);
+        return isNaN(parsed) ? undefined : parsed;
+    }
+
+    return undefined;
 }

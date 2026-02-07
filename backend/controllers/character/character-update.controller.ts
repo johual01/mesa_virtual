@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import User from '../../models/User';
-import Character, { state as characterState } from '../../models/Character';
+import Character, { state as characterState, ICharacter } from '../../models/Character';
 import CharacterDetail, { personaSecondaryAbilities } from '../../models/PersonaD20/CharacterDetail';
 import CharacterStatus from '../../models/PersonaD20/CharacterStatus';
 import { elements, personaStadistics } from '../../models/types';
-import { arraysEqual, saveImage, UploadedFile } from '../../functions';
+import { arraysEqual, saveImage, UploadedFile, parseMulterField, parseMulterNumber } from '../../functions';
 
 // Extender Request para incluir el archivo de multer
 interface MulterRequest extends Request {
@@ -32,14 +32,18 @@ export const editCharacter = async (req: MulterRequest, res: Response) => {
         const {
             name,
             state,
-            backstory,
-            pictureRoute,        
+            backstory: rawBackstory,
             persona,
-            money,
-            stadistics,
+            money: rawMoney,
+            stadistics: rawStadistics,
             element,
             weakness,
         } = req.body;
+
+        // Parsear campos que pueden venir como strings JSON desde multipart/form-data
+        const backstory = parseMulterField<ICharacter['backstory']>(rawBackstory);
+        const stadistics = parseMulterField<Record<personaStadistics, number>>(rawStadistics);
+        const money = parseMulterNumber(rawMoney);
 
         if (!name || !state || !persona || money === undefined || !element || !backstory || !stadistics || !weakness) {
             return res.status(400).json({ errMsg: 'Faltan campos obligatorios' });
@@ -61,10 +65,6 @@ export const editCharacter = async (req: MulterRequest, res: Response) => {
         const providedStats = Object.keys(stadistics);
         if (!arraysEqual(providedStats.sort(), requiredStats.sort())) {
             return res.status(400).json({ errMsg: 'Faltan estadísticas' });
-        }
-
-        if (typeof money !== 'number') {
-            return res.status(400).json({ errMsg: 'El dinero debe ser un número' });
         }
 
         const user = await User.findById(req.body.userId);
@@ -97,9 +97,6 @@ export const editCharacter = async (req: MulterRequest, res: Response) => {
             } else {
                 return res.status(500).json({ errMsg: 'No se pudo guardar la imagen' });
             }
-        } else if (pictureRoute && pictureRoute.startsWith('http')) {
-            // Permitir URLs externas directamente
-            character.pictureRoute = pictureRoute;
         }
 
         characterDetail.persona = persona;

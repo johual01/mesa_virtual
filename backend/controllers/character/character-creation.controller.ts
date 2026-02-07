@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import User from '../../models/User';
-import Character, { state as characterState } from '../../models/Character';
+import Character, { state as characterState, ICharacter } from '../../models/Character';
 import CharacterDetail, { personaSecondaryAbilities } from '../../models/PersonaD20/CharacterDetail';
 import CharacterStatus from '../../models/PersonaD20/CharacterStatus';
 import Campaign, { campaignState } from '../../models/Campaign';
 import Class from '../../models/PersonaD20/Class';
 import { elements, system as systems, personaStadistics } from '../../models/types';
-import { enumToArray, saveImage, arraysEqual, UploadedFile } from '../../functions';
+import { enumToArray, saveImage, arraysEqual, UploadedFile, parseMulterField, parseMulterNumber } from '../../functions';
 import { rollMaxDiceString } from 'diceLogic';
 import { allTranslations } from '../../translations';
 
@@ -51,19 +51,25 @@ export const createCharacter = async (req: MulterRequest, res: Response) => {
             name,
             system,
             state,
-            backstory,
+            backstory: rawBackstory,
             pictureRoute,
             characterClass,
             persona,
-            money,
-            stadistics,
-            proficency,
+            money: rawMoney,
+            stadistics: rawStadistics,
+            proficency: rawProficency,
             element,
             weakness,
         } = req.body;
 
+        // Parsear campos que pueden venir como strings JSON desde multipart/form-data
+        const backstory = parseMulterField<ICharacter['backstory']>(rawBackstory);
+        const stadistics = parseMulterField<Record<personaStadistics, number>>(rawStadistics);
+        const proficency = parseMulterField<personaSecondaryAbilities[]>(rawProficency);
+        const money = parseMulterNumber(rawMoney);
+
         // Validaciones
-        if (!name || !system || !state || !characterClass || !persona || money === undefined || 
+        if (!name || !system || !state || !characterClass || !persona || money === undefined ||
             !element || !backstory || !stadistics || !proficency || !weakness) {
             return res.status(400).json({ errMsg: 'Faltan campos obligatorios' });
         }
@@ -88,10 +94,6 @@ export const createCharacter = async (req: MulterRequest, res: Response) => {
         const providedStats = Object.keys(stadistics);
         if (!arraysEqual(providedStats.sort(), requiredStats.sort())) {
             return res.status(400).json({ errMsg: 'Faltan estadísticas' });
-        }
-
-        if (typeof money !== 'number') {
-            return res.status(400).json({ errMsg: 'El dinero debe ser un número' });
         }
 
         const invalidProficency = proficency.some((p: any) => !Object.values(personaSecondaryAbilities).includes(p));
@@ -306,10 +308,7 @@ export const createCharacter = async (req: MulterRequest, res: Response) => {
             } else {
                 return res.status(500).json({ errMsg: 'No se pudo guardar la imagen' });
             }
-        } else if (pictureRoute && pictureRoute.startsWith('http')) {
-            // Permitir URLs externas directamente
-            character.pictureRoute = pictureRoute;
-        }
+        } 
 
         character.characterData = characterDetailDoc._id;
         const newCharacter = new Character(character);

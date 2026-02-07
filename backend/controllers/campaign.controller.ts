@@ -4,7 +4,7 @@ import Note, { noteState } from '../models/Note';
 import History, { referenceType, origin } from '../models/History';
 import { ICharacter } from '../models/Character';
 import { Types } from 'mongoose';
-import { saveImage, UploadedFile } from '../functions';
+import { saveImage, UploadedFile, parseMulterField } from '../functions';
 import { IUser } from '../models/User';
 
 // Extender Request para incluir el archivo de multer
@@ -61,9 +61,6 @@ export const createCampaign = async (req: MulterRequest, res: Response) => {
             if (typeof savedImage === 'string') {
                 imageUrl = savedImage;
             }
-        } else if (req.body.imageUrl && req.body.imageUrl.startsWith('http')) {
-            // Permitir URLs externas directamente
-            imageUrl = req.body.imageUrl;
         }
 
         const campaignData = {
@@ -73,9 +70,9 @@ export const createCampaign = async (req: MulterRequest, res: Response) => {
             characters: [],
             image: imageUrl,
             description: req.body.description,
-            notes: req.body.notes || [],
+            notes: parseMulterField<string[]>(req.body.notes) || [],
             history: [],
-            publicEntries: req.body.publicEntries || [],
+            publicEntries: parseMulterField<string[]>(req.body.publicEntries) || [],
             state: campaignState.ACTIVE,
         };
         const campaign: ICampaign = new Campaign(campaignData);
@@ -201,8 +198,8 @@ export const editCampaign = async (req: MulterRequest, res: Response) => {
             name: req.body.name,
             image: imageUrl,
             description: req.body.description,
-            notes: req.body.notes,
-            publicEntries: req.body.publicEntries
+            notes: parseMulterField<string[]>(req.body.notes),
+            publicEntries: parseMulterField<string[]>(req.body.publicEntries)
         };
         const userId = new Types.ObjectId(req.body.userId);
         const history = new History({
