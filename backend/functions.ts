@@ -10,7 +10,7 @@ const GENERIC_BUCKET_NAME = config.GENERIC_BUCKET_NAME || ''
 const minioClient = new Minio.Client({
   endPoint: config.ENDPOINT_MINIO,
   port: config.PORT_MINIO,
-  useSSL: true,
+  useSSL: process.env.MINIO_USE_SSL === 'true',
   accessKey: config.ACCESS_KEY_MINIO,
   secretKey: config.SECRET_KEY_MINIO,
 })

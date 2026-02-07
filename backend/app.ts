@@ -9,9 +9,17 @@ import { requestFile } from "./functions";
 
 const app = express();
 
+// Configurar origenes permitidos para CORS
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://frontend:3000',  // Docker internal
+  process.env.URL?.replace(/\/api\/?$/, ''),  // URL publica sin /api
+].filter(Boolean);
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], 
-  credentials: true, 
+  origin: allowedOrigins as string[],
+  credentials: true,
   exposedHeaders: ["set-cookie"]
 }));
 app.use(morgan("dev"));
@@ -28,6 +36,11 @@ app.use('/auth', AuthRoutes);
 app.use("/files", express.static(path.join(__dirname, "files")))
 
 app.get('/dynamicFiles/:id', requestFile)
+
+// Health check endpoint para Docker
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // read static files
 app.use(express.static(path.join(__dirname, "..", "..", "dist")));
