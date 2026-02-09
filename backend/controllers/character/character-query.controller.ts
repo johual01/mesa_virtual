@@ -25,6 +25,29 @@ const markInactiveModifiers = (modifiers: IModifier[], inactiveFeatures?: Types.
     });
 };
 
+// Función para calcular los usos de un feature basándose en el nivel del personaje
+const calculateFeatureUses = (feature: IFeature, characterLevel: number): IFeature => {
+    if (!feature.usesPerLevel || feature.usesPerLevel.length === 0) {
+        return feature;
+    }
+    
+    // Buscar el rango de nivel que corresponde al personaje
+    const levelRange = feature.usesPerLevel.find(
+        range => characterLevel >= range.minLevel && characterLevel <= range.maxLevel
+    );
+    
+    if (levelRange) {
+        feature.uses = levelRange.uses;
+    }
+    
+    // Procesar recursivamente los subFeatures si existen
+    if (feature.subFeatures && feature.subFeatures.length > 0) {
+        feature.subFeatures = feature.subFeatures.map(sf => calculateFeatureUses(sf, characterLevel));
+    }
+    
+    return feature;
+};
+
 // Función para normalizar combatData y asegurar que todos los arrays existen
 const normalizeCombatData = (characterData: ICharacterPersonaDetail) => {
     const cd = characterData.combatData;
@@ -371,6 +394,8 @@ export const getCharacter = async (req: Request, res: Response) => {
             }
         });
 
+        const characterActualLevel = characterClass.levels.find((e) => e.level === characterData.level);
+
         res.status(200).json({
             name: character.name,
             state: character.state,
@@ -415,13 +440,18 @@ export const getCharacter = async (req: Request, res: Response) => {
             secondaryAbilities: characterData.secondaryAbilities,
             background: character.backstory,
             features: {
+                resource: characterClass.resourceType ? {
+                    name: characterClass.resourceType,
+                    current: characterStatus.resourcePool !== undefined ? characterStatus.resourcePool : characterClass.initialResourcePoolValue,
+                    max: characterActualLevel?.resourcePool !== undefined ? characterActualLevel.resourcePool : characterClass.initialResourcePoolValue
+                } : undefined,
                 classFeatures: characterActualLevels.reduce((features, level) => {
                     features.push(...level.features);
                     return features;
                 }, [] as IFeature[]).map((e) => {
                     e.origin = 'class';
                     if (characterStatus?.inactiveFeatures?.includes(e.featureId)) e.state = 'INACTIVE';
-                    return e;
+                    return calculateFeatureUses(e, characterData.level);
                 }),
                 subclassFeatures: subclass?.levels?.filter((e) => e.level < characterData.level)?.reduce((features, level) => {
                     features.push(...level.features);
@@ -429,7 +459,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                 }, [] as IFeature[])?.map((e) => {
                     e.origin = 'subclass';
                     if (characterStatus?.inactiveFeatures?.includes(e.featureId)) e.state = 'INACTIVE';
-                    return e;
+                    return calculateFeatureUses(e, characterData.level);
                 }) || [],
                 itemFeatures: characterInventory?.reduce((features, item) => {
                     if (item.additionalProperties) features.push(...item.additionalProperties);
@@ -437,7 +467,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                 }, [] as IFeature[])?.map((e) => {
                     e.origin = 'items';
                     if (characterStatus?.inactiveFeatures?.includes(e.featureId)) e.state = 'INACTIVE';
-                    return e;
+                    return calculateFeatureUses(e, characterData.level);
                 }) || [],
                 customFeatures: customFeatures || []
             },

@@ -24,6 +24,7 @@ export interface ICharacterStatus {
     customModifiers?: IModifier[],
     selectedSecondaryFeatures?: IFeature[],
     inactiveFeatures?: Types.ObjectId[],
+    resourcePool?: number,
 }
 
 export interface IPersonaCharacterStatus extends ICharacterStatus, Document {}
@@ -37,12 +38,14 @@ const CharacterStatusSchema = new Schema({
             freeList: [ { type: Schema.Types.ObjectId, ref: 'Spell' } ],
             additionalList: [ { type: Schema.Types.ObjectId, ref: 'Spell' } ],
             preparedList: [ { type: Schema.Types.ObjectId, ref: 'Spell' } ],
+            maxPrepared: { type: Number, required: true }
         }, 
         required: true
     },
     customModifiers: {type: [Object]},
     selectedSecondaryFeatures: {type: [Object]},
     inactiveFeatures: {type: [String]},
+    resourcePool: {type: Number},
 });
 
 export default model<IPersonaCharacterStatus>('PersonaCharacterStatus', CharacterStatusSchema);

@@ -3,7 +3,7 @@ import { ObjectId, Types } from 'mongoose';
 
 export enum healingTypes {
     HP = 'hp',
-    SP = 'sp',
+    AP = 'ap',
     TEMP_HP = 'temp_hp',
     ACC_TEMP_HP = 'accumulative_temp_hp',
     STATUS_EFFECT = 'status_effect',
@@ -153,9 +153,8 @@ export enum resourceTypes {
     RAGE_POINTS = 'Rage Points',
     MORALE_POINTS = 'Morale Points',
     REACTION = 'reaction',
-    ACTION_POINTS = 'AP',
-    SPELL_POINTS = 'SP',
-    HP = 'HP',
+    ANIMA_POINTS = 'AP',
+    HIT_POINTS = 'HP',
     MOVEMENT = 'movement',
     BONUS_ACTION = 'bonus_action',
     FREE_ACTION = 'free_action',
@@ -279,6 +278,12 @@ export enum useTypes {
     PASSIVE = 'passive',
 }
 
+export interface IUsesPerLevel {
+    minLevel: number;
+    maxLevel: number;
+    uses: number;
+}
+
 export interface IFeature {
     featureId: Types.ObjectId,
     name: string,
@@ -295,6 +300,7 @@ export interface IFeature {
     target?: targetTypes,
     duration?: IDuration,
     uses?: number,
+    usesPerLevel?: IUsesPerLevel[],
     internalCounter?: boolean,
     counterCondition?: string,
     triggerForRecover?: triggerTypes | triggerTypes[],

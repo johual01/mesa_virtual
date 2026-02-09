@@ -73,17 +73,23 @@ export const prepareSpell = async (req: Request, res: Response) => {
             return res.status(404).json({ errMsg: 'Estado del personaje no encontrado' });
         }
 
-        if (characterStatus.spells.preparedList.length >= characterStatus.spells.maxPrepared) {
-            return res.status(400).json({ errMsg: 'No puedes preparar más hechizos' });
-        }
-
         // Verificar si ya está preparado
         const alreadyPrepared = characterStatus.spells.preparedList.some(
             s => s.toString() === spellObjectId.toString()
         );
 
         if (alreadyPrepared) {
-            return res.status(400).json({ errMsg: 'El hechizo ya está preparado' });
+            // Si ya está preparado, lo despreparamos
+            characterStatus.spells.preparedList = characterStatus.spells.preparedList.filter(
+                s => s.toString() !== spellObjectId.toString()
+            );
+            await characterStatus.save();
+            return res.status(200).json({ message: 'Hechizo depreparado' });
+        }
+
+        // Verificar si hay espacio para preparar más
+        if (characterStatus.spells.preparedList.length >= characterStatus.spells.maxPrepared) {
+            return res.status(400).json({ errMsg: 'No puedes preparar más hechizos' });
         }
 
         characterStatus.spells.preparedList.push(spellObjectId);

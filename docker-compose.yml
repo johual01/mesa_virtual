@@ -156,17 +156,17 @@ services:
   # ===========================================
   # Cloudflare Tunnel - Exposicion a internet
   # ===========================================
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: mesavirtual-cloudflared
-    restart: unless-stopped
-    command: tunnel run
-    environment:
-      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
-    depends_on:
-      - nginx
-    networks:
-      - mesavirtual-network
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   container_name: mesavirtual-cloudflared
+  #   restart: unless-stopped
+  #   command: tunnel run
+  #   environment:
+  #     TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+  #   depends_on:
+  #     - nginx
+  #   networks:
+  #     - mesavirtual-network
 
 # ===========================================
 # Volumenes persistentes

@@ -328,6 +328,11 @@ export interface Character {
   secondaryAbilities: Record<string, unknown>;
   background: Backstory;
   features: {
+    resource?: {
+      name: string;
+      current: number;
+      max: number;
+    };
     classFeatures: Feature[];
     subclassFeatures: Feature[];
     itemFeatures: Feature[];

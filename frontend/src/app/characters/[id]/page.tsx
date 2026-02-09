@@ -498,12 +498,12 @@ export default function CharacterDetailPage() {
 
           {/* Tab Equipo */}
           <TabsContent value="equipment" className="space-y-6">
-            <EquipmentTab character={character} isOwner={isOwner} />
+            <EquipmentTab character={character} isOwner={isOwner} onRefetch={refetch} />
           </TabsContent>
 
           {/* Tab Conjuros */}
           <TabsContent value="spells" className="space-y-6">
-            <SpellsTab character={character} isOwner={isOwner} />
+            <SpellsTab character={character} isOwner={isOwner} onRefetch={refetch} />
           </TabsContent>
         </Tabs>
       </div>

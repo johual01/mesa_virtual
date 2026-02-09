@@ -2205,7 +2205,12 @@ await db.personaclasses.updateOne(
                         useType: 'active',
                         action: 'reaction',
                         trigger: 'before_ally_receive_attack',
-                        uses: 3,
+                        usesPerLevel: [
+                            { minLevel: 6, maxLevel: 9, uses: 3 },
+                            { minLevel: 10, maxLevel: 14, uses: 4 },
+                            { minLevel: 15, maxLevel: 19, uses: 5 },
+                            { minLevel: 20, maxLevel: 20, uses: 6 }
+                        ],
                         triggerForRecover: 'at_combat_end',
                         modifiers: [
                             {
