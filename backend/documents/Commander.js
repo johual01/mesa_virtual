@@ -2113,7 +2113,7 @@ await db.personaclasses.updateOne(
                 spells: [spells[0]],
                 features: [],
                 APGained: 5,
-                knownSpells: 4,
+                maxPreparedSpells: 4,
             },
             {
                 level: 2,
@@ -2139,7 +2139,7 @@ await db.personaclasses.updateOne(
                     }
                 ],
                 APGained: 1,
-                knownSpells: 4,
+                maxPreparedSpells: 4,
             },
             {
                 level: 3,
@@ -2173,7 +2173,7 @@ await db.personaclasses.updateOne(
                     }
                 ],
                 APGained: 1,
-                knownSpells: 4,
+                maxPreparedSpells: 4,
             },
             {
                 level: 4,
@@ -2181,7 +2181,7 @@ await db.personaclasses.updateOne(
                 spells: [spells[5], spells[6]],
                 features: [],
                 APGained: 2,
-                knownSpells: 6,
+                maxPreparedSpells: 6,
                 selectSubclass: true,
                 gainSubclassFeature: true
             },
@@ -2191,7 +2191,7 @@ await db.personaclasses.updateOne(
                 spells: [spells[7], spells[8]],
                 gainStatIncrease: true,
                 APGained: 1,
-                knownSpells: 6,
+                maxPreparedSpells: 6,
             },
             {
                 level: 6,
@@ -2253,7 +2253,7 @@ await db.personaclasses.updateOne(
                     }
                 ],
                 APGained: 1,
-                knownSpells: 6,
+                maxPreparedSpells: 6,
             },
             {
                 level: 7,
@@ -2278,7 +2278,7 @@ await db.personaclasses.updateOne(
                     }
                 ],
                 APGained: 1,
-                knownSpells: 6,
+                maxPreparedSpells: 6,
             },
             {
                 level: 8,
@@ -2286,7 +2286,7 @@ await db.personaclasses.updateOne(
                 spells: [spells[12], spells[13]],
                 features: [],
                 APGained: 2,
-                knownSpells: 7,
+                maxPreparedSpells: 7,
                 gainSubclassFeature: true
             },
             {
@@ -2295,7 +2295,7 @@ await db.personaclasses.updateOne(
                 spells: [spells[14], spells[15], spells[16]],
                 gainStatIncrease: true,
                 APGained: 1,
-                knownSpells: 7,
+                maxPreparedSpells: 7,
             },
             {
                 level: 10,
@@ -2360,7 +2360,7 @@ await db.personaclasses.updateOne(
                     }
                 ],
                 APGained: 1,
-                knownSpells: 7,
+                maxPreparedSpells: 7,
             },
             {
                 level: 11,
@@ -2622,7 +2622,7 @@ await db.personaclasses.updateOne(
                 ],
                 APGained: 1,
                 resourcePool: 8,
-                knownSpells: 7,
+                maxPreparedSpells: 7,
             },
             {
                 level: 12,
@@ -2674,7 +2674,7 @@ await db.personaclasses.updateOne(
                 ],
                 APGained: 2,
                 resourcePool: 8,
-                knownSpells: 9,
+                maxPreparedSpells: 9,
             },
             {
                 level: 13,
@@ -2683,7 +2683,7 @@ await db.personaclasses.updateOne(
                 features: [],
                 APGained: 1,
                 resourcePool: 8,
-                knownSpells: 9,
+                maxPreparedSpells: 9,
                 gainSubclassFeature: true
             },
             {
@@ -2692,7 +2692,7 @@ await db.personaclasses.updateOne(
                 spells: [spells[25], spells[26]],
                 APGained: 1,
                 resourcePool: 9,
-                knownSpells: 9,
+                maxPreparedSpells: 9,
                 gainStatIncrease: true
             },
             {
@@ -2719,7 +2719,7 @@ await db.personaclasses.updateOne(
                 ],
                 APGained: 1,
                 resourcePool: 9,
-                knownSpells: 9,
+                maxPreparedSpells: 9,
             },
             {
                 level: 16,
@@ -2764,7 +2764,7 @@ await db.personaclasses.updateOne(
                 ],
                 APGained: 2,
                 resourcePool: 9,
-                knownSpells: 10,
+                maxPreparedSpells: 10,
             },
             {
                 // Te quedaste acá
@@ -2801,7 +2801,7 @@ await db.personaclasses.updateOne(
                 ],
                 APGained: 1,
                 resourcePool: 9,
-                knownSpells: 10,
+                maxPreparedSpells: 10,
             },
             {
                 level: 18,
@@ -2810,7 +2810,7 @@ await db.personaclasses.updateOne(
                 features: [],
                 APGained: 1,
                 resourcePool: 10,
-                knownSpells: 10,
+                maxPreparedSpells: 10,
                 gainSubclassFeature: true
             },
             {
@@ -2820,7 +2820,7 @@ await db.personaclasses.updateOne(
                 gainStatIncrease: true,
                 APGained: 1,
                 resourcePool: 10,
-                knownSpells: 10,
+                maxPreparedSpells: 10,
             },
             {
                 level: 20,
@@ -2897,7 +2897,7 @@ await db.personaclasses.updateOne(
                 ],
                 APGained: 2,
                 resourcePool: 12,
-                knownSpells: 14,
+                maxPreparedSpells: 14,
             }
         ]
     }}
