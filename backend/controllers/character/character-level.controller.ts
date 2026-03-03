@@ -6,7 +6,7 @@ import CharacterStatus from '../../models/PersonaD20/CharacterStatus';
 import Class, { IPersonaClass } from '../../models/PersonaD20/Class';
 import Subclass, { IPersonaSubclass } from '../../models/PersonaD20/Subclass';
 import Spell from '../../models/Spell';
-import { IModifier, useTypes, IFeature } from '../../models/types';
+import { IModifier, useTypes, IFeature, IEffect } from '../../models/types';
 
 // Función auxiliar para obtener habilidades secundarias
 export const obtainSecondaryFeatures = (
@@ -21,6 +21,80 @@ export const obtainSecondaryFeatures = (
         .concat(subclassFeatures || [])
         .find(f => f.featureId?.toString() === featureId.toString())
         ?.subFeatures;
+};
+
+const effectTypeLabels: Record<string, string> = {
+    heal: 'Curación',
+    regeneration: 'Regeneración',
+    shield: 'Escudo',
+    barrier: 'Barrera',
+    damage: 'Daño',
+    physical_damage: 'Daño físico',
+    magical_damage: 'Daño mágico',
+    buff: 'Beneficio',
+    debuff: 'Perjuicio',
+    status_effect: 'Estado',
+    recover_resource: 'Recuperación de recurso',
+};
+
+const healTypeLabels: Record<string, string> = {
+    hp: 'PV',
+    ap: 'AP',
+    temp_hp: 'PV temporales',
+    accumulative_temp_hp: 'PV temp. acumulables',
+    status_effect: 'estado',
+    debilitation: 'debilitación',
+};
+
+const getEffectSummary = (effect: IEffect): string | null => {
+    const data = effect as unknown as Record<string, unknown>;
+    const type = typeof data.type === 'string' ? data.type : '';
+    const explicitDescription = typeof data.description === 'string' ? data.description.trim() : '';
+
+    if (explicitDescription) return explicitDescription;
+
+    if (['heal', 'regeneration', 'shield', 'barrier'].includes(type)) {
+        const amount = typeof data.heal === 'string' || typeof data.heal === 'number'
+            ? data.heal
+            : (typeof data.value === 'string' || typeof data.value === 'number' ? data.value : undefined);
+        const healType = typeof data.healType === 'string' ? (healTypeLabels[data.healType] || data.healType) : '';
+        if (amount !== undefined) {
+            return `${effectTypeLabels[type] || type}: ${String(amount)}${healType ? ` ${healType}` : ''}`;
+        }
+    }
+
+    if (['damage', 'physical_damage', 'magical_damage'].includes(type) && (typeof data.damage === 'string' || typeof data.damage === 'number')) {
+        return `${effectTypeLabels[type] || type}: ${String(data.damage)}`;
+    }
+
+    if (type === 'recover_resource') {
+        const amount = typeof data.value === 'string' || typeof data.value === 'number' ? data.value : undefined;
+        const resource = typeof data.resource === 'string' ? data.resource : '';
+        if (amount !== undefined) {
+            return `${effectTypeLabels[type] || type}: ${String(amount)}${resource ? ` ${resource}` : ''}`;
+        }
+    }
+
+    return effectTypeLabels[type] || null;
+};
+
+const getDescriptionWithEffects = (feature: IFeature): string => {
+    const description = feature.description?.trim() || '';
+
+    if (description.toLowerCase().includes('efectos:') || !feature.effects?.length) {
+        return description;
+    }
+
+    const summaries = feature.effects
+        .map(getEffectSummary)
+        .filter((summary): summary is string => Boolean(summary));
+
+    if (!summaries.length) {
+        return description;
+    }
+
+    const effectText = `Efectos: ${summaries.join(' | ')}`;
+    return description ? `${description}\n${effectText}` : effectText;
 };
 
 export const getLevelUpInfo = async (req: Request, res: Response) => {
@@ -95,7 +169,7 @@ export const getLevelUpInfo = async (req: Request, res: Response) => {
             response.secondaryFeatures = secondaryFeatures.map(f => ({
                 featureId: f.featureId,
                 name: f.name,
-                description: f.description,
+                description: getDescriptionWithEffects(f),
             }));
         }
 
@@ -319,6 +393,9 @@ export const levelUp = async (req: Request, res: Response) => {
                     case 'rangedWeaponRangeModifiers':
                         characterDetail.combatData.range.weaponRangedRangeModifiers.push(modifier);
                         break;
+                    case 'spellRangeNonDamageModifiers':
+                        characterDetail.combatData.range.spellRangeNonDamageModifiers.push(modifier);
+                        break;
                     case 'shieldModifiers':
                         characterDetail.combatData.defense.shieldModifiers.push(modifier);
                         break;
@@ -441,7 +518,7 @@ export const getSecondaryFeatures = async (req: Request, res: Response) => {
             secondaryFeatures: secondaryFeatures.map((f: IFeature) => ({
                 featureId: f.featureId,
                 name: f.name,
-                description: f.description,
+                description: getDescriptionWithEffects(f),
             }))
         });
     } catch (e) {

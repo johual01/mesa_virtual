@@ -295,6 +295,11 @@ export const createCharacter = async (req: MulterRequest, res: Response) => {
                     rangeDamageModifiers: [],
                     meleeDamageModifiers: [],
                     criticalDamageModifiers: []
+                },
+                range: {
+                    weaponRangedRangeModifiers: [],
+                    weaponMeleeRangeModifiers: [],
+                    spellRangeNonDamageModifiers: []
                 }
             }
         };

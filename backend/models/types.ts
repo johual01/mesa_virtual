@@ -313,6 +313,7 @@ export interface IFeature {
     state?: 'ACTIVE' | 'INACTIVE',
     effects: IEffect[],
     parent?: Types.ObjectId,
+    levelCondition?: number,
     subFeatures?: IFeature[],
 }
 
@@ -381,6 +382,7 @@ export type modificationEffectTypes =  'modification'
     | 'remove_buffs'
     | 'remove_debuffs'
     | 'extend_buffs'
+    | 'extend_debuffs'
     | 'spell_cost_reduction'
     | 'break_shield'
     | 'stack_buffs'
@@ -397,6 +399,10 @@ export type modificationEffectTypes =  'modification'
     | 'repeated_spell'
     | 'change_spell_action'
     | 'allow_second_concentration'
+    | 'remove_resistance'
+    | 'add_resistance'
+    | 'add_inmunity'
+    | 'remove_inmunity'
 
 export interface IModificationEffect extends IBaseEffect {
     type: modificationEffectTypes,

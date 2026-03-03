@@ -6,7 +6,32 @@ const characterClass = await db.personaclasses.insertOne({
     HPDice: '1d8',
     salvations: ['dexterity', 'knowledge'],
     resourceType: 'Morale Points',
-    levels: []
+    levels: [],
+    levelTable: {
+        columns: ['Nivel', 'Competencia', 'Beneficios', 'Resguardo Defensivo', 'Puntos de Ánimo'],
+        rows: [
+            { Nivel: '1', Competencia: '+2', Beneficios: 'Afinidad Elemental, Arma predilecta', 'Resguardo Defensivo': '-', 'Puntos de Ánimo': '-' },
+            { Nivel: '2', Competencia: '+2', Beneficios: 'Orden de Mando', 'Resguardo Defensivo': '-', 'Puntos de Ánimo': '-' },
+            { Nivel: '3', Competencia: '+2', Beneficios: 'Redada', 'Resguardo Defensivo': '-', 'Puntos de Ánimo': '-' },
+            { Nivel: '4', Competencia: '+2', Beneficios: 'Elección de subclase 1', 'Resguardo Defensivo': '-', 'Puntos de Ánimo': '-' },
+            { Nivel: '5', Competencia: '+3', Beneficios: 'Mejora de característica o beneficio', 'Resguardo Defensivo': '-', 'Puntos de Ánimo': '-' },
+            { Nivel: '6', Competencia: '+3', Beneficios: 'Resguardo Defensivo', 'Resguardo Defensivo': '3', 'Puntos de Ánimo': '-' },
+            { Nivel: '7', Competencia: '+3', Beneficios: 'Multiataque 1', 'Resguardo Defensivo': '3', 'Puntos de Ánimo': '-' },
+            { Nivel: '8', Competencia: '+3', Beneficios: 'Mecánica de subclase 2', 'Resguardo Defensivo': '3', 'Puntos de Ánimo': '-' },
+            { Nivel: '9', Competencia: '+4', Beneficios: 'Mejora de característica o beneficio', 'Resguardo Defensivo': '3', 'Puntos de Ánimo': '-' },
+            { Nivel: '10', Competencia: '+4', Beneficios: 'Maestría Armamentística', 'Resguardo Defensivo': '4', 'Puntos de Ánimo': '8' },
+            { Nivel: '11', Competencia: '+4', Beneficios: 'Despertar Espíritu', 'Resguardo Defensivo': '4', 'Puntos de Ánimo': '8' },
+            { Nivel: '12', Competencia: '+4', Beneficios: 'Ejecución Combinada', 'Resguardo Defensivo': '4', 'Puntos de Ánimo': '8' },
+            { Nivel: '13', Competencia: '+5', Beneficios: 'Mecánica de subclase 3', 'Resguardo Defensivo': '4', 'Puntos de Ánimo': '8' },
+            { Nivel: '14', Competencia: '+5', Beneficios: 'Mejora de característica o beneficio', 'Resguardo Defensivo': '4', 'Puntos de Ánimo': '9' },
+            { Nivel: '15', Competencia: '+5', Beneficios: 'Multiataque 2', 'Resguardo Defensivo': '5', 'Puntos de Ánimo': '9' },
+            { Nivel: '16', Competencia: '+5', Beneficios: 'Unidad de Combate', 'Resguardo Defensivo': '5', 'Puntos de Ánimo': '9' },
+            { Nivel: '17', Competencia: '+6', Beneficios: 'Repetición Marcial', 'Resguardo Defensivo': '5', 'Puntos de Ánimo': '9' },
+            { Nivel: '18', Competencia: '+6', Beneficios: 'Mecánica de subclase 4', 'Resguardo Defensivo': '5', 'Puntos de Ánimo': '10' },
+            { Nivel: '19', Competencia: '+6', Beneficios: 'Mejora de característica o beneficio', 'Resguardo Defensivo': '5', 'Puntos de Ánimo': '10' },
+            { Nivel: '20', Competencia: '+6', Beneficios: 'Líder del Batallón', 'Resguardo Defensivo': '6', 'Puntos de Ánimo': '12' }
+        ]
+    }
 })
 
 const characterClassId = characterClass.insertedId;

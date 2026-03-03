@@ -6,7 +6,32 @@ const characterClass = await db.personaclasses.insertOne({
     HPDice: '1d8',
     salvations: ['courage', 'charisma'],
     resourceType: 'AP',
-    levels: []
+    levels: [],
+    levelTable: {
+        columns: ['Nivel', 'Competencia', 'Beneficios', 'Usos de Utilería'],
+        rows: [
+            { Nivel: '1', Competencia: '+2', Beneficios: 'Afinidad Elemental, Arma predilecta', 'Usos de Utilería': '-' },
+            { Nivel: '2', Competencia: '+2', Beneficios: 'Arma de Chéjov', 'Usos de Utilería': '1' },
+            { Nivel: '3', Competencia: '+2', Beneficios: 'Puesta en Escena', 'Usos de Utilería': '1' },
+            { Nivel: '4', Competencia: '+2', Beneficios: 'Elección de subclase 1', 'Usos de Utilería': '1' },
+            { Nivel: '5', Competencia: '+3', Beneficios: 'Mejora de característica o beneficio', 'Usos de Utilería': '1' },
+            { Nivel: '6', Competencia: '+3', Beneficios: 'Cliché', 'Usos de Utilería': '1' },
+            { Nivel: '7', Competencia: '+3', Beneficios: 'Multiataque 1', 'Usos de Utilería': '2' },
+            { Nivel: '8', Competencia: '+3', Beneficios: 'Mecánica de subclase 2', 'Usos de Utilería': '2' },
+            { Nivel: '9', Competencia: '+4', Beneficios: 'Mejora de característica o beneficio', 'Usos de Utilería': '2' },
+            { Nivel: '10', Competencia: '+4', Beneficios: 'Bis', 'Usos de Utilería': '2' },
+            { Nivel: '11', Competencia: '+4', Beneficios: 'Fantasía Materializada', 'Usos de Utilería': '2' },
+            { Nivel: '12', Competencia: '+4', Beneficios: 'Cambio de Panorama', 'Usos de Utilería': '2' },
+            { Nivel: '13', Competencia: '+5', Beneficios: 'Mecánica de subclase 3', 'Usos de Utilería': '3' },
+            { Nivel: '14', Competencia: '+5', Beneficios: 'Mejora de característica o beneficio', 'Usos de Utilería': '3' },
+            { Nivel: '15', Competencia: '+5', Beneficios: 'Multiataque 2', 'Usos de Utilería': '3' },
+            { Nivel: '16', Competencia: '+5', Beneficios: 'Flashback', 'Usos de Utilería': '3' },
+            { Nivel: '17', Competencia: '+6', Beneficios: 'Giro Argumental', 'Usos de Utilería': '3' },
+            { Nivel: '18', Competencia: '+6', Beneficios: 'Mecánica de subclase 4', 'Usos de Utilería': '3' },
+            { Nivel: '19', Competencia: '+6', Beneficios: 'Mejora de característica o beneficio', 'Usos de Utilería': '4' },
+            { Nivel: '20', Competencia: '+6', Beneficios: 'Deus Ex Machina', 'Usos de Utilería': '5' }
+        ]
+    }
 })
 
 const characterClassId = characterClass.insertedId;

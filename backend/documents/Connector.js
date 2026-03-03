@@ -6,7 +6,32 @@ const characterClass = await db.personaclasses.insertOne({
     HPDice: '1d6',
     salvations: ['knowledge', 'charisma'],
     resourceType: 'AP',
-    levels: []
+    levels: [],
+    levelTable: {
+        columns: ['Nivel', 'Beneficios', 'Competencia', 'Mezclas Anímicas'],
+        rows: [
+            { Nivel: '1', Beneficios: 'Afinidad Elemental, Arma predilecta', Competencia: '+2', 'Mezclas Anímicas': '-' },
+            { Nivel: '2', Beneficios: 'Mezcla Anímica', Competencia: '+2', 'Mezclas Anímicas': '3' },
+            { Nivel: '3', Beneficios: 'Protección Estelar', Competencia: '+2', 'Mezclas Anímicas': '3' },
+            { Nivel: '4', Beneficios: 'Elección de subclase 1', Competencia: '+2', 'Mezclas Anímicas': '3' },
+            { Nivel: '5', Beneficios: 'Mejora de característica o beneficio', Competencia: '+3', 'Mezclas Anímicas': '4' },
+            { Nivel: '6', Beneficios: 'Restablecimiento Fugaz', Competencia: '+3', 'Mezclas Anímicas': '4' },
+            { Nivel: '7', Beneficios: 'Reflejo Curativo', Competencia: '+3', 'Mezclas Anímicas': '4' },
+            { Nivel: '8', Beneficios: 'Mecánica de subclase 2', Competencia: '+3', 'Mezclas Anímicas': '4' },
+            { Nivel: '9', Beneficios: 'Mejora de característica o beneficio', Competencia: '+4', 'Mezclas Anímicas': '5' },
+            { Nivel: '10', Beneficios: 'Amplificación de Aura', Competencia: '+4', 'Mezclas Anímicas': '5' },
+            { Nivel: '11', Beneficios: 'Equilibrio Espiritual', Competencia: '+4', 'Mezclas Anímicas': '5' },
+            { Nivel: '12', Beneficios: 'Restablecimiento Superior', Competencia: '+4', 'Mezclas Anímicas': '5' },
+            { Nivel: '13', Beneficios: 'Mecánica de subclase 3', Competencia: '+5', 'Mezclas Anímicas': '5' },
+            { Nivel: '14', Beneficios: 'Mejora de característica o beneficio', Competencia: '+5', 'Mezclas Anímicas': '6' },
+            { Nivel: '15', Beneficios: 'Potenciación Anímica', Competencia: '+5', 'Mezclas Anímicas': '6' },
+            { Nivel: '16', Beneficios: 'Alteración Espiritual', Competencia: '+5', 'Mezclas Anímicas': '6' },
+            { Nivel: '17', Beneficios: 'Soporte Moral', Competencia: '+6', 'Mezclas Anímicas': '6' },
+            { Nivel: '18', Beneficios: 'Mecánica de subclase 4', Competencia: '+6', 'Mezclas Anímicas': '6' },
+            { Nivel: '19', Beneficios: 'Mejora de característica o beneficio', Competencia: '+6', 'Mezclas Anímicas': '7' },
+            { Nivel: '20', Beneficios: 'Sobreestimulación', Competencia: '+6', 'Mezclas Anímicas': '8' }
+        ]
+    }
 });
 
 const characterClassId = characterClass.insertedId;
@@ -1215,24 +1240,6 @@ await db.personaclasses.updateOne(
                     level: 1,
                     proficency: 2,
                     spells: [spells[0], spells[1]],
-                    features: [
-                        {
-                            featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d13'),
-                            name: 'Afinidad Elemental',
-                            description: 'Defines una afinidad elemental principal para tus hechizos de daño.',
-                            useType: 'passive',
-                            effects: [{ type: 'set_elemental_affinity', target: 'self', condition: 'selection' }],
-                            state: 'ACTIVE'
-                        },
-                        {
-                            featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d14'),
-                            name: 'Arma Predilecta',
-                            description: 'Seleccionas un arma predilecta y mejoras su vínculo para efectos de clase.',
-                            useType: 'passive',
-                            effects: [{ type: 'set_favored_weapon', target: 'self', condition: 'selection' }],
-                            state: 'ACTIVE'
-                        }
-                    ],
                     APGained: 6,
                     maxPreparedSpells: 6
                 },
@@ -1244,7 +1251,7 @@ await db.personaclasses.updateOne(
                         {
                             featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d15'),
                             name: 'Mezcla Anímica',
-                            description: 'Construyes un hechizo personalizado mezclando concentraciones de ánima hasta tu competencia.',
+                            description: 'Con tu acción, utilizas tu cuerpo para canalizar y mezclar distintas concentraciones de ánimas a fin de generar hechizos adecuados para cada situación. Del listado proporcionado abajo, puedes construir un hechizo personalizado mezclando una cantidad de elementos igual a tu competencia. Puedes repetir el mismo elemento más de una vez, pero contarán como elementos distintos para la cantidad máxima indicada. Puedes utilizar este efecto una cantidad de veces por incursión igual a la cantidad de mezclas anímicas indicadas en la tabla de niveles. Al finalizar un combate, recuperas un uso de mezcla anímica.',
                             useType: 'active',
                             action: 'action',
                             usesPerLevel: [
@@ -1276,9 +1283,9 @@ await db.personaclasses.updateOne(
                                     description: 'Remueves estados o efectos negativos en aliados.',
                                     useType: 'active',
                                     effects: [
-                                        { type: 'heal', healType: 'status_effect', target: 'ally', condition: 'remove one status or negative effect', levelCondition: 2 },
-                                        { type: 'heal', healType: 'status_effect', target: 'ally', condition: 'remove status and negative effect', levelCondition: 7 },
-                                        { type: 'remove_debuffs', target: 'ally', condition: 'remove all', levelCondition: 14 }
+                                        { type: 'heal', healType: 'status_effect', target: 'ally', value: 1, levelCondition: 2 },
+                                        { type: 'heal', healType: 'status_effect', target: 'ally', value: 2, levelCondition: 7 },
+                                        { type: 'remove_debuffs', target: 'ally', levelCondition: 14 }
                                     ],
                                     state: 'ACTIVE'
                                 },
@@ -1300,9 +1307,10 @@ await db.personaclasses.updateOne(
                                     name: 'Ánima de Corrupción',
                                     description: 'Remueves estados positivos en enemigos.',
                                     useType: 'active',
+                                    levelCondition: 5,
                                     effects: [
-                                        { type: 'remove_buffs', target: 'enemy', condition: 'remove one', levelCondition: 5 },
-                                        { type: 'remove_buffs', target: 'enemy', condition: 'remove all', levelCondition: 13 }
+                                        { type: 'remove_buffs', target: 'enemy', value: 1, levelCondition: 5 },
+                                        { type: 'remove_buffs', target: 'enemy', levelCondition: 13 }
                                     ],
                                     state: 'ACTIVE'
                                 },
@@ -1311,6 +1319,7 @@ await db.personaclasses.updateOne(
                                     name: 'Éter de Protección',
                                     description: 'Otorgas PV temporales a un aliado. Escala por nivel.',
                                     useType: 'active',
+                                    levelCondition: 5,
                                     effects: [
                                         { type: 'heal', healType: 'temp_hp', heal: '3d4', target: 'ally', levelCondition: 5 },
                                         { type: 'heal', healType: 'temp_hp', heal: '4d6', target: 'ally', levelCondition: 9 },
@@ -1324,6 +1333,7 @@ await db.personaclasses.updateOne(
                                     name: 'Espíritu Potenciador',
                                     description: 'Otorgas una potenciación básica; a nivel 13 pasa a compleja.',
                                     useType: 'active',
+                                    levelCondition: 5,
                                     effects: [
                                         { type: 'cast_spell', target: 'ally', spellCategory: 'buff', condition: 'basic_buff', levelCondition: 5 },
                                         { type: 'cast_spell', target: 'ally', spellCategory: 'buff', condition: 'complex_buff', levelCondition: 13 }
@@ -1335,6 +1345,7 @@ await db.personaclasses.updateOne(
                                     name: 'Ánima de Expansión',
                                     description: 'Las concentraciones se aplican a todos los aliados o enemigos. Cuenta como dos concentraciones.',
                                     useType: 'active',
+                                    levelCondition: 9,
                                     effects: [{ type: 'modify_concentration_target', target: 'all', value: 'all_targets', levelCondition: 9 }],
                                     cost: [{ amount: 2, resource: 'concentrations' }],
                                     state: 'ACTIVE'
@@ -1344,6 +1355,7 @@ await db.personaclasses.updateOne(
                                     name: 'Concentración Superior',
                                     description: 'Las concentraciones se aplican dos veces. Cuenta como dos concentraciones.',
                                     useType: 'active',
+                                    levelCondition: 9,
                                     effects: [{ type: 'duplicate_concentration', target: 'self', levelCondition: 9 }],
                                     cost: [{ amount: 2, resource: 'concentrations' }],
                                     state: 'ACTIVE'
@@ -1353,7 +1365,10 @@ await db.personaclasses.updateOne(
                                     name: 'Espíritu Resistente',
                                     description: 'Otorgas resistencia elemental temporal a un aliado.',
                                     useType: 'active',
-                                    modifiers: [{ type: 'resistance', value: '{elemental_affinity}', target: 'ally', condition: 'selection', duration: { type: 'temporal', duration: 1, medition: 'turns' } }],
+                                    levelCondition: 9,
+                                    modifiers: [
+                                        { type: 'resistance', value: '{elemental_affinity}', target: 'ally', condition: 'selection', duration: { type: 'temporal', duration: 1, medition: 'turns' } }
+                                    ],
                                     state: 'ACTIVE'
                                 },
                                 {
@@ -1361,6 +1376,7 @@ await db.personaclasses.updateOne(
                                     name: 'Éter Crítico',
                                     description: 'Otorgas crítico adicional por 3 turnos.',
                                     useType: 'active',
+                                    levelCondition: 14,
                                     modifiers: [
                                         { type: 'critical', value: 5, target: 'ally', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, levelCondition: 14 },
                                         { type: 'critical', value: 10, target: 'ally', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, levelCondition: 19 }
@@ -1372,6 +1388,7 @@ await db.personaclasses.updateOne(
                                     name: 'Ánima Destructora',
                                     description: 'Un aliado rompe escudos adicionales por 3 turnos; duración doble en nivel 19.',
                                     useType: 'active',
+                                    levelCondition: 14,
                                     effects: [
                                         { type: 'break_shield', target: 'ally', value: 1, trigger: 'at_break_shield', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, levelCondition: 14 },
                                         { type: 'break_shield', target: 'ally', value: 1, trigger: 'at_break_shield', duration: { type: 'temporal', duration: 6, medition: 'rounds' }, levelCondition: 19 }
@@ -1383,6 +1400,7 @@ await db.personaclasses.updateOne(
                                     name: 'Concentración Debilitadora',
                                     description: 'Otorgas el efecto de una debilitación compleja a un enemigo.',
                                     useType: 'active',
+                                    levelCondition: 14,
                                     effects: [{ type: 'cast_spell', target: 'enemy', spellCategory: 'debuff', condition: 'complex_debuff', levelCondition: 14 }],
                                     state: 'ACTIVE'
                                 },
@@ -1391,7 +1409,11 @@ await db.personaclasses.updateOne(
                                     name: 'Espíritu de Extensión',
                                     description: 'Aumentas 3 turnos la duración de efectos positivos y negativos activos.',
                                     useType: 'active',
-                                    effects: [{ type: 'extend_buffs', target: 'all', value: 3, levelCondition: 20 }],
+                                    levelCondition: 20,
+                                    effects: [
+                                        { type: 'extend_buffs', target: 'all_allies', value: 3, levelCondition: 20 }, 
+                                        { type: 'extend_debuffs', target: 'all_enemies', value: 3, levelCondition: 20 }
+                                    ],
                                     cost: [{ amount: 2, resource: 'concentrations' }],
                                     state: 'ACTIVE'
                                 },
@@ -1400,7 +1422,8 @@ await db.personaclasses.updateOne(
                                     name: 'Éter de Atenuación',
                                     description: 'Eliminas resistencias, inmunidades y absorciones a un enemigo por 3 turnos.',
                                     useType: 'active',
-                                    effects: [{ type: 'remove_resistance_ladder', target: 'enemy', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, levelCondition: 20 }],
+                                    levelCondition: 20,
+                                    effects: [{ type: 'remove_resistance', target: 'enemy', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, value: 'all', levelCondition: 20 }],
                                     cost: [{ amount: 2, resource: 'concentrations' }],
                                     state: 'ACTIVE'
                                 },
@@ -1409,6 +1432,7 @@ await db.personaclasses.updateOne(
                                     name: 'Ánima de Aceleración',
                                     description: 'Un aliado gana una acción extra en su siguiente turno.',
                                     useType: 'active',
+                                    levelCondition: 20,
                                     effects: [{ type: 'extra_action', target: 'ally', trigger: 'at_turn_start', uses: 1, levelCondition: 20 }],
                                     cost: [{ amount: 3, resource: 'concentrations' }],
                                     state: 'ACTIVE'
@@ -1440,7 +1464,7 @@ await db.personaclasses.updateOne(
                         {
                             featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d32'),
                             name: 'Protección Estelar',
-                            description: 'Reacción: cuando un aliado con menos de la mitad de PV va a recibir ataque, le otorgas tu nivel en PV temporales.',
+                            description: 'Cuando un aliado recibirá un ataque cuando tiene menos de la mitad de sus puntos de vida totales puedes utilizar tu reacción para otorgarle tu nivel en PV temporales hasta el inicio de tu siguiente turno.',
                             useType: 'active',
                             action: 'reaction',
                             trigger: 'before_ally_receive_attack',
@@ -1478,7 +1502,7 @@ await db.personaclasses.updateOne(
                         {
                             featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d33'),
                             name: 'Restablecimiento Fugaz',
-                            description: 'Reacción: restauras a un aliado caído, lo curas y le das resistencia a todo daño hasta tu siguiente turno. Una vez por incursión.',
+                            description: 'Puedes utilizar tu reacción para restaurar a un aliado caído en combate, curarle el doble de tu nivel en PV y darle la resistencia a todo daño hasta el inicio de tu siguiente turno. Solo puedes activar este efecto una vez por incursión.',
                             useType: 'active',
                             action: 'reaction',
                             uses: 1,
@@ -1486,8 +1510,7 @@ await db.personaclasses.updateOne(
                             trigger: 'at_ally_death',
                             effects: [
                                 { type: 'heal', healType: 'HP', heal: '{level * 2}', target: 'ally' },
-                                { type: 'set_hp_floor', target: 'ally', value: 1 },
-                                { type: 'resistance_all', target: 'ally', duration: { type: 'temporal', duration: 1, medition: 'turns' } }
+                                { type: 'add_resistance', target: 'ally', value: 'all', duration: { type: 'temporal', duration: 1, medition: 'turns' } }
                             ],
                             state: 'ACTIVE'
                         }

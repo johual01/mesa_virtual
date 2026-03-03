@@ -20,6 +20,11 @@ export interface IClassLevel {
     gainStatIncrease?: boolean,
 }
 
+export interface IClassLevelTable {
+    columns: string[],
+    rows: Record<string, string | number | boolean>[]
+}
+
 export interface IPersonaClass extends Document {
     name: string,
     description: string,
@@ -30,6 +35,7 @@ export interface IPersonaClass extends Document {
     initialResourcePoolValue?: number,
     secondaryInitialResourcePoolValue?: number,
     featureIdThatGrantsSecondaryFeatures?: Types.ObjectId,
+    levelTable?: IClassLevelTable,
 }
 
 const ClassSchema = new Schema({
@@ -42,6 +48,10 @@ const ClassSchema = new Schema({
     initialResourcePoolValue: {type: Number},
     secondaryInitialResourcePoolValue: {type: Number},
     featureIdThatGrantsSecondaryFeatures: {type: Schema.Types.ObjectId},
+    levelTable: {
+        columns: { type: [String], required: false },
+        rows: { type: [Schema.Types.Mixed], required: false }
+    }
 });
 
 export default model<IPersonaClass>('PersonaClass', ClassSchema);

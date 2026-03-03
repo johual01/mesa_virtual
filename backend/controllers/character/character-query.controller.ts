@@ -7,7 +7,7 @@ import Campaign from '../../models/Campaign';
 import CharacterPersonaDetail from '../../models/PersonaD20/CharacterDetail';
 import CharacterClass, { IPersonaClass } from '../../models/PersonaD20/Class';
 import CharacterSubclass, { IPersonaSubclass } from '../../models/PersonaD20/Subclass';
-import { personaStadistics, IFeature, IModifier } from '../../models/types';
+import { personaStadistics, IFeature, IModifier, IEffect } from '../../models/types';
 import { reduceModifiers } from '../../functions';
 import { calculateBonification } from 'diceLogic';
 import CustomFeature from '../../models/PersonaD20/CustomFeature';
@@ -40,12 +40,95 @@ const calculateFeatureUses = (feature: IFeature, characterLevel: number): IFeatu
         feature.uses = levelRange.uses;
     }
     
-    // Procesar recursivamente los subFeatures si existen
+    // Procesar recursivamente los subFeatures si existen, filtrando por nivel
     if (feature.subFeatures && feature.subFeatures.length > 0) {
-        feature.subFeatures = feature.subFeatures.map(sf => calculateFeatureUses(sf, characterLevel));
+        feature.subFeatures = feature.subFeatures
+            .filter((sf) => sf.levelCondition === undefined || characterLevel >= sf.levelCondition)
+            .map((sf) => calculateFeatureUses(sf, characterLevel));
     }
     
     return feature;
+};
+
+const effectTypeLabels: Record<string, string> = {
+    heal: 'Curación',
+    regeneration: 'Regeneración',
+    shield: 'Escudo',
+    barrier: 'Barrera',
+    damage: 'Daño',
+    physical_damage: 'Daño físico',
+    magical_damage: 'Daño mágico',
+    buff: 'Beneficio',
+    debuff: 'Perjuicio',
+    status_effect: 'Estado',
+    recover_resource: 'Recuperación de recurso',
+};
+
+const healTypeLabels: Record<string, string> = {
+    hp: 'PV',
+    ap: 'AP',
+    temp_hp: 'PV temporales',
+    accumulative_temp_hp: 'PV temp. acumulables',
+    status_effect: 'estado',
+    debilitation: 'debilitación',
+};
+
+const getEffectSummary = (effect: IEffect): string | null => {
+    const data = effect as unknown as Record<string, unknown>;
+    const type = typeof data.type === 'string' ? data.type : '';
+    const explicitDescription = typeof data.description === 'string' ? data.description.trim() : '';
+
+    if (explicitDescription) return explicitDescription;
+
+    if (['heal', 'regeneration', 'shield', 'barrier'].includes(type)) {
+        const amount = typeof data.heal === 'string' || typeof data.heal === 'number'
+            ? data.heal
+            : (typeof data.value === 'string' || typeof data.value === 'number' ? data.value : undefined);
+        const healType = typeof data.healType === 'string' ? (healTypeLabels[data.healType] || data.healType) : '';
+        if (amount !== undefined) {
+            return `${effectTypeLabels[type] || type}: ${String(amount)}${healType ? ` ${healType}` : ''}`;
+        }
+    }
+
+    if (['damage', 'physical_damage', 'magical_damage'].includes(type) && (typeof data.damage === 'string' || typeof data.damage === 'number')) {
+        return `${effectTypeLabels[type] || type}: ${String(data.damage)}`;
+    }
+
+    if (type === 'recover_resource') {
+        const amount = typeof data.value === 'string' || typeof data.value === 'number' ? data.value : undefined;
+        const resource = typeof data.resource === 'string' ? data.resource : '';
+        if (amount !== undefined) {
+            return `${effectTypeLabels[type] || type}: ${String(amount)}${resource ? ` ${resource}` : ''}`;
+        }
+    }
+
+    return effectTypeLabels[type] || null;
+};
+
+const getDescriptionWithEffects = (feature: IFeature): string => {
+    const description = feature.description?.trim() || '';
+
+    if (description.toLowerCase().includes('efectos:') || !feature.effects?.length) {
+        return description;
+    }
+
+    const summaries = feature.effects
+        .map(getEffectSummary)
+        .filter((summary): summary is string => Boolean(summary));
+
+    if (!summaries.length) return description;
+
+    const effectText = `Efectos: ${summaries.join(' | ')}`;
+    return description ? `${description}\n${effectText}` : effectText;
+};
+
+const enrichFeatureDescriptions = (feature: IFeature): IFeature => {
+    const enrichedSubFeatures = feature.subFeatures?.map(enrichFeatureDescriptions);
+    return {
+        ...feature,
+        description: getDescriptionWithEffects(feature),
+        subFeatures: enrichedSubFeatures,
+    };
 };
 
 // Función para normalizar combatData y asegurar que todos los arrays existen
@@ -129,6 +212,12 @@ const normalizeCombatData = (characterData: ICharacterPersonaDetail) => {
     cd.damage.rangeDamageModifiers = cd.damage.rangeDamageModifiers || [];
     cd.damage.meleeDamageModifiers = cd.damage.meleeDamageModifiers || [];
     cd.damage.criticalDamageModifiers = cd.damage.criticalDamageModifiers || [];
+
+    // Range
+    cd.range = cd.range || { weaponRangedRangeModifiers: [], weaponMeleeRangeModifiers: [], spellRangeNonDamageModifiers: [] };
+    cd.range.weaponRangedRangeModifiers = cd.range.weaponRangedRangeModifiers || [];
+    cd.range.weaponMeleeRangeModifiers = cd.range.weaponMeleeRangeModifiers || [];
+    cd.range.spellRangeNonDamageModifiers = cd.range.spellRangeNonDamageModifiers || [];
 };
 
 export const getCharacters = async (req: Request, res: Response) => {
@@ -264,6 +353,9 @@ export const getCharacter = async (req: Request, res: Response) => {
         markInactiveModifiers(characterData.combatData.damage.rangeDamageModifiers, characterStatus.inactiveFeatures);
         markInactiveModifiers(characterData.combatData.damage.meleeDamageModifiers, characterStatus.inactiveFeatures);
         markInactiveModifiers(characterData.combatData.damage.criticalDamageModifiers, characterStatus.inactiveFeatures);
+        markInactiveModifiers(characterData.combatData.range.weaponRangedRangeModifiers, characterStatus.inactiveFeatures);
+        markInactiveModifiers(characterData.combatData.range.weaponMeleeRangeModifiers, characterStatus.inactiveFeatures);
+        markInactiveModifiers(characterData.combatData.range.spellRangeNonDamageModifiers, characterStatus.inactiveFeatures);
 
         const baseModifiers: { [name: string]: IModifier[] } = {};
         baseModifiers.HPModifiers = [
@@ -455,6 +547,9 @@ export const getCharacter = async (req: Request, res: Response) => {
             ...characterData.combatData.damage.damageModifiers,
             ...characterData.combatData.damage.fisicalDamageModifiers,
         ];
+        baseModifiers.weaponRangedRangeModifiers = [];
+        baseModifiers.weaponMeleeRangeModifiers = [];
+        baseModifiers.spellRangeNonDamageModifiers = [];
 
         characterInventory?.forEach((e) => {
             if (e.equipped && e.modifiers) {
@@ -545,7 +640,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                 }, [] as IFeature[]).map((e) => {
                     e.origin = 'class';
                     if (characterStatus?.inactiveFeatures?.includes(e.featureId)) e.state = 'INACTIVE';
-                    return calculateFeatureUses(e, characterData.level);
+                    return enrichFeatureDescriptions(calculateFeatureUses(e, characterData.level));
                 }),
                 subclassFeatures: subclass?.levels?.filter((e) => e.level < characterData.level)?.reduce((features, level) => {
                     features.push(...level.features);
@@ -553,7 +648,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                 }, [] as IFeature[])?.map((e) => {
                     e.origin = 'subclass';
                     if (characterStatus?.inactiveFeatures?.includes(e.featureId)) e.state = 'INACTIVE';
-                    return calculateFeatureUses(e, characterData.level);
+                    return enrichFeatureDescriptions(calculateFeatureUses(e, characterData.level));
                 }) || [],
                 itemFeatures: characterInventory?.reduce((features, item) => {
                     if (item.additionalProperties) features.push(...item.additionalProperties);
@@ -561,7 +656,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                 }, [] as IFeature[])?.map((e) => {
                     e.origin = 'items';
                     if (characterStatus?.inactiveFeatures?.includes(e.featureId)) e.state = 'INACTIVE';
-                    return calculateFeatureUses(e, characterData.level);
+                    return enrichFeatureDescriptions(calculateFeatureUses(e, characterData.level));
                 }) || [],
                 customFeatures: customFeatures || []
             },
@@ -749,6 +844,20 @@ export const getCharacter = async (req: Request, res: Response) => {
                         total: reduceModifiers([...baseModifiers.criticalAttackModifiers, ...characterData.combatData.critical.criticalOnMagicAttackModifiers], {}),
                         modifiers: [...baseModifiers.criticalAttackModifiers, ...characterData.combatData.critical.criticalOnMagicAttackModifiers]
                     },
+                },
+                range: {
+                    weaponRanged: {
+                        total: reduceModifiers([...baseModifiers.weaponRangedRangeModifiers, ...characterData.combatData.range.weaponRangedRangeModifiers], {}),
+                        modifiers: [...baseModifiers.weaponRangedRangeModifiers, ...characterData.combatData.range.weaponRangedRangeModifiers]
+                    },
+                    weaponMelee: {
+                        total: reduceModifiers([...baseModifiers.weaponMeleeRangeModifiers, ...characterData.combatData.range.weaponMeleeRangeModifiers], {}),
+                        modifiers: [...baseModifiers.weaponMeleeRangeModifiers, ...characterData.combatData.range.weaponMeleeRangeModifiers]
+                    },
+                    spellNonDamage: {
+                        total: reduceModifiers([...baseModifiers.spellRangeNonDamageModifiers, ...characterData.combatData.range.spellRangeNonDamageModifiers], {}),
+                        modifiers: [...baseModifiers.spellRangeNonDamageModifiers, ...characterData.combatData.range.spellRangeNonDamageModifiers]
+                    }
                 },
                 resource: {
                     name: characterClass.resourceType

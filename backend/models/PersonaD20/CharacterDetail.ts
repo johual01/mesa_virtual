@@ -136,6 +136,7 @@ export interface ICharacterPersonaDetail {
         range: {
             weaponRangedRangeModifiers: IModifier[],
             weaponMeleeRangeModifiers: IModifier[],
+            spellRangeNonDamageModifiers: IModifier[],
         }
     }
 }
@@ -463,6 +464,10 @@ const characterPersonaDetailSchema = new Schema({
             weaponMeleeRangeModifiers: {
                 type: [Object],
                 required: true
+            },
+            spellRangeNonDamageModifiers: {
+                type: [Object],
+                default: []
             }
         }
     }
