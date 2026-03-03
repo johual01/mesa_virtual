@@ -65,6 +65,33 @@ const normalizeCombatData = (characterData: ICharacterPersonaDetail) => {
     cd.speed = cd.speed || { initiativeModifiers: [], speedModifiers: [] };
     cd.speed.initiativeModifiers = cd.speed.initiativeModifiers || [];
     cd.speed.speedModifiers = cd.speed.speedModifiers || [];
+
+    // Saving throws
+    if (Array.isArray((cd as any).savingThrowsModifiers)) {
+        cd.savingThrowsModifiers = {
+            general: (cd as any).savingThrowsModifiers,
+            courage: [],
+            dexterity: [],
+            instincts: [],
+            knowledge: [],
+            charisma: [],
+        };
+    } else {
+        cd.savingThrowsModifiers = cd.savingThrowsModifiers || {
+            general: [],
+            courage: [],
+            dexterity: [],
+            instincts: [],
+            knowledge: [],
+            charisma: [],
+        };
+    }
+    cd.savingThrowsModifiers.general = cd.savingThrowsModifiers.general || [];
+    cd.savingThrowsModifiers.courage = cd.savingThrowsModifiers.courage || [];
+    cd.savingThrowsModifiers.dexterity = cd.savingThrowsModifiers.dexterity || [];
+    cd.savingThrowsModifiers.instincts = cd.savingThrowsModifiers.instincts || [];
+    cd.savingThrowsModifiers.knowledge = cd.savingThrowsModifiers.knowledge || [];
+    cd.savingThrowsModifiers.charisma = cd.savingThrowsModifiers.charisma || [];
     
     // Magic
     cd.magic = cd.magic || { APModifiers: [], saveModifiers: [], launchModifiers: [], healingModifiers: [], damageModifiers: [] };
@@ -209,6 +236,12 @@ export const getCharacter = async (req: Request, res: Response) => {
         markInactiveModifiers(characterData.combatData.defense.magicDefenseModifiers, characterStatus.inactiveFeatures);
         markInactiveModifiers(characterData.combatData.speed.initiativeModifiers, characterStatus.inactiveFeatures);
         markInactiveModifiers(characterData.combatData.speed.speedModifiers, characterStatus.inactiveFeatures);
+        markInactiveModifiers(characterData.combatData.savingThrowsModifiers.general, characterStatus.inactiveFeatures);
+        markInactiveModifiers(characterData.combatData.savingThrowsModifiers.courage, characterStatus.inactiveFeatures);
+        markInactiveModifiers(characterData.combatData.savingThrowsModifiers.dexterity, characterStatus.inactiveFeatures);
+        markInactiveModifiers(characterData.combatData.savingThrowsModifiers.instincts, characterStatus.inactiveFeatures);
+        markInactiveModifiers(characterData.combatData.savingThrowsModifiers.knowledge, characterStatus.inactiveFeatures);
+        markInactiveModifiers(characterData.combatData.savingThrowsModifiers.charisma, characterStatus.inactiveFeatures);
         markInactiveModifiers(characterData.combatData.magic.APModifiers, characterStatus.inactiveFeatures);
         markInactiveModifiers(characterData.combatData.magic.saveModifiers, characterStatus.inactiveFeatures);
         markInactiveModifiers(characterData.combatData.magic.launchModifiers, characterStatus.inactiveFeatures);
@@ -283,6 +316,67 @@ export const getCharacter = async (req: Request, res: Response) => {
                 description: 'Bonificación de instintos',
                 state: 'ACTIVE' 
             }
+        ];
+        baseModifiers.savingThrowsModifiers = [];
+        baseModifiers.courageSavingThrowsModifiers = [
+            {
+                value: stadisticBonifiers.courage,
+                type: 'stadistic',
+                stadistic: personaStadistics.COURAGE,
+                description: 'Bonificación de coraje',
+                state: 'ACTIVE'
+            },
+            ...(characterClass.salvations.includes(personaStadistics.COURAGE)
+                ? [{ value: characterData.proficency, type: 'proficency', description: 'Proficiencia en salvación', state: 'ACTIVE' as const }]
+                : [])
+        ];
+        baseModifiers.dexteritySavingThrowsModifiers = [
+            {
+                value: stadisticBonifiers.dexterity,
+                type: 'stadistic',
+                stadistic: personaStadistics.DEXTERITY,
+                description: 'Bonificación de destreza',
+                state: 'ACTIVE'
+            },
+            ...(characterClass.salvations.includes(personaStadistics.DEXTERITY)
+                ? [{ value: characterData.proficency, type: 'proficency', description: 'Proficiencia en salvación', state: 'ACTIVE' as const }]
+                : [])
+        ];
+        baseModifiers.instinctsSavingThrowsModifiers = [
+            {
+                value: stadisticBonifiers.instincts,
+                type: 'stadistic',
+                stadistic: personaStadistics.INSTINCTS,
+                description: 'Bonificación de instintos',
+                state: 'ACTIVE'
+            },
+            ...(characterClass.salvations.includes(personaStadistics.INSTINCTS)
+                ? [{ value: characterData.proficency, type: 'proficency', description: 'Proficiencia en salvación', state: 'ACTIVE' as const }]
+                : [])
+        ];
+        baseModifiers.knowledgeSavingThrowsModifiers = [
+            {
+                value: stadisticBonifiers.knowledge,
+                type: 'stadistic',
+                stadistic: personaStadistics.KNOWLEDGE,
+                description: 'Bonificación de conocimiento',
+                state: 'ACTIVE'
+            },
+            ...(characterClass.salvations.includes(personaStadistics.KNOWLEDGE)
+                ? [{ value: characterData.proficency, type: 'proficency', description: 'Proficiencia en salvación', state: 'ACTIVE' as const }]
+                : [])
+        ];
+        baseModifiers.charismaSavingThrowsModifiers = [
+            {
+                value: stadisticBonifiers.charisma,
+                type: 'stadistic',
+                stadistic: personaStadistics.CHARISMA,
+                description: 'Bonificación de carisma',
+                state: 'ACTIVE'
+            },
+            ...(characterClass.salvations.includes(personaStadistics.CHARISMA)
+                ? [{ value: characterData.proficency, type: 'proficency', description: 'Proficiencia en salvación', state: 'ACTIVE' as const }]
+                : [])
         ];
         baseModifiers.APModifiers = [
             { value: 5, type: 'base', description: 'Puntos de acción base', state: 'ACTIVE' },
@@ -489,6 +583,88 @@ export const getCharacter = async (req: Request, res: Response) => {
                     },
                 },
                 fisicalStats: {
+                    savingThrowsModifiers: {
+                        general: {
+                            total: reduceModifiers([
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general
+                            ], stadisticBonifiers),
+                            modifiers: [
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general
+                            ]
+                        },
+                        courage: {
+                            total: reduceModifiers([
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...baseModifiers.courageSavingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general,
+                                ...characterData.combatData.savingThrowsModifiers.courage
+                            ], stadisticBonifiers),
+                            modifiers: [
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...baseModifiers.courageSavingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general,
+                                ...characterData.combatData.savingThrowsModifiers.courage
+                            ]
+                        },
+                        dexterity: {
+                            total: reduceModifiers([
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...baseModifiers.dexteritySavingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general,
+                                ...characterData.combatData.savingThrowsModifiers.dexterity
+                            ], stadisticBonifiers),
+                            modifiers: [
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...baseModifiers.dexteritySavingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general,
+                                ...characterData.combatData.savingThrowsModifiers.dexterity
+                            ]
+                        },
+                        instincts: {
+                            total: reduceModifiers([
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...baseModifiers.instinctsSavingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general,
+                                ...characterData.combatData.savingThrowsModifiers.instincts
+                            ], stadisticBonifiers),
+                            modifiers: [
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...baseModifiers.instinctsSavingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general,
+                                ...characterData.combatData.savingThrowsModifiers.instincts
+                            ]
+                        },
+                        knowledge: {
+                            total: reduceModifiers([
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...baseModifiers.knowledgeSavingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general,
+                                ...characterData.combatData.savingThrowsModifiers.knowledge
+                            ], stadisticBonifiers),
+                            modifiers: [
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...baseModifiers.knowledgeSavingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general,
+                                ...characterData.combatData.savingThrowsModifiers.knowledge
+                            ]
+                        },
+                        charisma: {
+                            total: reduceModifiers([
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...baseModifiers.charismaSavingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general,
+                                ...characterData.combatData.savingThrowsModifiers.charisma
+                            ], stadisticBonifiers),
+                            modifiers: [
+                                ...baseModifiers.savingThrowsModifiers,
+                                ...baseModifiers.charismaSavingThrowsModifiers,
+                                ...characterData.combatData.savingThrowsModifiers.general,
+                                ...characterData.combatData.savingThrowsModifiers.charisma
+                            ]
+                        }
+                    },
                     speed: {
                         total: reduceModifiers([...baseModifiers.speedModifiers, ...characterData.combatData.speed.speedModifiers], stadisticBonifiers),
                         modifiers: [...baseModifiers.speedModifiers, ...characterData.combatData.speed.speedModifiers]

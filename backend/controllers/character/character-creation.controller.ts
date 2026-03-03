@@ -249,6 +249,14 @@ export const createCharacter = async (req: MulterRequest, res: Response) => {
                     initiativeModifiers: [],
                     speedModifiers: [],
                 },
+                savingThrowsModifiers: {
+                    general: [],
+                    courage: [],
+                    dexterity: [],
+                    instincts: [],
+                    knowledge: [],
+                    charisma: [],
+                },
                 elements: {
                     affinity: element,
                     resistance: [ element ],

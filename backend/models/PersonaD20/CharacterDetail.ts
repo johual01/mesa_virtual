@@ -85,6 +85,14 @@ export interface ICharacterPersonaDetail {
             initiativeModifiers: IModifier[], // Suma instintos
             speedModifiers: IModifier[] 
         },
+        savingThrowsModifiers: {
+            general: IModifier[],
+            courage: IModifier[],
+            dexterity: IModifier[],
+            instincts: IModifier[],
+            knowledge: IModifier[],
+            charisma: IModifier[],
+        },
         elements: {
             affinity: elements,
             secondaryAffinity?: elements,
@@ -296,6 +304,32 @@ const characterPersonaDetailSchema = new Schema({
             speedModifiers: {
                 type: [Object],
                 required: true
+            }
+        },
+        savingThrowsModifiers: {
+            general: {
+                type: [Object],
+                default: []
+            },
+            courage: {
+                type: [Object],
+                default: []
+            },
+            dexterity: {
+                type: [Object],
+                default: []
+            },
+            instincts: {
+                type: [Object],
+                default: []
+            },
+            knowledge: {
+                type: [Object],
+                default: []
+            },
+            charisma: {
+                type: [Object],
+                default: []
             }
         },
         elements: {

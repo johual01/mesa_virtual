@@ -303,6 +303,24 @@ export interface ModifierStat {
   modifiers: Modifier[];
 }
 
+export interface SavingThrowsStats {
+  general: ModifierStat;
+  courage: ModifierStat;
+  dexterity: ModifierStat;
+  instincts: ModifierStat;
+  knowledge: ModifierStat;
+  charisma: ModifierStat;
+}
+
+export interface SavingThrowsModifierInput {
+  general: Modifier[];
+  courage: Modifier[];
+  dexterity: Modifier[];
+  instincts: Modifier[];
+  knowledge: Modifier[];
+  charisma: Modifier[];
+}
+
 export interface Character {
   _id: string;
   name: string;
@@ -347,6 +365,7 @@ export interface Character {
       magicDefense: ModifierStat;
     };
     fisicalStats: {
+      savingThrowsModifiers: SavingThrowsStats;
       speed: ModifierStat;
       initiative: ModifierStat;
       rangeAttackModifiers: ModifierStat;
@@ -425,6 +444,7 @@ export interface EditCharacterData {
   proficency: string[];
   element: Element;
   weakness: Element;
+  savingThrowsModifiers?: SavingThrowsModifierInput;
 }
 
 export interface PersonaClass {

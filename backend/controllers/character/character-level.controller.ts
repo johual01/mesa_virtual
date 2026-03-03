@@ -232,6 +232,24 @@ export const levelUp = async (req: Request, res: Response) => {
                     case 'initiativeModifiers':
                         characterDetail.combatData.speed.initiativeModifiers.push(modifier);
                         break;
+                    case 'savingThrowsModifiers':
+                        characterDetail.combatData.savingThrowsModifiers.general.push(modifier);
+                        break;
+                    case 'courageSavingThrowsModifiers':
+                        characterDetail.combatData.savingThrowsModifiers.courage.push(modifier);
+                        break;
+                    case 'dexteritySavingThrowsModifiers':
+                        characterDetail.combatData.savingThrowsModifiers.dexterity.push(modifier);
+                        break;
+                    case 'instinctsSavingThrowsModifiers':
+                        characterDetail.combatData.savingThrowsModifiers.instincts.push(modifier);
+                        break;
+                    case 'knowledgeSavingThrowsModifiers':
+                        characterDetail.combatData.savingThrowsModifiers.knowledge.push(modifier);
+                        break;
+                    case 'charismaSavingThrowsModifiers':
+                        characterDetail.combatData.savingThrowsModifiers.charisma.push(modifier);
+                        break;
                     case 'APModifiers':
                         characterDetail.combatData.magic.APModifiers.push(modifier);
                         break;

@@ -92,6 +92,10 @@ export const characterService = {
     formData.append('stadistics', JSON.stringify(data.stadistics));
     formData.append('element', data.element);
     formData.append('weakness', data.weakness);
+
+    if (data.savingThrowsModifiers) {
+      formData.append('savingThrowsModifiers', JSON.stringify(data.savingThrowsModifiers));
+    }
     
     // Si hay un archivo de imagen, agregarlo al FormData
     if (data.image) {

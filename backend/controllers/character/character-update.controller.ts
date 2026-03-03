@@ -4,12 +4,21 @@ import User from '../../models/User';
 import Character, { state as characterState, ICharacter } from '../../models/Character';
 import CharacterDetail, { personaSecondaryAbilities } from '../../models/PersonaD20/CharacterDetail';
 import CharacterStatus from '../../models/PersonaD20/CharacterStatus';
-import { elements, personaStadistics } from '../../models/types';
+import { elements, IModifier, personaStadistics } from '../../models/types';
 import { arraysEqual, saveImage, UploadedFile, parseMulterField, parseMulterNumber } from '../../functions';
 
 // Extender Request para incluir el archivo de multer
 interface MulterRequest extends Request {
     file?: Express.Multer.File;
+}
+
+interface SavingThrowsModifiersInput {
+    general: IModifier[];
+    courage: IModifier[];
+    dexterity: IModifier[];
+    instincts: IModifier[];
+    knowledge: IModifier[];
+    charisma: IModifier[];
 }
 
 export const editCharacter = async (req: MulterRequest, res: Response) => {
@@ -38,11 +47,13 @@ export const editCharacter = async (req: MulterRequest, res: Response) => {
             stadistics: rawStadistics,
             element,
             weakness,
+            savingThrowsModifiers: rawSavingThrowsModifiers,
         } = req.body;
 
         // Parsear campos que pueden venir como strings JSON desde multipart/form-data
         const backstory = parseMulterField<ICharacter['backstory']>(rawBackstory);
         const stadistics = parseMulterField<Record<personaStadistics, number>>(rawStadistics);
+        const savingThrowsModifiers = parseMulterField<SavingThrowsModifiersInput>(rawSavingThrowsModifiers);
         const money = parseMulterNumber(rawMoney);
 
         if (!name || !state || !persona || money === undefined || !element || !backstory || !stadistics || !weakness) {
@@ -105,6 +116,11 @@ export const editCharacter = async (req: MulterRequest, res: Response) => {
         characterDetail.markModified('secondaryAbilities');
         characterDetail.combatData.elements.affinity = element;
         characterDetail.combatData.elements.weakness = [ weakness ];
+
+        if (savingThrowsModifiers) {
+            characterDetail.combatData.savingThrowsModifiers = savingThrowsModifiers;
+        }
+
         characterDetail.markModified('combatData');
 
         await character.save();

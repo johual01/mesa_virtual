@@ -160,7 +160,7 @@ const listSpells = await db.spells.insertMany([
             {
                 value: '1d4',
                 type: 'dices',
-                addTo: 'attackRollModifiers',
+                addTo: 'attackModifiers',
                 description: 'Aumenta 1d4 en las tiradas de ataque',
                 target: 'ally',
                 duration: {
@@ -1484,6 +1484,7 @@ const subclass = await db.personasubclasses.insertMany([
                                 modifiers: [
                                     {
                                         type: 'all_saving_throws',
+                                        addTo: 'savingThrowModifiers',
                                         value: 'disadvantage',
                                         description: 'Desventaja en todas las tiradas de salvación',
                                         target: 'self',
@@ -2566,6 +2567,7 @@ await db.personaclasses.updateOne(
                                     },
                                     {
                                         type: 'all_saving_throws',
+                                        addTo: 'savingThrowModifiers',
                                         value: 3,
                                         description: 'Aumenta todas las tiradas de salvación',
                                         target: 'ally',
