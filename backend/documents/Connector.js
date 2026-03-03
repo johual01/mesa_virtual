@@ -969,16 +969,18 @@ const subclass = await db.personasubclasses.insertMany([
                     {
                         featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d01'),
                         name: 'Protección Superior',
-                        description: 'Como acción adicional, gastas dados de protección para sanar a un aliado y otorgar PV temporales por dado.',
+                        description: 'Como acción adicional, puedes gastar dados para sanar a un aliado en tu rango de hechizos. Al iniciar una incursión, obtienes una cantidad de dados d6 igual a tu nivel. Por cada dado utilizado, el objetivo también gana 1 PV temporal, escala a 2 a nivel 8, 3 a nivel 13 y 4 a nivel 18.',
                         useType: 'active',
                         action: 'bonus_action',
+                        cost: [{ amount: '{protection_dice_spent}', resource: 'Protection Dice' }],
+                        range: { type: 'ranged', range: 6 },
                         effects: [
                             { type: 'heal', healType: 'HP', heal: '{protection_dice_spent}d6', target: 'ally' },
-                            { type: 'heal', healType: 'temp_hp', heal: '{protection_dice_spent * protection_temp_value}', target: 'ally' }
-                        ],
-                        modifiers: [
-                            { type: 'resource', value: '{level}', description: 'Dados de protección por incursión', target: 'self', addTo: 'protectionDicePool', permanent: true },
-                            { type: 'resource', value: 1, description: 'PV temporales por dado (escala por nivel)', target: 'self', addTo: 'protectionTempValue', permanent: true }
+                            { type: 'heal', healType: 'temp_hp', heal: '{protection_dice_spent}', target: 'ally' },
+                            { type: 'heal', healType: 'temp_hp', heal: '{protection_dice_spent * 2}', target: 'ally', levelCondition: 8 },
+                            { type: 'heal', healType: 'temp_hp', heal: '{protection_dice_spent * 3}', target: 'ally', levelCondition: 13 },
+                            { type: 'heal', healType: 'temp_hp', heal: '{protection_dice_spent * 4}', target: 'ally', levelCondition: 18 },
+                            { type: 'recover_resource', target: 'self', trigger: 'at_incursion_start', resource: 'Protection Dice', value: '{level}' }
                         ],
                         state: 'ACTIVE'
                     }
@@ -990,12 +992,12 @@ const subclass = await db.personasubclasses.insertMany([
                     {
                         featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d02'),
                         name: 'Redirección de Riesgos',
-                        description: 'Marcas a un aliado como Chivo Expiatorio; al iniciar combate puedes forzar prioridad de objetivo enemiga.',
+                        description: 'Con tu acción adicional, puedes marcar a un aliado con su consentimiento para marcarlo como un "Chivo Expiatorio". Al inicio de cada turno enemigo, el enemigo deberá salvar sabiduría o será obligado a tomar como objetivo prioritario al "Chivo Expiatorio" para todos sus efectos, a menos que otra situación se lo impida.',
                         useType: 'active',
                         action: 'bonus_action',
                         effects: [
                             { type: 'mark_target', target: 'ally', value: 'scapegoat' },
-                            { type: 'taunt_priority', target: 'all_enemies', trigger: 'at_combat_start', condition: '1d100 < {level + knowledge_save}' }
+                            { type: 'status_effect', statusEffectIdentifier: 'scapegoat_target', target: 'all_enemies', trigger: 'at_turn_start', salvation: 'knowledge' }
                         ],
                         state: 'ACTIVE'
                     }
@@ -1007,7 +1009,7 @@ const subclass = await db.personasubclasses.insertMany([
                     {
                         featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d03'),
                         name: 'Seguro de Vida',
-                        description: 'Marcas a un aliado; si recibe daño este turno, obtiene PV temporales y resistencia elemental elegida.',
+                        description: 'Marcas a un aliado; si recibe daño esta ronda, obtiene PV temporales y resistencia elemental elegida por el turno.',
                         useType: 'active',
                         action: 'bonus_action',
                         effects: [
@@ -1022,7 +1024,9 @@ const subclass = await db.personasubclasses.insertMany([
                                 name: 'Reserva Duplicada',
                                 description: 'Duplicas la cantidad de dados obtenida por Protección Superior al inicio de la incursión.',
                                 useType: 'passive',
-                                effects: [{ type: 'modify_feature_uses', featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d01'), multiplier: 2, description: 'Duplica dados de Protección Superior' }],
+                                effects: [
+                                    { type: 'recover_resource', target: 'self', trigger: 'at_incursion_start', resource: 'Protection Dice', value: '{level}' }
+                                ],
                                 state: 'ACTIVE'
                             }
                         ],
@@ -1041,7 +1045,7 @@ const subclass = await db.personasubclasses.insertMany([
                         action: 'action',
                         uses: 1,
                         triggerForRecover: 'at_combat_end',
-                        effects: [{ type: 'untargetable', target: 'ally', duration: { type: 'temporal', duration: 3, medition: 'turns' } }],
+                        effects: [{ type: 'untargetable', target: 'ally', duration: { type: 'temporal', duration: 3, medition: 'rounds' } }],
                         state: 'ACTIVE'
                     }
                 ]
@@ -1081,8 +1085,8 @@ const subclass = await db.personasubclasses.insertMany([
                         uses: 1,
                         triggerForRecover: 'at_combat_end',
                         effects: [
-                            { type: 'distributed_heal', target: 'all_allies', value: '{level * 10}' },
-                            { type: 'cast_spell', target: 'all_allies', spellCategory: 'utility', reduction: 1 }
+                            { type: 'heal', target: 'all_allies_distribute', value: '{level * 10}' },
+                            { type: 'cast_spell', target: 'all_allies', spellCategory: 'utility' }
                         ],
                         state: 'ACTIVE'
                     }
@@ -1107,7 +1111,9 @@ const subclass = await db.personasubclasses.insertMany([
                                 name: 'Punchline Complejo',
                                 description: 'Punchline ahora aplica una potenciación compleja en vez de básica.',
                                 useType: 'passive',
-                                effects: [{ type: 'replace_effect', featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d05'), condition: 'individual heal', value: 'complex_buff' }],
+                                effects: [{ type: 'replace_effect', featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d05'), effects: [
+                                    { type: 'cast_spell', target: 'ally', trigger: 'at_heal', condition: 'individual heal', spellCategory: 'buff', reduction: 1, description: 'Otorga una potenciación compleja al objetivo' }
+                                ]}],
                                 state: 'ACTIVE'
                             }
                         ],
@@ -1124,9 +1130,9 @@ const subclass = await db.personasubclasses.insertMany([
                         description: 'Tras dos hechizos, el tercero se lanza dos veces; una vez por incursión puedes restaurar todos tus AP y PV.',
                         useType: 'passive',
                         internalCounter: true,
-                        counterCondition: 'spell casts equals 2',
+                        counterCondition: 'spell cast',
                         effects: [
-                            { type: 'duplicate_next_spell', target: 'self', condition: 'counter reached', etiquette: 'catch_phrase' },
+                            { type: 'duplicate_next_spell', target: 'self', condition: 'counter reached 2', etiquette: 'catch_phrase' },
                             { type: 'double_effect_duration', target: 'self', condition: 'duplicated spell category is utility', etiquette: 'catch_phrase' }
                         ],
                         subFeatures: [
@@ -1142,7 +1148,7 @@ const subclass = await db.personasubclasses.insertMany([
                                     { type: 'recover_resource', resource: 'AP', value: 'full', target: 'self' },
                                     { type: 'heal', healType: 'HP', heal: 'full', target: 'self' }
                                 ],
-                                modifiers: [{ type: 'reaction', value: -99, description: 'No puedes tomar reacciones', target: 'self', duration: { type: 'temporal', duration: 1, medition: 'turns' } }],
+                                modifiers: [{ type: 'reaction', value: -99, description: 'No puedes tomar reacciones', target: 'self', duration: { type: 'temporal', duration: 1, medition: 'rounds' } }],
                                 state: 'ACTIVE'
                             }
                         ],
@@ -1180,11 +1186,11 @@ const subclass = await db.personasubclasses.insertMany([
                     {
                         featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d10'),
                         name: 'Repartición de Ánima',
-                        description: 'Si dañas a un enemigo debilitado, curas a un aliado la mitad del daño. Reacción para convertir daño neutral en daño a debilidad.',
+                        description: 'Cada vez que infliges daño a un enemigo con una debilitación básica o efecto negativo, restauras la mitad del daño infligido a un aliado. Además, una vez por ronda y utilizando tu reacción, puedes causar que un hechizo que vaya a causar daño neutral a un enemigo sea considerado como daño a debilidad.',
                         useType: 'passive',
                         effects: [
                             { type: 'heal', healType: 'HP', heal: '{damage / 2}', target: 'ally', trigger: 'at_damage', condition: 'target has debuff or negative effect' },
-                            { type: 'convert_damage_affinity', target: 'enemy', trigger: 'at_spell', action: 'reaction', condition: 'spell damage is neutral', uses: 1, triggerForRecover: 'at_round_end' }
+                            { type: 'weakness', target: 'enemy', trigger: 'at_spell', action: 'reaction', uses: 1, triggerForRecover: 'at_round_end' }
                         ],
                         state: 'ACTIVE'
                     }
@@ -1199,7 +1205,7 @@ const subclass = await db.personasubclasses.insertMany([
                         description: 'Al causar daño con hechizo individual, reaplicas el daño mínimo al inicio de tus siguientes 2 turnos.',
                         useType: 'passive',
                         effects: [
-                            { type: 'repeat_damage_minimum', target: 'enemy', trigger: 'at_spell_attack', condition: 'single target spell', value: 2, triggerForRecover: 'at_turn_start' },
+                            { type: 'damage', value: '{count_dice} + {roll_modifier}', target: 'enemy', objective: 'next_spell', condition: 'single target spell', value: 2, timing: 'at_turn_start' },
                             { type: 'replace_effect', featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d09'), condition: 'basic_debuff', value: 'complex_debuff' }
                         ],
                         state: 'ACTIVE'
@@ -1217,9 +1223,9 @@ const subclass = await db.personasubclasses.insertMany([
                         effects: [
                             { type: 'break_shield', target: 'enemy', trigger: 'at_break_shield', value: 1 },
                             { type: 'debuff', target: 'all_enemies', trigger: 'at_all_out_attack', addTo: 'shieldModifiers', value: -1, permanent: true },
-                            { type: 'modify_resistance_ladder', target: 'enemy', trigger: 'at_all_out_attack', value: 'absorb->immune | immune->resist | remove resist' },
                             { type: 'heal', healType: 'HP', heal: '{level}', target: 'all_allies', trigger: 'at_all_out_attack' },
-                            { type: 'recover_resource', resource: 'AP', value: '{proficiency}', target: 'all_allies', trigger: 'at_all_out_attack' }
+                            { type: 'recover_resource', resource: 'AP', value: '{proficiency}', target: 'all_allies', trigger: 'at_all_out_attack' },
+                            {  type: 'remove_resistance', target: 'enemy', value: 1, condition: 'selection', trigger: 'at_all_out_attack' }
                         ],
                         state: 'ACTIVE'
                     }
@@ -1510,7 +1516,7 @@ await db.personaclasses.updateOne(
                             trigger: 'at_ally_death',
                             effects: [
                                 { type: 'heal', healType: 'HP', heal: '{level * 2}', target: 'ally' },
-                                { type: 'add_resistance', target: 'ally', value: 'all', duration: { type: 'temporal', duration: 1, medition: 'turns' } }
+                                { type: 'resistance', value: '{elemental_affinity}', description: 'Otorga resistencia elemental a elección', target: 'ally', condition: 'selection', duration: { type: 'temporal', duration: 1, medition: 'turns' } }
                             ],
                             state: 'ACTIVE'
                         }
@@ -1529,7 +1535,7 @@ await db.personaclasses.updateOne(
                             description: 'Cuando sanas a un aliado con un hechizo o efecto tuyo, restauras la mitad a otro aliado adicional.',
                             useType: 'passive',
                             trigger: 'at_heal',
-                            effects: [{ type: 'heal', healType: 'HP', heal: '{healed_amount / 2}', target: 'ally', condition: 'different target' }],
+                            effects: [{ type: 'heal', healType: 'HP', heal: '{amount / 2}', target: 'ally', condition: 'different target' }],
                             state: 'ACTIVE'
                         }
                     ],
@@ -1562,7 +1568,7 @@ await db.personaclasses.updateOne(
                         {
                             featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d35'),
                             name: 'Amplificación de Aura',
-                            description: 'Aumentas 3 casillas el rango de hechizos no ofensivos. Una vez por combate, una salvación aliada es éxito automático.',
+                            description: 'Agregas 3 casillas adicionales al rango de todos tus hechizos que no causen daño. Además, una vez por combate puedes decidir que la siguiente tirada de salvación que requieran uno o más aliados sea exitosa de forma automática.',
                             useType: 'passive',
                             modifiers: [{ type: 'range', value: 3, description: 'Rango extra para hechizos no ofensivos', target: 'self', addTo: 'spellRangeNonDamageModifiers', permanent: true }],
                             subFeatures: [
@@ -1592,12 +1598,98 @@ await db.personaclasses.updateOne(
                         {
                             featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d37'),
                             name: 'Equilibrio Espiritual',
-                            description: 'Generas Black Marks y White Marks según tus acciones para habilitar conversiones tácticas.',
+                            description: 'Tus acciones contra enemigos generan Black Marks (2 si son individuales, 1 si son en área). Tus acciones a favor de aliados generan White Marks (2 si son individuales, 1 si son en área). Puedes consumir estas marcas para activar técnicas especiales.',
                             useType: 'passive',
                             effects: [
-                                { type: 'generate_marks', target: 'enemy', value: '{is_area ? 1 : 2}', trigger: 'at_spell_attack', resource: 'Black Marks' },
-                                { type: 'generate_marks', target: 'ally', value: '{is_area ? 1 : 2}', trigger: 'at_heal', resource: 'White Marks' },
-                                { type: 'unlock_mark_actions', target: 'self', resource: ['Black Marks', 'White Marks'] }
+                                { type: 'recover_resource', target: 'self', trigger: 'at_spell_attack', condition: 'single target spell', resource: 'Black Marks', value: 2 },
+                                { type: 'recover_resource', target: 'self', trigger: 'at_spell_attack', condition: 'area spell', resource: 'Black Marks', value: 1 },
+                                { type: 'recover_resource', target: 'self', trigger: 'at_heal', condition: 'single target spell', resource: 'White Marks', value: 2 },
+                                { type: 'recover_resource', target: 'self', trigger: 'at_heal', condition: 'area spell', resource: 'White Marks', value: 1 }
+                            ],
+                            subFeatures: [
+                                {
+                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d50'),
+                                    name: 'BM - Eco Curativo',
+                                    description: 'Consumes 1 BM para que tu siguiente Curación Común se aplique nuevamente al inicio del turno del objetivo durante 2 turnos.',
+                                    useType: 'active',
+                                    action: 'free_action',
+                                    cost: [{ amount: 1, resource: 'Black Marks' }],
+                                    effects: [{ type: 'repeated_spell', target: 'ally', trigger: 'next_spell', appliesTo: '^Curación Común', value: 2, timing: 'at_target_turn_start' }],
+                                    state: 'ACTIVE'
+                                },
+                                {
+                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d51'),
+                                    name: 'BM - Ritmo de Asistencia',
+                                    description: 'Consumes 2 BM para lanzar como acción adicional tu siguiente hechizo que tenga como objetivo a un aliado.',
+                                    useType: 'active',
+                                    action: 'free_action',
+                                    cost: [{ amount: 2, resource: 'Black Marks' }],
+                                    effects: [{ type: 'change_spell_action', target: 'self', trigger: 'next_spell', value: 'bonus_action', condition: 'spell targets ally' }],
+                                    state: 'ACTIVE'
+                                },
+                                {
+                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d52'),
+                                    name: 'BM - Pulso Grupal',
+                                    description: 'Consumes 3 BM para que tu siguiente hechizo con un solo objetivo aliado se aplique a todo el grupo.',
+                                    useType: 'active',
+                                    action: 'free_action',
+                                    cost: [{ amount: 3, resource: 'Black Marks' }],
+                                    effects: [{ type: 'modify_next_spell_target', target: 'all_allies', condition: 'spell targets ally' }],
+                                    state: 'ACTIVE'
+                                },
+                                {
+                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d53'),
+                                    name: 'BM - Escudo de Cobertura',
+                                    description: 'Consumes 4 BM para, como reacción, proteger a todos los aliados del siguiente daño físico o mágico.',
+                                    useType: 'active',
+                                    action: 'reaction',
+                                    cost: [{ amount: 4, resource: 'Black Marks' }],
+                                    effects: [
+                                        { type: 'barrier', barrierType: 'physical', target: 'all_allies', uses: 1, duration: { type: 'temporal', duration: 1, medition: 'turn' } },
+                                        { type: 'barrier', barrierType: 'magical', target: 'all_allies', uses: 1, duration: { type: 'temporal', duration: 1, medition: 'turn' } }
+                                    ],
+                                    state: 'ACTIVE'
+                                },
+                                {
+                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d54'),
+                                    name: 'WM - Réplica Dolorosa',
+                                    description: 'Consumes 1 WM para que tu siguiente hechizo de daño individual, si impacta, repita el daño mínimo al inicio de tu siguiente turno.',
+                                    useType: 'active',
+                                    action: 'free_action',
+                                    cost: [{ amount: 1, resource: 'White Marks' }],
+                                    effects: [{ type: 'damage', value: '{count_dice} + {roll_modifier}', target: 'enemy', objective: 'next_spell', condition: 'single target spell', value: 1, timing: 'at_turn_start' }],
+                                    state: 'ACTIVE'
+                                },
+                                {
+                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d55'),
+                                    name: 'WM - Estado Súbito',
+                                    description: 'Consumes 2 WM para lanzar como acción adicional tu siguiente hechizo de estado contra enemigos.',
+                                    useType: 'active',
+                                    action: 'free_action',
+                                    cost: [{ amount: 2, resource: 'White Marks' }],
+                                    effects: [{ type: 'change_spell_action', target: 'self', trigger: 'next_spell', value: 'bonus_action', condition: 'spell category is debuff and target is enemy' }],
+                                    state: 'ACTIVE'
+                                },
+                                {
+                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d56'),
+                                    name: 'WM - Ofensiva Súbita',
+                                    description: 'Consumes 3 WM para lanzar como acción adicional tu siguiente hechizo de daño individual.',
+                                    useType: 'active',
+                                    action: 'free_action',
+                                    cost: [{ amount: 3, resource: 'White Marks' }],
+                                    effects: [{ type: 'change_spell_action', target: 'self', trigger: 'next_spell', value: 'bonus_action', condition: 'single target spell and spell category is attack' }],
+                                    state: 'ACTIVE'
+                                },
+                                {
+                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d57'),
+                                    name: 'WM - Interrupción Mental',
+                                    description: 'Consumes 4 WM para, como reacción, interrumpir la acción de un enemigo mediante enfrentamiento de salvación de inteligencia.',
+                                    useType: 'active',
+                                    action: 'reaction',
+                                    cost: [{ amount: 4, resource: 'White Marks' }],
+                                    effects: [{ type: 'counterspell', target: 'enemy', trigger: 'at_enemy_spell_cast', salvation: 'knowledge', condition: 'opposed intelligence save' }],
+                                    state: 'ACTIVE'
+                                }
                             ],
                             state: 'ACTIVE'
                         }
@@ -1617,7 +1709,11 @@ await db.personaclasses.updateOne(
                             useType: 'passive',
                             effects: [
                                 { type: 'replace_effect', featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d33'), condition: 'resistance_all', value: 'immunity_all' },
-                                { type: 'add_followup_effect', featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d33'), value: 'elemental_resistance_selection_3_rounds' }
+                                { 
+                                    type: 'add_effect', featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d33'), condition: 'after_heal', effects: [
+                                        { type: 'resistance', value: '{elemental_affinity}', description: 'Otorga resistencia elemental a elección', target: 'ally', condition: 'selection', duration: { type: 'temporal', duration: 3, medition: 'rounds' } }
+                                    ] 
+                                }
                             ],
                             state: 'ACTIVE'
                         }
@@ -1655,7 +1751,7 @@ await db.personaclasses.updateOne(
                             useType: 'passive',
                             effects: [
                                 { type: 'cast_spell', target: 'all_allies', trigger: 'at_combat_start', spellCategory: 'buff', condition: 'complex_buff', reduction: 1 },
-                                { type: 'amplify_spell_by_stat', target: 'self', stat: 'charisma_save', uses: '{proficiency}', condition: 'spell category is attack or heal' }
+                                { type: 'modification', target: 'self', trigger: 'at_attack_or_heal_spell_cast', value: '{charisma_save}', uses: '{proficiency}', condition: 'selection' }
                             ],
                             state: 'ACTIVE'
                         }
@@ -1668,46 +1764,37 @@ await db.personaclasses.updateOne(
                     proficency: 5,
                     spells: [spells[46], spells[47], spells[48]],
                     features: [
+                        {  
+                            featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d41'),
+                            name: 'Alteración Espiritual - Alcance',
+                            description: 'Un hechizo de objetivo único pasa a todos los objetivos disponibles.',
+                            useType: 'active',
+                            action: 'free_action',
+                            uses: 1,
+                            triggerForRecover: 'at_combat_end',
+                            effects: [{ type: 'modify_next_spell_target', target: 'all', condition: 'single target spell' }],
+                            state: 'ACTIVE'
+                        },
                         {
-                            featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d40'),
-                            name: 'Alteración Espiritual',
-                            description: 'Ganas tres técnicas especiales, una vez por combate cada una.',
-                            useType: 'passive',
-                            subFeatures: [
-                                {
-                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d41'),
-                                    name: 'Objetivos Totales',
-                                    description: 'Un hechizo de objetivo único pasa a todos los objetivos disponibles.',
-                                    useType: 'active',
-                                    action: 'free_action',
-                                    uses: 1,
-                                    triggerForRecover: 'at_combat_end',
-                                    effects: [{ type: 'modify_next_spell_target', target: 'all', condition: 'single target spell' }],
-                                    state: 'ACTIVE'
-                                },
-                                {
-                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d42'),
-                                    name: 'Ritmo Acelerado',
-                                    description: 'Lanzas un hechizo que no causa daño como acción adicional.',
-                                    useType: 'active',
-                                    action: 'free_action',
-                                    uses: 1,
-                                    triggerForRecover: 'at_combat_end',
-                                    effects: [{ type: 'change_spell_action', target: 'self', value: 'bonus_action', condition: 'spell does not deal damage' }],
-                                    state: 'ACTIVE'
-                                },
-                                {
-                                    featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d43'),
-                                    name: 'Curación Perfecta',
-                                    description: 'Tu siguiente hechizo de curación restaura la tirada máxima.',
-                                    useType: 'active',
-                                    action: 'free_action',
-                                    uses: 1,
-                                    triggerForRecover: 'at_combat_end',
-                                    effects: [{ type: 'maximize_next_heal', target: 'self' }],
-                                    state: 'ACTIVE'
-                                }
-                            ],
+                            featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d42'),
+                            name: 'Alteración Espiritual - Velocidad',
+                            description: 'Lanzas un hechizo que no causa daño como acción adicional.',
+                            useType: 'active',
+                            action: 'free_action',
+                            uses: 1,
+                            triggerForRecover: 'at_combat_end',
+                            effects: [{ type: 'change_spell_action', target: 'self', value: 'bonus_action', condition: 'spell does not deal damage' }],
+                            state: 'ACTIVE'
+                        },
+                        {
+                            featureId: new ObjectId('7f8f4b3b3f1d9a001f2b3d43'),
+                            name: 'Alteración Espiritual - Curación Perfecta',
+                            description: 'Tu siguiente hechizo de curación restaura la tirada máxima.',
+                            useType: 'active',
+                            action: 'free_action',
+                            uses: 1,
+                            triggerForRecover: 'at_combat_end',
+                            effects: [{ type: 'maximize_next_heal', target: 'self' }],
                             state: 'ACTIVE'
                         }
                     ],
@@ -1726,8 +1813,8 @@ await db.personaclasses.updateOne(
                             useType: 'passive',
                             trigger: 'at_round_start',
                             effects: [
-                                { type: 'cast_spell', target: 'all_allies', condition: '1d8 >= 6', spellCategory: 'buff', value: ['charge', 'concentration'], duration: { type: 'temporal', duration: 1, medition: 'rounds' } },
-                                { type: 'buff', target: 'self', condition: '1d8 < 6', modifiers: [{ type: 'reaction', value: 1, addTo: 'reactionModifiers', duration: { type: 'temporal', duration: 1, medition: 'rounds' } }] }
+                                { type: 'cast_spell', target: 'all_allies', condition: 'roll is 6 or higher', spellCategory: 'buff', value: ['charge', 'concentration'], duration: { type: 'temporal', duration: 1, medition: 'rounds' } },
+                                { type: 'buff', target: 'self', condition: 'roll is less than 6', modifiers: [{ type: 'reaction', value: 1, addTo: 'reactionModifiers', duration: { type: 'temporal', duration: 1, medition: 'rounds' } }] }
                             ],
                             state: 'ACTIVE'
                         }
@@ -1775,8 +1862,7 @@ await db.personaclasses.updateOne(
                                     useType: 'active',
                                     action: 'action',
                                     uses: 1,
-                                    triggerForRecover: 'at_combat_end',
-                                    effects: [{ type: 'restore_pre_incursion_state', target: 'ally', condition: 'does not retrigger at_combat_start features' }],
+                                    effects: [{ type: 'restore_state', target: 'ally', condition: 'does not retrigger at_combat_start features' }],
                                     state: 'ACTIVE'
                                 }
                             ],

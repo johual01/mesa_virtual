@@ -59,6 +59,7 @@ export enum targetTypes {
     ONLY_ALLY = 'only_ally',
     ALLIES_ATTACKING_TARGET = 'allies_attacking_target',
     ALL = 'all',
+    ALL_ALLIES_DISTRIBUTE = 'all_allies_distribute',
 }
 
 export enum rangeTypes {
@@ -128,9 +129,11 @@ export enum triggerTypes {
     AT_APPLY_BUFF_EFFECT = 'at_apply_buff_effect', // Se activa al aplicar un efecto positivo
     AT_APPLY_NEGATIVE_EFFECT = 'at_apply_negative_effect', // Se activa al aplicar un efecto negativo o debilitante
     AT_DISPEL_EFFECT = 'at_dispel_effect', // Se activa al disipar un efecto
+    AT_ATTACK_OR_HEAL_SPELL_CAST = 'at_attack_or_heal_spell_cast', // Se activa al lanzar un hechizo de ataque o curación
     AT_SPELL_CAST_DURING_ATTACK = 'at_spell_cast_during_attack', // Se activa al lanzar un hechizo como parte de un ataque
     AT_ENEMY_SPELL_CAST = 'at_enemy_spell_cast', // Se activa al lanzar un hechizo un enemigo
     AT_ALL_OUT_ATTACK = 'at_all_out_attack', // Se activa al realizar un ataque total
+    AT_INCURSION_START = 'at_incursion_start', // Se activa al inicio de una incursión
 }
 
 export enum costTypes {
@@ -343,6 +346,7 @@ export interface IDamageEffect extends IBaseEffect {
     damage: string,
     damageType?: elements,
     preventCritical?: boolean,
+    timing?: triggerTypes,
 }
 
 export interface IHealEffect extends IBaseEffect {
@@ -361,6 +365,7 @@ export interface IShieldEffect extends IBaseEffect {
 
 export interface IStatusEffectType extends IBaseEffect {
     type: 'status_effect' | 'debuff' | 'buff',
+    statusEffectIdentifier?: string,
     statusEffect?: IStatusEffect,
     modifiers?: IModifier[],
 }
@@ -403,6 +408,12 @@ export type modificationEffectTypes =  'modification'
     | 'add_resistance'
     | 'add_inmunity'
     | 'remove_inmunity'
+    | 'modify_next_spell_target'
+    | 'maximize_next_heal'
+    | 'restore_state'
+    | 'untargetable'
+    | 'duplicate_next_spell'
+    | 'double_effect_duration'
 
 export interface IModificationEffect extends IBaseEffect {
     type: modificationEffectTypes,
@@ -422,6 +433,7 @@ export interface IModificationEffect extends IBaseEffect {
     appliesTo?: string,
     additionalTargets?: number,
     dicePenaltyByTarget?: number[],
+    timing?: triggerTypes,
 }
 
 // Union type for all effects
