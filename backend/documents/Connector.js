@@ -123,9 +123,9 @@ const listSpells = await db.spells.insertMany([
         class: characterClassId,
         useType: 'active',
         category: 'heal',
-        description: 'Restauras 1d4 más lanzamiento de hechizos en PV a todos los aliados a 6 casillas.',
+        description: 'Restauras 1d4 en PV a todos los aliados a 6 casillas.',
         concentration: false,
-        effects: [{ type: 'heal', healType: 'HP', heal: '1d4 + {magic_launch}', target: 'allies_at_range', range: { type: 'area', range: 6, shape: 'circle' } }],
+        effects: [{ type: 'heal', healType: 'HP', heal: '1d4', target: 'allies_at_range', range: { type: 'area', range: 6, shape: 'circle' } }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -140,7 +140,7 @@ const listSpells = await db.spells.insertMany([
         concentration: true,
         modifiers: [
             { value: '1d4', type: 'dices', addTo: 'damageRollModifiers', description: 'Aumenta 1d4 al daño', target: 'ally', duration: { type: 'temporal', duration: 10, medition: 'rounds' }, etiquette: 'bless' },
-            { value: '1d4', type: 'dices', addTo: 'attackRollModifiers', description: 'Aumenta 1d4 al ataque', target: 'ally', duration: { type: 'temporal', duration: 10, medition: 'rounds' }, etiquette: 'bless' },
+            { value: '1d4', type: 'dices', addTo: 'attackModifiers', description: 'Aumenta 1d4 al ataque', target: 'ally', duration: { type: 'temporal', duration: 10, medition: 'rounds' }, etiquette: 'bless' },
             { value: '1d4', type: 'all_saving_throws', addTo: 'savingThrowsModifiers', description: 'Aumenta 1d4 a salvaciones', target: 'ally', duration: { type: 'temporal', duration: 10, medition: 'rounds' }, etiquette: 'bless' }
         ],
         toList: 'list',
@@ -213,7 +213,6 @@ const listSpells = await db.spells.insertMany([
         category: 'utility',
         description: 'Tú y los aliados aceptantes viajan a la última sala segura.',
         concentration: false,
-        effects: [{ type: 'teleport_to_safe_room', target: 'all_allies', condition: 'not boss combat and not restricted mobility' }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -252,9 +251,9 @@ const listSpells = await db.spells.insertMany([
         class: characterClassId,
         useType: 'active',
         category: 'heal',
-        description: 'Restauras 3d6 más lanzamiento de hechizos en PV a un aliado.',
+        description: 'Restauras 3d6 en PV a un aliado.',
         concentration: false,
-        effects: [{ type: 'heal', healType: 'HP', heal: '3d6 + {magic_launch}', target: 'ally' }],
+        effects: [{ type: 'heal', healType: 'HP', heal: '3d6', target: 'ally' }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -268,9 +267,9 @@ const listSpells = await db.spells.insertMany([
         useType: 'active',
         action: 'bonus_action',
         category: 'heal',
-        description: 'Restauras 2d4 más lanzamiento de hechizos en PV a un aliado. Acción adicional.',
+        description: 'Restauras 2d4 en PV a un aliado. Acción adicional.',
         concentration: false,
-        effects: [{ type: 'heal', healType: 'HP', heal: '2d4 + {magic_launch}', target: 'ally' }],
+        effects: [{ type: 'heal', healType: 'HP', heal: '2d4', target: 'ally' }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -342,9 +341,9 @@ const listSpells = await db.spells.insertMany([
         class: characterClassId,
         useType: 'active',
         category: 'heal',
-        description: 'Restauras 2d4 más lanzamiento de hechizos en PV a todos los aliados a 6 casillas.',
+        description: 'Restauras 2d4 en PV a todos los aliados a 6 casillas.',
         concentration: false,
-        effects: [{ type: 'heal', healType: 'HP', heal: '2d4 + {magic_launch}', target: 'allies_at_range', range: { type: 'area', range: 6, shape: 'circle' } }],
+        effects: [{ type: 'heal', healType: 'HP', heal: '2d4', target: 'allies_at_range', range: { type: 'area', range: 6, shape: 'circle' } }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -407,7 +406,7 @@ const listSpells = await db.spells.insertMany([
         category: 'buff',
         description: 'Aumenta en +5 a todo daño infligido por 3 turnos a ti o a un aliado.',
         concentration: false,
-        modifiers: [{ value: 5, type: 'damage', description: 'Aumenta en +5 el daño', target: 'ally', addTo: 'damageModifiers', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, etiquette: 'complex_empowerment_damage' }],
+        modifiers: [{ value: 5, type: 'damage', description: 'Aumenta en +5 el daño', target: 'ally', addTo: 'damageModifiers', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, etiquette: 'empowerment_damage' }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -420,7 +419,7 @@ const listSpells = await db.spells.insertMany([
         category: 'buff',
         description: 'Aumenta en +3 el ataque por 3 turnos a ti o a un aliado.',
         concentration: false,
-        modifiers: [{ value: 3, type: 'attack', description: 'Aumenta en +3 el ataque', target: 'ally', addTo: 'attackModifiers', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, etiquette: 'complex_empowerment_attack' }],
+        modifiers: [{ value: 3, type: 'attack', description: 'Aumenta en +3 el ataque', target: 'ally', addTo: 'attackModifiers', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, etiquette: 'empowerment_attack' }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -434,8 +433,8 @@ const listSpells = await db.spells.insertMany([
         description: 'Aumenta en +3 la defensa y +2 a la resistencia mágica por 3 turnos a ti o a un aliado.',
         concentration: false,
         modifiers: [
-            { value: 3, type: 'defense', description: 'Aumenta en +3 la defensa', target: 'ally', addTo: 'defenseModifiers', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, etiquette: 'complex_empowerment_defense' },
-            { value: 2, type: 'magic_defense', description: 'Aumenta en +2 la resistencia mágica', target: 'ally', addTo: 'magicDefenseModifiers', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, etiquette: 'complex_empowerment_defense' }
+            { value: 3, type: 'defense', description: 'Aumenta en +3 la defensa', target: 'ally', addTo: 'defenseModifiers', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, etiquette: 'empowerment_defense' },
+            { value: 2, type: 'magic_defense', description: 'Aumenta en +2 la resistencia mágica', target: 'ally', addTo: 'magicDefenseModifiers', duration: { type: 'temporal', duration: 3, medition: 'rounds' }, etiquette: 'empowerment_defense' }
         ],
         toList: 'list',
         state: 'ACTIVE'
@@ -465,7 +464,14 @@ const listSpells = await db.spells.insertMany([
         category: 'heal',
         description: 'Tu siguiente Curación Común se replica con un dado menos a segundo objetivo y dos dados menos a un tercero.',
         concentration: false,
-        effects: [{ type: 'chain_heal', target: 'allies_at_range', value: 2, description: 'Replica curación a objetivos adicionales con menos dados' }],
+        effects: [{
+            type: 'repeated_spell',
+            target: 'allies_at_range',
+            appliesTo: '^Curación Común',
+            additionalTargets: 2,
+            dicePenaltyByTarget: [1, 2],
+            description: 'Repite tu siguiente Curación Común sobre 2 objetivos adicionales: -1 dado al segundo y -2 dados al tercero'
+        }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -478,7 +484,7 @@ const listSpells = await db.spells.insertMany([
         category: 'utility',
         description: 'Por 3 turnos, tú y todos los aliados pueden usar su acción adicional para correr, esquivar o destrabarse.',
         concentration: false,
-        effects: [{ type: 'grant_bonus_actions', target: 'all_allies', value: ['dash', 'dodge', 'disengage'], duration: { type: 'temporal', duration: 3, medition: 'rounds' } }],
+        effects: [{ type: 'restricted_bonus_actions', target: 'all_allies', value: ['dash', 'dodge', 'disengage'], duration: { type: 'temporal', duration: 3, medition: 'rounds' } }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -506,7 +512,7 @@ const listSpells = await db.spells.insertMany([
         category: 'shield',
         description: 'Cuando el aliado objetivo cae a 0 PV, se establece en 1 PV y el hechizo termina.',
         concentration: true,
-        effects: [{ type: 'death_ward', target: 'ally', trigger: 'at_self_death', value: 1 }],
+        effects: [{ type: 'heal', healType: 'HP', target: 'ally', trigger: 'at_ally_death', value: 1 }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -533,9 +539,9 @@ const listSpells = await db.spells.insertMany([
         class: characterClassId,
         useType: 'active',
         category: 'heal',
-        description: 'Restauras 4d8 más lanzamiento de hechizos en PV a un aliado.',
+        description: 'Restauras 4d8 en PV a un aliado.',
         concentration: false,
-        effects: [{ type: 'heal', healType: 'HP', heal: '4d8 + {magic_launch}', target: 'ally' }],
+        effects: [{ type: 'heal', healType: 'HP', heal: '4d8', target: 'ally' }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -549,9 +555,9 @@ const listSpells = await db.spells.insertMany([
         useType: 'active',
         action: 'bonus_action',
         category: 'heal',
-        description: 'Restauras 3d6 más lanzamiento de hechizos en PV a un aliado. Acción adicional.',
+        description: 'Restauras 3d6 en PV a un aliado. Acción adicional.',
         concentration: false,
-        effects: [{ type: 'heal', healType: 'HP', heal: '3d6 + {magic_launch}', target: 'ally' }],
+        effects: [{ type: 'heal', healType: 'HP', heal: '3d6', target: 'ally' }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -624,9 +630,9 @@ const listSpells = await db.spells.insertMany([
         class: characterClassId,
         useType: 'active',
         category: 'heal',
-        description: 'Restauras 3d6 más lanzamiento de hechizos en PV a todos los aliados a 6 casillas.',
+        description: 'Restauras 3d6 en PV a todos los aliados a 6 casillas.',
         concentration: false,
-        effects: [{ type: 'heal', healType: 'HP', heal: '3d6 + {magic_launch}', target: 'allies_at_range', range: { type: 'area', range: 6, shape: 'circle' } }],
+        effects: [{ type: 'heal', healType: 'HP', heal: '3d6', target: 'allies_at_range', range: { type: 'area', range: 6, shape: 'circle' } }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -728,9 +734,9 @@ const listSpells = await db.spells.insertMany([
         class: characterClassId,
         useType: 'active',
         category: 'heal',
-        description: 'Restauras 6d10 más lanzamiento de hechizos en PV a un aliado.',
+        description: 'Restauras 6d10 en PV a un aliado.',
         concentration: false,
-        effects: [{ type: 'heal', healType: 'HP', heal: '6d10 + {magic_launch}', target: 'ally' }],
+        effects: [{ type: 'heal', healType: 'HP', heal: '6d10', target: 'ally' }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -744,9 +750,9 @@ const listSpells = await db.spells.insertMany([
         useType: 'active',
         action: 'bonus_action',
         category: 'heal',
-        description: 'Restauras 4d8 más lanzamiento de hechizos en PV a un aliado. Acción adicional.',
+        description: 'Restauras 4d8 en PV a un aliado. Acción adicional.',
         concentration: false,
-        effects: [{ type: 'heal', healType: 'HP', heal: '4d8 + {magic_launch}', target: 'ally' }],
+        effects: [{ type: 'heal', healType: 'HP', heal: '4d8', target: 'ally' }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -757,11 +763,11 @@ const listSpells = await db.spells.insertMany([
         class: characterClassId,
         useType: 'active',
         category: 'utility',
-        description: 'Vinculas daño y curación mínimos entre aliados y enemigos por 3 turnos en 6 casillas.',
+        description: 'Tu siguiente hechizo de daño aplicará su tirada mínima (cantidad de dados + bonificador de la tirada) como curación a todos los aliados en un radio de 6 casillas durante 3 turnos. Tu siguiente hechizo de curación aplicará su tirada mínima (cantidad de dados + bonificador de la tirada) como daño a todos los enemigos en un radio de 6 casillas durante 3 turnos.',
         concentration: true,
         effects: [
-            { type: 'link_damage_to_heal_minimum', target: 'allies_at_range', range: { type: 'area', range: 6, shape: 'circle' }, duration: { type: 'temporal', duration: 3, medition: 'rounds' } },
-            { type: 'link_heal_to_damage_minimum', target: 'enemies_at_range', range: { type: 'area', range: 6, shape: 'circle' }, duration: { type: 'temporal', duration: 3, medition: 'rounds' } }
+            { type: 'heal', healType: 'HP', heal: '{count_dice} + {roll_modifier}', target: 'allies_at_range', trigger: 'next_spell', condition: 'spell is damage', range: { type: 'area', range: 6, shape: 'circle' }, duration: { type: 'temporal', duration: 3, medition: 'rounds' } },
+            { type: 'damage', damageType: 'affinity', dice: '{count_dice} + {roll_modifier}', target: 'enemies_at_range', trigger: 'next_spell', condition: 'spell is heal', range: { type: 'area', range: 6, shape: 'circle' }, duration: { type: 'temporal', duration: 3, medition: 'rounds' } }
         ],
         toList: 'list',
         state: 'ACTIVE'
@@ -778,7 +784,7 @@ const listSpells = await db.spells.insertMany([
         category: 'shield',
         description: 'Previenes las dos siguientes instancias de daño a ti o a un aliado.',
         concentration: false,
-        effects: [{ type: 'barrier', barrierType: 'double_almighty', target: 'ally', uses: 2 }],
+        effects: [{ type: 'barrier', barrierType: 'almighty', target: 'ally', uses: 2 }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -819,9 +825,9 @@ const listSpells = await db.spells.insertMany([
         class: characterClassId,
         useType: 'active',
         category: 'heal',
-        description: 'Restauras 4d8 más lanzamiento de hechizos en PV a todos los aliados a 6 casillas.',
+        description: 'Restauras 4d8 en PV a todos los aliados a 6 casillas.',
         concentration: false,
-        effects: [{ type: 'heal', healType: 'HP', heal: '4d8 + {magic_launch}', target: 'allies_at_range', range: { type: 'area', range: 6, shape: 'circle' } }],
+        effects: [{ type: 'heal', healType: 'HP', heal: '4d8', target: 'allies_at_range', range: { type: 'area', range: 6, shape: 'circle' } }],
         toList: 'list',
         state: 'ACTIVE'
     },
@@ -837,7 +843,7 @@ const listSpells = await db.spells.insertMany([
         description: 'Otorga doble lanzamiento no ofensivo, +2 resistencia mágica y segunda concentración por 5 turnos.',
         concentration: true,
         effects: [
-            { type: 'cast_spell', target: 'ally', spellCategory: 'utility', trigger: 'at_spell', uses: 1, duration: { type: 'temporal', duration: 5, medition: 'turns' } },
+            { type: 'cast_spell', target: 'ally', spellCategory: 'not_heal_or_damage', trigger: 'at_spell', uses: 1, duration: { type: 'temporal', duration: 5, medition: 'turns' } },
             { type: 'allow_second_concentration', target: 'ally', duration: { type: 'temporal', duration: 5, medition: 'turns' } }
         ],
         modifiers: [{ value: 2, type: 'magic_defense', description: 'Aumenta en +2 la resistencia mágica', target: 'ally', addTo: 'magicDefenseModifiers', duration: { type: 'temporal', duration: 5, medition: 'turns' }, etiquette: 'magic_haste' }],
@@ -902,7 +908,7 @@ const listSpells = await db.spells.insertMany([
         category: 'shield',
         description: 'Tras ver a un aliado recibir daño, puede volverse inmune a todo daño hasta el inicio de tu turno.',
         concentration: false,
-        effects: [{ type: 'immunity_barrier', target: 'ally', trigger: 'at_ally_receive_attack', duration: { type: 'temporal', duration: 1, medition: 'turns' }, condition: 'only one target can hold effect' }],
+        effects: [{ type: 'barrier', barrierType: 'invulnerability', target: 'ally', trigger: 'at_ally_receive_attack', duration: { type: 'temporal', duration: 1, medition: 'rounds' }, condition: 'only one target can hold effect', etiquette: 'ultimate_barrier' }],
         toList: 'list',
         state: 'ACTIVE'
     },

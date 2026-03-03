@@ -793,7 +793,7 @@ const listSpells = await db.spells.insertMany([
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_complete'
+                etiquette: 'full_empowerment'
             },
             {
                 value: 5,
@@ -806,7 +806,7 @@ const listSpells = await db.spells.insertMany([
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_complete'
+                etiquette: 'full_empowerment'
             },
             {
                 value: 3,
@@ -819,7 +819,7 @@ const listSpells = await db.spells.insertMany([
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_complete'
+                etiquette: 'full_empowerment'
             },
             {
                 value: 2,
@@ -832,7 +832,7 @@ const listSpells = await db.spells.insertMany([
                     duration: 3,
                     medition: 'rounds'
                 },
-                etiquette: 'empowerment_complete'
+                etiquette: 'full_empowerment'
             }
         ],
         toList: 'list',

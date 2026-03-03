@@ -15,7 +15,7 @@ export enum barrierTypes {
     PHYSICAL = 'physical',
     MAGICAL = 'magical',
     ALMIGHTY = 'almighty',
-    DOUBLE_ALMIGHTY = 'double_almighty',
+    INVULNERABILITY = 'invulnerability',
 }
 
 export enum elements {
@@ -346,7 +346,8 @@ export interface IDamageEffect extends IBaseEffect {
 
 export interface IHealEffect extends IBaseEffect {
     type: 'heal' | 'regeneration',
-    heal: string,
+    heal?: string,
+    value?: number,
     healType?: healingTypes,
     resource?: resourceTypes | string,
 }
@@ -380,14 +381,11 @@ export type modificationEffectTypes =  'modification'
     | 'remove_buffs'
     | 'remove_debuffs'
     | 'extend_buffs'
-    | 'change_initiative'
     | 'spell_cost_reduction'
     | 'break_shield'
-    | 'additional_target'
     | 'stack_buffs'
     | 'attack_with_weapon'
     | 'opportunity_attack'
-    | 'modify_feature_uses'
     | 'cast_spell'
     | 'create_zone'
     | 'counterspell'
@@ -396,6 +394,9 @@ export type modificationEffectTypes =  'modification'
     | 'additional_target'
     | 'modify_feature_uses'
     | 'all_out_attack'
+    | 'repeated_spell'
+    | 'change_spell_action'
+    | 'allow_second_concentration'
 
 export interface IModificationEffect extends IBaseEffect {
     type: modificationEffectTypes,
@@ -412,6 +413,9 @@ export interface IModificationEffect extends IBaseEffect {
     zoneType?: string,
     resource?: resourceTypes | string,
     forEtiquette?: string,
+    appliesTo?: string,
+    additionalTargets?: number,
+    dicePenaltyByTarget?: number[],
 }
 
 // Union type for all effects
