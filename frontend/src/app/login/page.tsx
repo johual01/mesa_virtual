@@ -2,6 +2,7 @@
 
 import { LoginForm } from "@/components/login-form"
 import { usePageTitle } from "@/hooks/usePageTitle"
+import Image from "next/image"
 
 export default function LoginPage() {
   // Establecer título dinámico de la página
@@ -17,10 +18,12 @@ export default function LoginPage() {
         </div>
       </div>
       <div className="relative hidden bg-muted lg:block">
-        <img
+        <Image
           src="/background_login.jpg"
           alt="Image"
+          fill
           className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          sizes="50vw"
         />
       </div>
     </div>

@@ -15,6 +15,10 @@ const Footer = ({
     <section>
       <div>
         <footer>
+          <div className="mb-4">
+            <p className="font-semibold text-foreground">{title}</p>
+            <p className="text-sm text-muted-foreground">{tagline}</p>
+          </div>
           <div className="flex flex-col justify-between gap-4 border-t pt-8 text-sm font-medium text-muted-foreground md:flex-row md:items-center">
             <div className="pd-3em">{copyright}</div>
           </div>

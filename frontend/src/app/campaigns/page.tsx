@@ -15,7 +15,7 @@ import Image from "next/image";
 export default function CampaignsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const { campaigns, loading, error, refetch } = useCampaigns();
+  const { campaigns, loading, error } = useCampaigns();
   const { error: notifyError } = useNotificationContext();
   
   // Establecer título dinámico de la página

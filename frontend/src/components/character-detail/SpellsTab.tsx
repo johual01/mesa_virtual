@@ -116,7 +116,7 @@ export function SpellsTab({ character, isOwner, onRefetch }: SpellsTabProps) {
       const isPrepared = preparedIds.has(spellId);
       notifySuccess('Éxito', isPrepared ? 'Hechizo depreparado' : 'Hechizo preparado');
       onRefetch?.();
-    } catch (err) {
+    } catch {
       notifyError('Error', 'No se pudo preparar el hechizo');
     } finally {
       setLoadingSpellId(null);
@@ -129,7 +129,7 @@ export function SpellsTab({ character, isOwner, onRefetch }: SpellsTabProps) {
       await characterSpellsService.clearPreparedSpells(character._id);
       notifySuccess('Éxito', 'Todos los hechizos han sido depreparados');
       onRefetch?.();
-    } catch (err) {
+    } catch {
       notifyError('Error', 'No se pudieron limpiar los hechizos preparados');
     } finally {
       setIsClearingPrepared(false);
