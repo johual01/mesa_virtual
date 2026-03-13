@@ -10,10 +10,10 @@ WORKDIR /app
 # Copiar package files del monorepo
 COPY package*.json ./
 COPY frontend/package*.json ./frontend/
-COPY packages/dicelogic/package*.json ./packages/dicelogic/
+COPY packages/diceLogic/package*.json ./packages/diceLogic/
 
-# Copiar el paquete dicelogic primero (dependencia local)
-COPY packages/dicelogic ./packages/dicelogic
+# Copiar el paquete diceLogic primero (dependencia local)
+COPY packages/diceLogic ./packages/diceLogic
 
 # Instalar dependencias del frontend
 WORKDIR /app/frontend
@@ -25,7 +25,6 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copiar dependencias instaladas
-COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
 COPY --from=deps /app/packages ./packages
 

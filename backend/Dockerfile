@@ -10,10 +10,10 @@ WORKDIR /app
 # Copiar package files del monorepo
 COPY package*.json ./
 COPY backend/package*.json ./backend/
-COPY packages/dicelogic/package*.json ./packages/dicelogic/
+COPY packages/diceLogic/package*.json ./packages/diceLogic/
 
-# Copiar el paquete dicelogic primero (dependencia local)
-COPY packages/dicelogic ./packages/dicelogic
+# Copiar el paquete diceLogic primero (dependencia local)
+COPY packages/diceLogic ./packages/diceLogic
 
 # Instalar dependencias del backend
 WORKDIR /app/backend
