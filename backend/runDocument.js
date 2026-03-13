@@ -27,10 +27,14 @@ async function runDocument(fileName) {
         
         // Crear un objeto db con las colecciones
         const db = {
-            class: database.collection('class'),
+            // Nombres actuales usados por los documentos de clases
+            personaclasses: database.collection('personaclasses'),
+            personasubclasses: database.collection('personasubclasses'),
             spells: database.collection('spells'),
-            subclass: database.collection('subclass'),
-            features: database.collection('features')
+            features: database.collection('features'),
+            // Alias de compatibilidad con scripts antiguos
+            class: database.collection('class'),
+            subclass: database.collection('subclass')
         };
 
         // Leer el archivo del documento
