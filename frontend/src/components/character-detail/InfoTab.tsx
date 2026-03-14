@@ -45,6 +45,29 @@ const secondaryAbilityTranslations: Record<string, string> = {
   willpower: "Voluntad"
 };
 
+const secondaryAbilityDescriptions: Record<string, string> = {
+  acrobatics: "Maniobras, equilibrio y control corporal fino.",
+  art: "Interpretación y expresión artística.",
+  athletics: "Esfuerzo físico, resistencia y potencia.",
+  consciousness: "Atención al entorno y detección de riesgos.",
+  empathy: "Leer emociones y conectar con otros.",
+  expression: "Comunicar ideas e influir socialmente.",
+  folklore: "Tradiciones, relatos y conocimiento popular.",
+  handcraft: "Destreza manual para crear o reparar objetos.",
+  investigation: "Análisis, deducción y búsqueda de pistas.",
+  meditation: "Disciplina mental y fortaleza interior.",
+  mysticism: "Saber arcano y prácticas esotéricas.",
+  orientation: "Ubicación, navegación y sentido de dirección.",
+  quibble: "Engaño, negociación y juego verbal.",
+  reflexes: "Velocidad de reacción ante estímulos repentinos.",
+  speed: "Rapidez de movimiento y ejecución.",
+  stealth: "Pasar desapercibido y moverse en silencio.",
+  strength: "Aplicación de fuerza bruta y control del cuerpo.",
+  technology: "Uso y comprensión de sistemas tecnológicos.",
+  streetwise: "Manejo del entorno urbano y sus códigos.",
+  willpower: "Resistencia mental frente a presión o miedo.",
+};
+
 const elementTranslations: Record<string, string> = {
   fire: "Fuego",
   ice: "Hielo",
@@ -119,13 +142,19 @@ const SecondaryAbilityRow = ({
   proficiencyBonus: number;
 }) => {
   const totalBonus = bonus + statModifier + (isProficient ? proficiencyBonus : 0);
+  const translatedName = secondaryAbilityTranslations[name] || name;
+  const statAbbr = statAbbreviations[stat] || stat;
+  const tooltipText = secondaryAbilityDescriptions[name]
+    ? `${translatedName} (${statAbbr})\n${secondaryAbilityDescriptions[name]}`
+    : `${translatedName} (${statAbbr})`;
+
   return (
-    <div className="flex items-center justify-between py-1 px-2 hover:bg-muted/30 rounded">
+    <div className="flex items-center justify-between py-1 px-2 hover:bg-muted/30 rounded" title={tooltipText}>
       <div className="flex items-center gap-2">
         <div className={`w-2 h-2 rounded-full ${isProficient ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
         <span className="text-sm">
-          {secondaryAbilityTranslations[name] || name} 
-          <span className="text-muted-foreground text-xs ml-1">({statAbbreviations[stat]})</span>
+          {translatedName}
+          <span className="text-muted-foreground text-xs ml-1">({statAbbr})</span>
         </span>
       </div>
       <span className="font-mono text-sm">

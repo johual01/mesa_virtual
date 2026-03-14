@@ -13,6 +13,7 @@ export interface IRequestHistory extends Document {
     params?: Record<string, unknown>;
     query?: Record<string, unknown>;
     body?: unknown;
+    response?: unknown;
 }
 
 const requestHistorySchema = new Schema({
@@ -60,6 +61,9 @@ const requestHistorySchema = new Schema({
         type: Schema.Types.Mixed,
     },
     body: {
+        type: Schema.Types.Mixed,
+    },
+    response: {
         type: Schema.Types.Mixed,
     },
 }, {

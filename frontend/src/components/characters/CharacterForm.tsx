@@ -72,6 +72,29 @@ const BACKSTORY_FIELDS = [
   { key: 'trauma', label: 'Traumas/Miedos', placeholder: 'Experiencias traumáticas o miedos...' },
 ];
 
+const SECONDARY_ABILITY_META: Record<string, { stat: keyof Stadistics; description: string }> = {
+  acrobatics: { stat: 'dexterity', description: 'Maniobras, equilibrio y control corporal fino.' },
+  art: { stat: 'charisma', description: 'Interpretación y expresión artística.' },
+  athletics: { stat: 'courage', description: 'Esfuerzo físico, resistencia y potencia.' },
+  consciousness: { stat: 'instincts', description: 'Atención al entorno y detección de riesgos.' },
+  empathy: { stat: 'charisma', description: 'Leer emociones y conectar con otros.' },
+  expression: { stat: 'charisma', description: 'Comunicar ideas e influir socialmente.' },
+  folklore: { stat: 'knowledge', description: 'Tradiciones, relatos y conocimiento popular.' },
+  handcraft: { stat: 'dexterity', description: 'Destreza manual para crear o reparar objetos.' },
+  investigation: { stat: 'knowledge', description: 'Análisis, deducción y búsqueda de pistas.' },
+  meditation: { stat: 'courage', description: 'Disciplina mental y fortaleza interior.' },
+  mysticism: { stat: 'knowledge', description: 'Saber arcano y prácticas esotéricas.' },
+  orientation: { stat: 'instincts', description: 'Ubicación, navegación y sentido de dirección.' },
+  quibble: { stat: 'charisma', description: 'Engaño, negociación y juego verbal.' },
+  reflexes: { stat: 'instincts', description: 'Velocidad de reacción ante estímulos repentinos.' },
+  speed: { stat: 'dexterity', description: 'Rapidez de movimiento y ejecución.' },
+  stealth: { stat: 'dexterity', description: 'Pasar desapercibido y moverse en silencio.' },
+  strength: { stat: 'courage', description: 'Aplicación de fuerza bruta y control del cuerpo.' },
+  technology: { stat: 'knowledge', description: 'Uso y comprensión de sistemas tecnológicos.' },
+  streetwise: { stat: 'instincts', description: 'Manejo del entorno urbano y sus códigos.' },
+  willpower: { stat: 'courage', description: 'Resistencia mental frente a presión o miedo.' },
+};
+
 export function CharacterForm({
   mode,
   formData,
@@ -87,6 +110,10 @@ export function CharacterForm({
   onCampaignChange,
 }: CharacterFormProps) {
   const isCreateMode = mode === 'create';
+  const statByKey = STATS_CONFIG.reduce((acc, stat) => {
+    acc[stat.key as keyof Stadistics] = stat;
+    return acc;
+  }, {} as Record<keyof Stadistics, (typeof STATS_CONFIG)[number]>);
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -336,14 +363,20 @@ export function CharacterForm({
                       const isSelected = formData.proficency.includes(ability);
                       const isDisabled = !isSelected && formData.proficency.length >= 2;
                       const label = createInfo?.translations?.secondaryAbilities?.[ability] || ability;
+                      const abilityMeta = SECONDARY_ABILITY_META[ability];
+                      const statMeta = abilityMeta ? statByKey[abilityMeta.stat] : null;
+                      const tooltipText = abilityMeta && statMeta
+                        ? `${label}\nEstadística: ${statMeta.name} (${statMeta.abbr})\n${abilityMeta.description}`
+                        : label;
                       
                       return (
                         <button
                           key={ability}
                           type="button"
+                          title={tooltipText}
                           disabled={isDisabled}
                           onClick={() => onProficiencyChange(ability, !isSelected)}
-                          className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                          className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded-full border transition-colors ${
                             isSelected 
                               ? 'bg-primary text-primary-foreground border-primary' 
                               : isDisabled
@@ -352,6 +385,11 @@ export function CharacterForm({
                           }`}
                         >
                           {label}
+                          {statMeta ? (
+                            <span className="rounded bg-black/10 px-1.5 py-0.5 text-[10px] font-semibold leading-none">
+                              {statMeta.abbr}
+                            </span>
+                          ) : null}
                         </button>
                       );
                     })}

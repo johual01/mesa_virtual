@@ -73,6 +73,20 @@ const extractUserIdFromToken = (req: Request): Types.ObjectId | undefined => {
 
 export const requestHistoryMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const start = Date.now();
+    let responsePayload: unknown;
+
+    const originalJson = res.json.bind(res);
+    const originalSend = res.send.bind(res);
+
+    res.json = ((body: unknown) => {
+        responsePayload = body;
+        return originalJson(body);
+    }) as Response['json'];
+
+    res.send = ((body: unknown) => {
+        responsePayload = body;
+        return originalSend(body);
+    }) as Response['send'];
 
     res.on('finish', () => {
         if (req.path === '/health') {
@@ -86,6 +100,7 @@ export const requestHistoryMiddleware = (req: Request, res: Response, next: Next
                 : undefined) || extractUserIdFromToken(req);
 
         const body = sanitizeValue(req.body);
+        const response = sanitizeValue(responsePayload);
         const hasFiles = Boolean((req as Request & { file?: unknown }).file) || Boolean((req as Request & { files?: unknown }).files);
 
         void RequestHistory.create({
@@ -101,6 +116,7 @@ export const requestHistoryMiddleware = (req: Request, res: Response, next: Next
             params: sanitizeValue(req.params),
             query: sanitizeValue(req.query),
             body,
+            response,
         }).catch((error: unknown) => {
             console.error('Error guardando request history:', error);
         });
