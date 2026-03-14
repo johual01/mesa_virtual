@@ -230,17 +230,17 @@ export default function CharactersPage() {
 // Componente para la grilla de personajes (evita duplicación)
 function CharacterGrid({ characters, router }: { characters: CharacterSummary[], router: ReturnType<typeof useRouter> }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {characters.map((character) => (
-        <Card key={character._id} className="hover:shadow-lg transition-shadow">
+        <Card key={character._id} className="flex h-full flex-col overflow-hidden hover:shadow-lg transition-shadow">
           <CardHeader className="pb-3">
             {character.pictureRoute && (
-              <div className="relative w-full h-32 mb-3 rounded-md overflow-hidden">
+              <div className="relative mb-3 h-48 w-full rounded-md border bg-muted/30 overflow-hidden">
                 <Image
                   src={character.pictureRoute}
                   alt={character.name}
                   fill
-                  className="object-cover"
+                  className="object-contain p-2"
                 />
               </div>
             )}
@@ -266,12 +266,12 @@ function CharacterGrid({ characters, router }: { characters: CharacterSummary[],
               </div>
             </div>
           </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex gap-2">
+          <CardContent className="mt-auto pt-0">
+            <div className="flex flex-col gap-2">
               <Button
                 variant="default"
                 size="sm"
-                className="flex-1"
+                className="w-full"
                 onClick={() => router.push(`/characters/${character._id}`)}
               >
                 <Eye className="h-4 w-4 mr-1" />
@@ -280,9 +280,11 @@ function CharacterGrid({ characters, router }: { characters: CharacterSummary[],
               <Button
                 variant="outline"
                 size="sm"
+                className="w-full"
                 onClick={() => router.push(`/characters/${character._id}/edit`)}
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-4 w-4 mr-1" />
+                Editar
               </Button>
             </div>
           </CardContent>

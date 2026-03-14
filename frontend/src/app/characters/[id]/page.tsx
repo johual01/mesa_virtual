@@ -191,32 +191,22 @@ export default function CharacterDetailPage() {
       <div className="border-b border-border bg-card/50">
         <div className="container mx-auto px-4 py-4">
           {/* Breadcrumb y acciones */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 overflow-hidden text-xs text-muted-foreground sm:text-sm">
               <span>PERSONAD20</span>
               <span>/</span>
               <button 
                 onClick={() => router.push('/characters')}
-                className="hover:text-foreground transition-colors"
+                className="shrink-0 transition-colors hover:text-foreground"
               >
                 PERSONAJES
               </button>
               <span>/</span>
-              <span className="text-foreground uppercase">{character.name}</span>
+              <span className="truncate text-foreground uppercase">{character.name}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 self-end sm:self-auto">
               {isOwner && (
                 <>
-                  {character.level < 20 && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => router.push(`/characters/${characterId}/level-up`)}
-                    >
-                      <ArrowUp className="h-4 w-4 mr-1" />
-                      Subir de Nivel
-                    </Button>
-                  )}
                   <Button variant="default" size="sm" onClick={() => router.push(`/characters/${characterId}/edit`)}>
                     <Edit className="h-4 w-4 mr-1" />
                     Editar
@@ -227,7 +217,7 @@ export default function CharacterDetailPage() {
           </div>
 
           {/* Info principal */}
-          <div className="flex items-start gap-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
             {/* Avatar */}
             <div className="relative">
               {character.pictureRoute ? (
@@ -254,12 +244,12 @@ export default function CharacterDetailPage() {
             </div>
 
             {/* Nombre y detalles */}
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold">{character.name}</h1>
+            <div className="flex-1 min-w-0">
+              <h1 className="truncate text-xl font-bold sm:text-2xl">{character.name}</h1>
               <p className="text-muted-foreground">
                 {character.persona} {character.class} {character.level}
               </p>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="mt-1 flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="text-xs">
                   Nivel {character.level}
                 </Badge>
@@ -270,12 +260,12 @@ export default function CharacterDetailPage() {
             </div>
 
             {/* Barra superior: XP e inspiración - Compacta */}
-            <div className="flex items-center gap-2">
+            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:items-center">
               {/* XP Display */}
               <Dialog open={isXpModalOpen} onOpenChange={setIsXpModalOpen}>
                 <DialogTrigger asChild>
                   <button 
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex h-[58px] items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={!isOwner}
                   >
                     <Sparkles className="h-4 w-4 text-primary" />
@@ -326,7 +316,7 @@ export default function CharacterDetailPage() {
               <Dialog open={isInspirationModalOpen} onOpenChange={setIsInspirationModalOpen}>
                 <DialogTrigger asChild>
                   <button 
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex h-[58px] items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={!isOwner}
                   >
                     <Sparkles className="h-4 w-4 text-amber-500" />
@@ -444,7 +434,7 @@ export default function CharacterDetailPage() {
                   size="default"
                   disabled={!isOwner}
                   onClick={() => router.push(`/characters/${characterId}/level-up`)}
-                  className="h-[58px] px-4 flex flex-col gap-0.5"
+                  className="h-[58px] px-4 flex flex-col gap-0.5 sm:col-span-2 lg:col-span-1"
                 >
                   <ArrowUp className="h-4 w-4" />
                   <span className="text-xs">Subir de nivel</span>
@@ -458,26 +448,26 @@ export default function CharacterDetailPage() {
       {/* Contenido con tabs */}
       <div className="container mx-auto px-4 py-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start overflow-x-auto mb-4 bg-muted/50 scrollbar-hide">
+          <TabsList className="mb-4 w-full justify-start gap-1 overflow-x-auto bg-muted/50 scrollbar-hide sm:gap-0">
             <TabsTrigger value="info" className="gap-2">
               <User className="h-4 w-4" />
-              Información
+              <span className="sr-only sm:not-sr-only">Información</span>
             </TabsTrigger>
             <TabsTrigger value="backstory" className="gap-2">
               <BookOpen className="h-4 w-4" />
-              Trasfondo
+              <span className="sr-only sm:not-sr-only">Trasfondo</span>
             </TabsTrigger>
             <TabsTrigger value="features" className="gap-2">
               <Sparkles className="h-4 w-4" />
-              Rasgos
+              <span className="sr-only sm:not-sr-only">Rasgos</span>
             </TabsTrigger>
             <TabsTrigger value="equipment" className="gap-2">
               <Package className="h-4 w-4" />
-              Equipo
+              <span className="sr-only sm:not-sr-only">Equipo</span>
             </TabsTrigger>
             <TabsTrigger value="spells" className="gap-2">
               <Scroll className="h-4 w-4" />
-              Conjuros
+              <span className="sr-only sm:not-sr-only">Conjuros</span>
             </TabsTrigger>
           </TabsList>
 

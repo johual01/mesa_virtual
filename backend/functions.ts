@@ -93,7 +93,7 @@ export const saveImage = async (file: UploadedFile, userId: Types.ObjectId, buck
         "Content-Type": file.mimetype 
     });
 
-    const escritura = process.env.URL + 'dynamicFiles/' + BUCKET_KEY[bucketName] + '.' + fileName;
+    const escritura = '/api/dynamicFiles/' + BUCKET_KEY[bucketName] + '.' + fileName;
     return escritura;
 }
 
@@ -119,7 +119,7 @@ export const saveImageFromBase64 = async (base64: string, userId: Types.ObjectId
 
     await minioClient.putObject(bucketName, fileName, response.data, response.data.length, { "userId": userId.toString() });
 
-    const escritura = process.env.URL + 'dynamicFiles/' + BUCKET_KEY[bucketName] + '.' + fileName;
+    const escritura = '/api/dynamicFiles/' + BUCKET_KEY[bucketName] + '.' + fileName;
     return escritura;
 }
 
