@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_URL_API || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_URL_API || '/api';
 
 class ApiService {
   private getAuthHeaders(isFormData: boolean = false): HeadersInit {

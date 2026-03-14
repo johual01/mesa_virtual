@@ -6,7 +6,7 @@ import {
   ResetPasswordData
 } from '@/types/auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_URL_API || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_URL_API || '/api';
 
 export const authService = {
   /**
