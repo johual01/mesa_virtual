@@ -107,16 +107,18 @@ const SecondaryAbilityRow = ({
   name, 
   stat, 
   bonus, 
+  statModifier,
   isProficient,
   proficiencyBonus
 }: { 
   name: string; 
   stat: string; 
   bonus: number;
+  statModifier: number;
   isProficient: boolean;
   proficiencyBonus: number;
 }) => {
-  const totalBonus = bonus + (isProficient ? proficiencyBonus : 0);
+  const totalBonus = bonus + statModifier + (isProficient ? proficiencyBonus : 0);
   return (
     <div className="flex items-center justify-between py-1 px-2 hover:bg-muted/30 rounded">
       <div className="flex items-center gap-2">
@@ -372,6 +374,7 @@ export function InfoTab({ character }: InfoTabProps) {
                   name={key}
                   stat={ability.statistic}
                   bonus={ability.bonus}
+                  statModifier={stats?.[ability.statistic as keyof typeof stats]?.bonus || 0}
                   isProficient={ability.isProficient}
                   proficiencyBonus={character.proficency}
                 />

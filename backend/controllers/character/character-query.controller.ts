@@ -310,7 +310,7 @@ export const getCharacter = async (req: Request, res: Response) => {
             characterStatus.spells.additionalList.push(...additionalList);
         }
 
-        const characterActualLevels = characterClass.levels.filter((e) => e.level < characterData.level);
+        const characterActualLevels = characterClass.levels.filter((e) => e.level <= characterData.level);
         const stadisticBonifiers = {
             courage: calculateBonification(characterData.stadistics.courage),
             dexterity: calculateBonification(characterData.stadistics.dexterity),
@@ -642,7 +642,7 @@ export const getCharacter = async (req: Request, res: Response) => {
                     if (characterStatus?.inactiveFeatures?.includes(e.featureId)) e.state = 'INACTIVE';
                     return enrichFeatureDescriptions(calculateFeatureUses(e, characterData.level));
                 }),
-                subclassFeatures: subclass?.levels?.filter((e) => e.level < characterData.level)?.reduce((features, level) => {
+                subclassFeatures: subclass?.levels?.filter((e) => e.level <= characterData.level)?.reduce((features, level) => {
                     features.push(...level.features);
                     return features;
                 }, [] as IFeature[])?.map((e) => {

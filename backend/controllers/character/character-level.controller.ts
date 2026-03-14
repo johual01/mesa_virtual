@@ -15,8 +15,11 @@ export const obtainSecondaryFeatures = (
     level: number, 
     featureId: Types.ObjectId
 ) => {
-    const subclassFeatures = (characterDetail.subclass as IPersonaSubclass)?.levels?.find(e => e.level < level)?.features;
+    const subclassFeatures = (characterDetail.subclass as IPersonaSubclass)?.levels
+        ?.filter((e) => e.level <= level)
+        ?.flatMap((e) => e.features);
     return characterClass.levels
+        .filter((e) => e.level <= level)
         .flatMap(el => el.features)
         .concat(subclassFeatures || [])
         .find(f => f.featureId?.toString() === featureId.toString())
