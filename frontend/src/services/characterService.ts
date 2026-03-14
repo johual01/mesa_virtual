@@ -56,6 +56,10 @@ export const characterService = {
     if (data.image) {
       formData.append('image', data.image);
     }
+
+    if (data.profileImage) {
+      formData.append('profileImage', data.profileImage);
+    }
     
     return apiService.postFormData<{ message: string; characterId: string }>('/api/createCharacter', formData);
   },
@@ -100,6 +104,10 @@ export const characterService = {
     // Si hay un archivo de imagen, agregarlo al FormData
     if (data.image) {
       formData.append('image', data.image);
+    }
+
+    if (data.profileImage) {
+      formData.append('profileImage', data.profileImage);
     }
     
     return apiService.patchFormData<{ message: string }>(`/api/editCharacter/${characterId}`, formData);

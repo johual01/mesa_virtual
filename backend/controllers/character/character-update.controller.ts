@@ -10,6 +10,9 @@ import { arraysEqual, saveImage, UploadedFile, parseMulterField, parseMulterNumb
 // Extender Request para incluir el archivo de multer
 interface MulterRequest extends Request {
     file?: Express.Multer.File;
+    files?: {
+        [fieldname: string]: Express.Multer.File[];
+    } | Express.Multer.File[];
 }
 
 interface SavingThrowsModifiersInput {
@@ -94,19 +97,39 @@ export const editCharacter = async (req: MulterRequest, res: Response) => {
         character.backstory = backstory;
         character.state = state;
 
-        // Procesar imagen si se proporciona un archivo
-        if (req.file) {
+        const filesByField = !Array.isArray(req.files) ? req.files : undefined;
+        const mainImageFile = filesByField?.image?.[0] || req.file;
+        const profileImageFile = filesByField?.profileImage?.[0];
+
+        // Procesar imagen principal si se proporciona un archivo
+        if (mainImageFile) {
             const uploadedFile: UploadedFile = {
-                buffer: req.file.buffer,
-                mimetype: req.file.mimetype,
-                originalname: req.file.originalname,
-                size: req.file.size
+                buffer: mainImageFile.buffer,
+                mimetype: mainImageFile.mimetype,
+                originalname: mainImageFile.originalname,
+                size: mainImageFile.size
             };
             const savedImage = await saveImage(uploadedFile, userIdObj, 'characters');
             if (typeof savedImage === 'string') {
                 character.pictureRoute = savedImage;
             } else {
                 return res.status(500).json({ errMsg: 'No se pudo guardar la imagen' });
+            }
+        }
+
+        // Procesar imagen de perfil si se proporciona un archivo
+        if (profileImageFile) {
+            const uploadedFile: UploadedFile = {
+                buffer: profileImageFile.buffer,
+                mimetype: profileImageFile.mimetype,
+                originalname: profileImageFile.originalname,
+                size: profileImageFile.size
+            };
+            const savedProfileImage = await saveImage(uploadedFile, userIdObj, 'characters');
+            if (typeof savedProfileImage === 'string') {
+                character.profilePictureRoute = savedProfileImage;
+            } else {
+                return res.status(500).json({ errMsg: 'No se pudo guardar la imagen de perfil' });
             }
         }
 

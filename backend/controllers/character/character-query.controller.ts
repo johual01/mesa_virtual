@@ -241,7 +241,7 @@ export const getCharacters = async (req: Request, res: Response) => {
                     query.state = state;
                 }
 
-                const characters = await Character.find(query, { name: 1, system: 1, state: 1, pictureRoute: 1 })
+                const characters = await Character.find(query, { name: 1, system: 1, state: 1, pictureRoute: 1, profilePictureRoute: 1 })
                     .populate({ path: 'characterData', select: { class: 1, level: 1 } });
                 return res.status(200).json(characters);
 
@@ -255,7 +255,7 @@ export const getCharacters = async (req: Request, res: Response) => {
 
                 const charactersCampaign = await Character.find(
                     { _id: { $in: campaign.characters } }, 
-                    { name: 1, system: 1, state: 1, pictureRoute: 1 }
+                    { name: 1, system: 1, state: 1, pictureRoute: 1, profilePictureRoute: 1 }
                 ).populate({ path: 'characterData', select: { class: 1, level: 1 } });
 
                 return res.status(200).json(charactersCampaign);
@@ -590,6 +590,7 @@ export const getCharacter = async (req: Request, res: Response) => {
             state: character.state,
             system: character.system,
             pictureRoute: character.pictureRoute,
+            profilePictureRoute: character.profilePictureRoute,
             class: characterClass.name,
             subclass: subclass?.name,
             level: characterData.level,

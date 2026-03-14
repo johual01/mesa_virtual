@@ -143,7 +143,7 @@ export const openCampaign = async (req: Request, res: Response) => {
         const campaign = await Campaign.findById(campaignId)
             .populate<{ owner: IUser }>('owner', '-password -email')
             .populate<{ players: IUser }>('players', '-password -email -joinDate')
-            .populate('characters', 'name pictureRoute player')
+            .populate('characters', 'name pictureRoute profilePictureRoute player')
             .populate('publicEntries')
             .populate('notes');
 

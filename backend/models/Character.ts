@@ -29,6 +29,7 @@ export interface ICharacter extends Document {
     characterData: Types.ObjectId | ICharacterPersonaDetail,
     state: state,
     pictureRoute?: string,
+    profilePictureRoute?: string,
 }
 
 const characterSchema = new Schema({
@@ -75,6 +76,10 @@ const characterSchema = new Schema({
         }
     },
     pictureRoute: {
+        type: String,
+        required: false
+    },
+    profilePictureRoute: {
         type: String,
         required: false
     },

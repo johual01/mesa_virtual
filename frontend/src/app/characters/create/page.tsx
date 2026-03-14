@@ -22,6 +22,7 @@ export default function CreateCharacterPage() {
   
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<CharacterFormData>({
     name: "",
     state: CharacterState.ACTIVE,
@@ -37,6 +38,7 @@ export default function CreateCharacterPage() {
       trauma: ""
     },
     previewUrl: "",
+    profilePreviewUrl: "",
     characterClass: "",
     persona: "",
     money: 0,
@@ -94,6 +96,7 @@ export default function CreateCharacterPage() {
         element: formData.element,
         weakness: formData.weakness,
         image: imageFile || undefined,
+        profileImage: profileImageFile || undefined,
       };
       const response = await characterService.createCharacter(createData);
       success('Personaje creado', 'El personaje se ha creado exitosamente');
@@ -139,6 +142,15 @@ export default function CreateCharacterPage() {
       setFormData(prev => ({ ...prev, previewUrl: URL.createObjectURL(file) }));
     } else {
       setFormData(prev => ({ ...prev, previewUrl: '' }));
+    }
+  };
+
+  const handleProfileFileChange = (file: File | null) => {
+    setProfileImageFile(file);
+    if (file) {
+      setFormData(prev => ({ ...prev, profilePreviewUrl: URL.createObjectURL(file) }));
+    } else {
+      setFormData(prev => ({ ...prev, profilePreviewUrl: '' }));
     }
   };
 
@@ -204,6 +216,7 @@ export default function CreateCharacterPage() {
         onCancel={() => router.back()}
         onChange={handleInputChange}
         onFileChange={handleFileChange}
+        onProfileFileChange={handleProfileFileChange}
         onProficiencyChange={handleProficiencyChange}
         campaignId={campaignId}
         onCampaignChange={setCampaignId}

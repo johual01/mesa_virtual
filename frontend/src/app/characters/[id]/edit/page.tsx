@@ -34,6 +34,7 @@ export default function EditCharacterPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<CharacterFormData>({
     name: "",
     state: CharacterState.ACTIVE,
@@ -49,6 +50,7 @@ export default function EditCharacterPage() {
       trauma: "",
     },
     previewUrl: "",
+    profilePreviewUrl: "",
     persona: "",
     money: 0,
     stadistics: {
@@ -96,6 +98,7 @@ export default function EditCharacterPage() {
           trauma: "",
         },
         previewUrl: character.pictureRoute || "",
+        profilePreviewUrl: character.profilePictureRoute || "",
         persona: character.persona,
         money: character.money,
         stadistics: {
@@ -116,6 +119,13 @@ export default function EditCharacterPage() {
     setImageFile(file);
     if (file) {
       setFormData(prev => ({ ...prev, previewUrl: URL.createObjectURL(file) }));
+    }
+  };
+
+  const handleProfileFileChange = (file: File | null) => {
+    setProfileImageFile(file);
+    if (file) {
+      setFormData(prev => ({ ...prev, profilePreviewUrl: URL.createObjectURL(file) }));
     }
   };
 
@@ -169,6 +179,7 @@ export default function EditCharacterPage() {
         element: formData.element,
         weakness: formData.weakness,
         image: imageFile || undefined,
+        profileImage: profileImageFile || undefined,
       };
       await characterService.editCharacter(characterId, editData);
       notifySuccess("Personaje actualizado", "Los cambios se guardaron correctamente.");
@@ -268,6 +279,7 @@ export default function EditCharacterPage() {
         onCancel={() => router.push(`/characters/${characterId}`)}
         onChange={handleInputChange}
         onFileChange={handleFileChange}
+        onProfileFileChange={handleProfileFileChange}
         readOnlyClass={character.class}
       />
 

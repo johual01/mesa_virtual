@@ -26,6 +26,7 @@ export interface CharacterFormData {
     trauma: string;
   };
   previewUrl: string;
+  profilePreviewUrl: string;
   persona: string;
   money: number;
   stadistics: Stadistics;
@@ -45,6 +46,7 @@ interface CharacterFormProps {
   onCancel: () => void;
   onChange: (field: string, value: string | number) => void;
   onFileChange?: (file: File | null) => void;
+  onProfileFileChange?: (file: File | null) => void;
   onProficiencyChange?: (ability: string, checked: boolean) => void;
   // Para modo edición - mostrar valores solo lectura
   readOnlyClass?: string;
@@ -105,6 +107,7 @@ export function CharacterForm({
   onCancel,
   onChange,
   onFileChange,
+  onProfileFileChange,
   onProficiencyChange,
   readOnlyClass,
   campaignId,
@@ -257,6 +260,13 @@ export function CharacterForm({
               value={formData.previewUrl || ""}
               onChange={(value) => onChange('previewUrl', value)}
               onFileChange={onFileChange}
+            />
+
+            <ImageUploader
+              label="Imagen de Perfil (rostro)"
+              value={formData.profilePreviewUrl || ""}
+              onChange={(value) => onChange('profilePreviewUrl', value)}
+              onFileChange={onProfileFileChange}
             />
           </CardContent>
         </Card>

@@ -386,7 +386,9 @@ export default function CampaignDetailPage() {
                   {campaign.characters.map((character, index) => {
                     const characterId = typeof character === 'string' ? character : character._id;
                     const characterName = typeof character === 'string' ? `Personaje ${index + 1}` : character.name;
-                    const characterImage = typeof character === 'string' ? undefined : character.pictureRoute;
+                    const characterImage = typeof character === 'string'
+                      ? undefined
+                      : character.profilePictureRoute || character.pictureRoute;
                     const characterOwnerId =
                       typeof character === 'string'
                         ? undefined

@@ -186,6 +186,8 @@ export default function CharacterDetailPage() {
     return null;
   }
 
+  const smallCharacterImage = character.profilePictureRoute || character.pictureRoute;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header del personaje */}
@@ -221,7 +223,7 @@ export default function CharacterDetailPage() {
           <div className="space-y-3 lg:flex lg:items-end lg:justify-between lg:gap-6 lg:space-y-0">
             <div className="flex items-start gap-3 lg:flex-1">
               <div className="relative self-start">
-                {character.pictureRoute ? (
+                {smallCharacterImage ? (
                   <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
                     <DialogTrigger asChild>
                       <button
@@ -230,7 +232,7 @@ export default function CharacterDetailPage() {
                         aria-label="Ver avatar en grande"
                       >
                         <Image
-                          src={character.pictureRoute}
+                          src={smallCharacterImage}
                           alt={character.name}
                           width={64}
                           height={64}
@@ -245,7 +247,7 @@ export default function CharacterDetailPage() {
                       </DialogHeader>
                       <div className="relative mt-2 aspect-square w-full overflow-hidden rounded-md border bg-muted/30">
                         <Image
-                          src={character.pictureRoute}
+                          src={smallCharacterImage}
                           alt={character.name}
                           fill
                           className="object-contain p-2"

@@ -29,10 +29,22 @@ router.post('/deleteCampaign/:campaignId', validateToken, Campaign.deleteCampaig
 
 // rutas del personaje
 router.get('/getCreateCharacterInfo', validateToken, Character.getCreateCharacterInfo);
-router.post('/createCharacter', validateToken, upload.single('image'), handleMulterError, Character.createCharacter);
+router.post(
+  '/createCharacter',
+  validateToken,
+  upload.fields([{ name: 'image', maxCount: 1 }, { name: 'profileImage', maxCount: 1 }]),
+  handleMulterError,
+  Character.createCharacter
+);
 router.post('/getCharacters', validateToken, Character.getCharacters);
 router.get('/getCharacter/:characterId', validateToken, Character.getCharacter);
-router.patch('/editCharacter/:characterId', validateToken, upload.single('image'), handleMulterError, Character.editCharacter);
+router.patch(
+  '/editCharacter/:characterId',
+  validateToken,
+  upload.fields([{ name: 'image', maxCount: 1 }, { name: 'profileImage', maxCount: 1 }]),
+  handleMulterError,
+  Character.editCharacter
+);
 router.delete('/deleteCharacter/:characterId', validateToken, Character.deleteCharacter);
 router.patch('/addCustomModifier/:characterId', validateToken, Character.addCustomModifier);
 router.patch('/removeCustomModifier/:characterId/:modifierId', validateToken, Character.removeCustomModifier);

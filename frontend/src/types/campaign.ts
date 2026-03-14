@@ -17,6 +17,7 @@ export interface Character {
   name: string;
   player?: string | User;
   pictureRoute?: string;
+  profilePictureRoute?: string;
 }
 
 export interface Note {

@@ -327,6 +327,7 @@ export interface Character {
   state: CharacterState;
   system: System;
   pictureRoute?: string;
+  profilePictureRoute?: string;
   class: string;
   subclass?: string;
   level: number;
@@ -404,6 +405,7 @@ export interface CharacterSummary {
   system: System;
   state: CharacterState;
   pictureRoute?: string;
+  profilePictureRoute?: string;
   characterData: {
     class: object;
     level: number;
@@ -424,6 +426,7 @@ export interface CreateCharacterData {
   state: CharacterState;
   backstory: Backstory;
   image?: File;
+  profileImage?: File;
   characterClass: string;
   persona: string;
   money: number;
@@ -438,6 +441,7 @@ export interface EditCharacterData {
   state: CharacterState;
   backstory: Backstory;
   image?: File;
+  profileImage?: File;
   persona: string;
   money: number;
   stadistics: Stadistics;
