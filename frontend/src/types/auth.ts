@@ -6,6 +6,10 @@ export interface LoginData {
   rememberMe?: boolean;
 }
 
+export interface GoogleLoginData {
+  credential: string;
+}
+
 export interface SignupData {
   username: string;
   email: string;
