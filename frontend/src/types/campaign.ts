@@ -44,7 +44,7 @@ export interface Campaign {
   name: string;
   owner: User;
   players: User[];
-  characters: string[];
+  characters: (string | Character)[];
   image?: string;
   description?: string;
   publicEntries?: Note[];
@@ -103,4 +103,9 @@ export interface UpdateRegisterData {
 export interface RemoveFromCampaignData {
   playerId: string;
   campaignId: string;
+}
+
+export interface AddCharacterToCampaignData {
+  campaignId: string;
+  characterId: string;
 }

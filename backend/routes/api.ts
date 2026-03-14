@@ -24,6 +24,7 @@ router.put('/addRegister/:campaignId', validateToken, Campaign.addRegister);
 router.patch('/updateRegister/:registerId', validateToken, Campaign.updateRegister);
 router.delete('/deleteRegister/:registerId', validateToken, Campaign.deleteRegister);
 router.post('/removeFromCampaign', validateToken, Campaign.removeFromCampaign);
+router.post('/addCharacterToCampaign', validateToken, Campaign.addCharacterToCampaign);
 router.post('/deleteCampaign/:campaignId', validateToken, Campaign.deleteCampaign);
 
 // rutas del personaje

@@ -7,7 +7,8 @@ import {
   RegisterMutationResponse,
   AddRegisterData,
   UpdateRegisterData,
-  RemoveFromCampaignData
+  RemoveFromCampaignData,
+  AddCharacterToCampaignData
 } from '@/types/campaign';
 
 export const campaignService = {
@@ -99,6 +100,14 @@ export const campaignService = {
    */
   async removeFromCampaign(data: RemoveFromCampaignData): Promise<{ message: string }> {
     return apiService.post<{ message: string }>('/api/removeFromCampaign', data);
+  },
+
+  /**
+   * POST /api/addCharacterToCampaign
+   * Agrega un personaje existente a una campaña
+   */
+  async addCharacterToCampaign(data: AddCharacterToCampaignData): Promise<{ message: string }> {
+    return apiService.post<{ message: string }>('/api/addCharacterToCampaign', data);
   },
 
   /**

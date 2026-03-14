@@ -3,6 +3,7 @@ import Campaign, { ICampaign, campaignState } from '../models/Campaign';
 import Note, { noteState } from '../models/Note';
 import History, { referenceType, origin } from '../models/History';
 import { ICharacter } from '../models/Character';
+import Character, { state as characterState } from '../models/Character';
 import { Types } from 'mongoose';
 import { saveImage, UploadedFile, parseMulterField } from '../functions';
 import { IUser } from '../models/User';
@@ -142,6 +143,7 @@ export const openCampaign = async (req: Request, res: Response) => {
         const campaign = await Campaign.findById(campaignId)
             .populate<{ owner: IUser }>('owner', '-password -email')
             .populate<{ players: IUser }>('players', '-password -email -joinDate')
+            .populate('characters', 'name system state pictureRoute')
             .populate('publicEntries')
             .populate('notes');
 
@@ -446,5 +448,72 @@ export const deleteRegister = async (req: Request, res: Response) => {
         res.status(200).json({ message: 'Registro eliminado' });
     } catch (e) {
         res.status(500).json({ errMsg: 'Error al eliminar registro', error: e });
+    }
+}
+
+export const addCharacterToCampaign = async (req: Request, res: Response) => {
+    try {
+        if (!req.body.campaignId || !req.body.characterId) {
+            return res.status(400).json({ errMsg: 'Faltan datos' });
+        }
+
+        const userId = new Types.ObjectId(req.body.userId);
+        const campaignId = new Types.ObjectId(req.body.campaignId);
+        const characterId = new Types.ObjectId(req.body.characterId);
+
+        const campaign = await Campaign.findById(campaignId);
+        if (!campaign) {
+            return res.status(404).json({ errMsg: 'No se encontró la campaña' });
+        }
+
+        const isOwner = campaign.owner.toString() === userId.toString();
+        const isPlayer = campaign.players.some((player) => player.toString() === userId.toString());
+        if (!isOwner && !isPlayer) {
+            return res.status(403).json({ errMsg: 'Debes formar parte de la campaña para agregar personajes' });
+        }
+
+        const character = await Character.findById(characterId);
+        if (!character) {
+            return res.status(404).json({ errMsg: 'No se encontró el personaje' });
+        }
+
+        if (character.state === characterState.DELETED) {
+            return res.status(400).json({ errMsg: 'No se puede agregar un personaje eliminado' });
+        }
+
+        const isPlayerInCampaign = campaign.players.some((player) => player.toString() === character.player.toString());
+        const isOwnerCharacter = campaign.owner.toString() === character.player.toString();
+
+        if (!isOwnerCharacter && !isPlayerInCampaign) {
+            return res.status(400).json({ errMsg: 'El personaje debe pertenecer al dueño o a un jugador de la campaña' });
+        }
+
+        const alreadyInCampaign = campaign.characters.some((charId) => charId.toString() === characterId.toString());
+        if (alreadyInCampaign) {
+            return res.status(400).json({ errMsg: 'El personaje ya está agregado a la campaña' });
+        }
+
+        const history = new History({
+            event: 'Personaje agregado a campaña',
+            description: `Se agregó el personaje ${character.name} a la campaña.`,
+            user: userId,
+            origin: origin.USER,
+            referenceType: referenceType.CAMPAIGN,
+            reference: campaignId,
+            body: {
+                campaignId,
+                characterId
+            }
+        });
+
+        const savedHistory = await history.save();
+
+        campaign.characters.push(characterId);
+        campaign.history.push(savedHistory._id as Types.ObjectId);
+        await campaign.save();
+
+        return res.status(200).json({ message: 'Personaje agregado a la campaña' });
+    } catch (e) {
+        return res.status(500).json({ errMsg: 'Error al agregar personaje a la campaña', error: e });
     }
 }

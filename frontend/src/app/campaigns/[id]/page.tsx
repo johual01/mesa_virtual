@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { useCampaign } from "@/hooks/useCampaigns";
 import { campaignService } from "@/services/campaignService";
+import { characterService } from "@/services/characterService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ import { ArrowLeft, Settings, Users, BookOpen, Plus, Loader2, Copy, Check, Link,
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNotificationContext } from "@/context/notifications";
 import { Note } from "@/types/campaign";
+import { CharacterSummary, CharacterState } from "@/types/character";
 
 interface NoteFormData {
   title: string;
@@ -64,6 +66,11 @@ export default function CampaignDetailPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const [isDeletingNote, setIsDeletingNote] = useState(false);
+  const [showAddCharacterModal, setShowAddCharacterModal] = useState(false);
+  const [availableCharacters, setAvailableCharacters] = useState<CharacterSummary[]>([]);
+  const [selectedCharacterId, setSelectedCharacterId] = useState<string>('');
+  const [isLoadingCharacters, setIsLoadingCharacters] = useState(false);
+  const [isAddingCharacter, setIsAddingCharacter] = useState(false);
 
   const inviteLink = typeof window !== 'undefined' 
     ? `${window.location.origin}/campaigns/join/${campaignId}` 
@@ -159,6 +166,61 @@ export default function CampaignDetailPage() {
     if (isOwner) return true;
     const userId = user?._id || user?.id;
     return note.owner === userId;
+  };
+
+  const openAddCharacterModal = async () => {
+    if (!campaign) return;
+
+    setShowAddCharacterModal(true);
+    setIsLoadingCharacters(true);
+    setSelectedCharacterId('');
+
+    try {
+      const userCharacters = await characterService.getCharacters({ origin: 'user' });
+      const assignedCharacterIds = new Set(
+        (campaign.characters || []).map((character) =>
+          typeof character === 'string' ? character : character._id
+        )
+      );
+
+      const filteredCharacters = userCharacters.filter(
+        (character) =>
+          !assignedCharacterIds.has(character._id) && character.state !== CharacterState.DELETED
+      );
+
+      setAvailableCharacters(filteredCharacters);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al cargar personajes';
+      notifyError('Error', message);
+      setShowAddCharacterModal(false);
+    } finally {
+      setIsLoadingCharacters(false);
+    }
+  };
+
+  const handleAddCharacterToCampaign = async () => {
+    if (!selectedCharacterId) {
+      notifyError('Falta selección', 'Selecciona un personaje para agregar.');
+      return;
+    }
+
+    setIsAddingCharacter(true);
+    try {
+      await campaignService.addCharacterToCampaign({
+        campaignId,
+        characterId: selectedCharacterId,
+      });
+
+      success('Personaje agregado', 'El personaje se agregó a la campaña.');
+      setShowAddCharacterModal(false);
+      setSelectedCharacterId('');
+      refetch?.();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al agregar personaje';
+      notifyError('Error', message);
+    } finally {
+      setIsAddingCharacter(false);
+    }
   };
   
   // Establecer título dinámico basado en la campaña
@@ -292,7 +354,7 @@ export default function CampaignDetailPage() {
                 <BookOpen className="h-5 w-5" />
                 Personajes ({campaign.characters?.length || 0})
               </CardTitle>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" onClick={openAddCharacterModal}>
                 <Plus className="h-4 w-4 mr-2" />
                 Agregar Personaje
               </Button>
@@ -301,10 +363,12 @@ export default function CampaignDetailPage() {
               {campaign.characters && campaign.characters.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {campaign.characters.map((character, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <h4 className="font-semibold">Personaje {index + 1}</h4>
+                    <div key={typeof character === 'string' ? character : character._id} className="border rounded-lg p-4">
+                      <h4 className="font-semibold">
+                        {typeof character === 'string' ? `Personaje ${index + 1}` : character.name}
+                      </h4>
                       <p className="text-sm text-muted-foreground">
-                        {typeof character === 'string' ? character : 'ID: ' + character}
+                        {typeof character === 'string' ? character : `${character.system} • ${character.state}`}
                       </p>
                     </div>
                   ))}
@@ -512,6 +576,66 @@ export default function CampaignDetailPage() {
               El jugador deberá tener una cuenta e iniciar sesión para unirse a la campaña.
             </p>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de agregar personaje existente */}
+      <Dialog open={showAddCharacterModal} onOpenChange={setShowAddCharacterModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Agregar personaje a campaña</DialogTitle>
+            <DialogDescription>
+              Selecciona uno de tus personajes para vincularlo a esta campaña.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 max-h-72 overflow-y-auto">
+            {isLoadingCharacters ? (
+              <div className="flex items-center justify-center py-6 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Cargando personajes...
+              </div>
+            ) : availableCharacters.length > 0 ? (
+              availableCharacters.map((character) => {
+                const isSelected = selectedCharacterId === character._id;
+                return (
+                  <button
+                    key={character._id}
+                    type="button"
+                    onClick={() => setSelectedCharacterId(character._id)}
+                    className={`w-full rounded-lg border p-3 text-left transition-colors ${
+                      isSelected
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:bg-muted/50'
+                    }`}
+                  >
+                    <p className="font-medium">{character.name}</p>
+                    <p className="text-sm text-muted-foreground">{character.system} • {character.state}</p>
+                  </button>
+                );
+              })
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-6">
+                No hay personajes disponibles para agregar.
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddCharacterModal(false)} disabled={isAddingCharacter}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAddCharacterToCampaign} disabled={!selectedCharacterId || isAddingCharacter}>
+              {isAddingCharacter ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Agregando...
+                </>
+              ) : (
+                'Agregar'
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
