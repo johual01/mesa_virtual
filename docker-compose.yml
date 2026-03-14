@@ -89,6 +89,7 @@ services:
       MONGO_DB: mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-adminpassword}@mongodb:27017/mesavirtual?authSource=admin
       REFRESH_SECRET: ${REFRESH_SECRET:-your-refresh-secret-change-me}
       SECRET: ${SECRET:-your-jwt-secret-change-me}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       URL: ${PUBLIC_URL:-http://localhost}/api/
       ENDPOINT_MINIO: minio
       PORT_MINIO: 9000
@@ -124,6 +125,7 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         NEXT_PUBLIC_URL_API: ${NEXT_PUBLIC_URL_API:-/api}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
         NEXT_PUBLIC_BASE_PATH: ""
     container_name: mesavirtual-frontend
     restart: unless-stopped

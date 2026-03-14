@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/auth';
 import { useNotificationContext } from '@/context/notifications';
 import { ForgotPasswordModal } from '@/components/forgot-password-modal';
+import { GoogleSignInButton } from '@/components/google-signin-button';
 import { Loader2 } from "lucide-react"
 
 export function LoginForm({
@@ -21,7 +22,7 @@ export function LoginForm({
   const [rememberMe, setRememberMe] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const { error: notifyError } = useNotificationContext();
   const router = useRouter();
 
@@ -44,6 +45,21 @@ export function LoginForm({
     e.preventDefault();
     setShowForgotPassword(true);
   };
+
+  const handleGoogleCredential = async (credential: string) => {
+    setIsLoading(true);
+    try {
+      await loginWithGoogle(credential);
+      router.push('/');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al iniciar sesión con Google';
+      notifyError('Error de autenticación', message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 
   return (
     <>
@@ -126,6 +142,20 @@ export function LoginForm({
               'Ingresar'
             )}
           </Button>
+
+          {googleClientId ? (
+            <>
+              <div className="relative text-center text-xs text-muted-foreground">
+                <span className="bg-background px-2 relative z-10">o continúa con</span>
+                <div className="absolute left-0 right-0 top-1/2 -z-0 h-px bg-border" />
+              </div>
+              <GoogleSignInButton
+                clientId={googleClientId}
+                disabled={isLoading}
+                onCredential={handleGoogleCredential}
+              />
+            </>
+          ) : null}
         </div>
         <div className="text-center text-sm">
           No tienes una cuenta?{" "}

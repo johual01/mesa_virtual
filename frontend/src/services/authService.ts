@@ -1,5 +1,6 @@
 import {
   LoginData,
+  GoogleLoginData,
   SignupData,
   AuthResponse,
   RefreshResponse,
@@ -26,6 +27,28 @@ export const authService = {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.errMsg || errorData.message || 'Error al iniciar sesión');
+    }
+
+    return response.json();
+  },
+
+  /**
+   * POST /auth/google
+   * Inicia sesión usando Google Identity Services
+   */
+  async googleLogin(data: GoogleLoginData): Promise<AuthResponse> {
+    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.errMsg || errorData.message || 'Error al autenticar con Google');
     }
 
     return response.json();
