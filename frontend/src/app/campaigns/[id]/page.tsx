@@ -168,6 +168,27 @@ export default function CampaignDetailPage() {
     return note.owner === userId;
   };
 
+  const resolveUserNameById = (userId?: string) => {
+    if (!campaign || !userId) return 'Desconocido';
+
+    const ownerId = typeof campaign.owner === 'string' ? campaign.owner : campaign.owner._id;
+    if (ownerId === userId) {
+      return typeof campaign.owner === 'string' ? 'Game Master' : campaign.owner.username;
+    }
+
+    const player = campaign.players?.find((p) => p._id === userId);
+    return player?.username || 'Desconocido';
+  };
+
+  const canOpenCharacterSheet = (characterOwnerId?: string) => {
+    if (!campaign || !user) return false;
+
+    const currentUserId = user._id || user.id;
+    const campaignOwnerId = typeof campaign.owner === 'string' ? campaign.owner : campaign.owner._id;
+
+    return currentUserId === campaignOwnerId || (!!characterOwnerId && currentUserId === characterOwnerId);
+  };
+
   const openAddCharacterModal = async () => {
     if (!campaign) return;
 
@@ -362,16 +383,45 @@ export default function CampaignDetailPage() {
             <CardContent>
               {campaign.characters && campaign.characters.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {campaign.characters.map((character, index) => (
-                    <div key={typeof character === 'string' ? character : character._id} className="border rounded-lg p-4">
-                      <h4 className="font-semibold">
-                        {typeof character === 'string' ? `Personaje ${index + 1}` : character.name}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {typeof character === 'string' ? character : `${character.system} • ${character.state}`}
-                      </p>
+                  {campaign.characters.map((character, index) => {
+                    const characterId = typeof character === 'string' ? character : character._id;
+                    const characterName = typeof character === 'string' ? `Personaje ${index + 1}` : character.name;
+                    const characterImage = typeof character === 'string' ? undefined : character.pictureRoute;
+                    const characterOwnerId =
+                      typeof character === 'string'
+                        ? undefined
+                        : typeof character.player === 'string'
+                          ? character.player
+                          : character.player?._id;
+                    const characterOwnerName = resolveUserNameById(characterOwnerId);
+                    const canOpenSheet = canOpenCharacterSheet(characterOwnerId);
+
+                    return (
+                    <div key={characterId} className="border rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md border bg-muted/30">
+                          {characterImage ? (
+                            <Image src={characterImage} alt={characterName} fill className="object-contain p-1" />
+                          ) : null}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="truncate font-semibold">{characterName}</h4>
+                          <p className="text-sm text-muted-foreground">Dueño: {characterOwnerName}</p>
+                        </div>
+                      </div>
+
+                      {canOpenSheet ? (
+                        <Button
+                          variant="link"
+                          className="mt-2 h-auto p-0"
+                          onClick={() => router.push(`/characters/${characterId}`)}
+                        >
+                          Ver ficha
+                        </Button>
+                      ) : null}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-muted-foreground text-center py-8">

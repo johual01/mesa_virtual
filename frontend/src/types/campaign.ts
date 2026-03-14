@@ -15,8 +15,7 @@ export interface User {
 export interface Character {
   _id: string;
   name: string;
-  system: string;
-  state: string;
+  player?: string | User;
   pictureRoute?: string;
 }
 
