@@ -6,6 +6,7 @@ import cookieparser from 'cookie-parser';
 import APIRoutes from "./routes/api";
 import AuthRoutes from "./routes/login";
 import { requestFile } from "./functions";
+import { requestHistoryMiddleware } from "./requestHistory";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(morgan("dev"));
 app.use(express.urlencoded({extended: true, limit: '50mb'}));
 app.use(express.json({limit: '50mb'}));
 app.use(cookieparser());
+app.use(requestHistoryMiddleware);
 
 //rutas de consulta
 app.use("/api", APIRoutes);
