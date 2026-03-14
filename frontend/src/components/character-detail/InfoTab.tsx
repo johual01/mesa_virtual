@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { HoverTooltip } from "@/components/ui/hover-tooltip";
 import { Shield, Swords, Zap } from "lucide-react";
 import { Character } from "@/types/character";
 
@@ -144,23 +145,30 @@ const SecondaryAbilityRow = ({
   const totalBonus = bonus + statModifier + (isProficient ? proficiencyBonus : 0);
   const translatedName = secondaryAbilityTranslations[name] || name;
   const statAbbr = statAbbreviations[stat] || stat;
-  const tooltipText = secondaryAbilityDescriptions[name]
-    ? `${translatedName} (${statAbbr})\n${secondaryAbilityDescriptions[name]}`
-    : `${translatedName} (${statAbbr})`;
 
   return (
-    <div className="flex items-center justify-between py-1 px-2 hover:bg-muted/30 rounded" title={tooltipText}>
-      <div className="flex items-center gap-2">
-        <div className={`w-2 h-2 rounded-full ${isProficient ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
-        <span className="text-sm">
-          {translatedName}
-          <span className="text-muted-foreground text-xs ml-1">({statAbbr})</span>
+    <HoverTooltip
+      className="block"
+      content={
+        <div className="space-y-0.5">
+          <p className="font-semibold">{translatedName} ({statAbbr})</p>
+          <p className="text-[11px] text-muted-foreground">{secondaryAbilityDescriptions[name] || 'Sin descripción disponible.'}</p>
+        </div>
+      }
+    >
+      <div className="flex items-center justify-between py-1 px-2 hover:bg-muted/30 rounded">
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${isProficient ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+          <span className="text-sm">
+            {translatedName}
+            <span className="text-muted-foreground text-xs ml-1">({statAbbr})</span>
+          </span>
+        </div>
+        <span className="font-mono text-sm">
+          <ModifierDisplay value={totalBonus} />
         </span>
       </div>
-      <span className="font-mono text-sm">
-        <ModifierDisplay value={totalBonus} />
-      </span>
-    </div>
+    </HoverTooltip>
   );
 };
 

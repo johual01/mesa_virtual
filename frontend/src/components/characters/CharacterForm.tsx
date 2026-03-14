@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectOption } from "@/components/ui/select";
+import { HoverTooltip } from "@/components/ui/hover-tooltip";
 import { ImageUploader } from "@/components/ImageUploader";
 import { Loader2, Plus, Minus, Save } from "lucide-react";
 import { CharacterState, Element, Stadistics, CharacterCreateInfo, PersonaClass } from "@/types/character";
@@ -365,32 +366,43 @@ export function CharacterForm({
                       const label = createInfo?.translations?.secondaryAbilities?.[ability] || ability;
                       const abilityMeta = SECONDARY_ABILITY_META[ability];
                       const statMeta = abilityMeta ? statByKey[abilityMeta.stat] : null;
-                      const tooltipText = abilityMeta && statMeta
-                        ? `${label}\nEstadística: ${statMeta.name} (${statMeta.abbr})\n${abilityMeta.description}`
-                        : label;
-                      
+
                       return (
-                        <button
+                        <HoverTooltip
                           key={ability}
-                          type="button"
-                          title={tooltipText}
-                          disabled={isDisabled}
-                          onClick={() => onProficiencyChange(ability, !isSelected)}
-                          className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded-full border transition-colors ${
-                            isSelected 
-                              ? 'bg-primary text-primary-foreground border-primary' 
-                              : isDisabled
-                                ? 'bg-muted text-muted-foreground border-muted cursor-not-allowed opacity-50'
-                                : 'bg-background hover:bg-accent border-input'
-                          }`}
+                          className="inline-flex"
+                          content={
+                            abilityMeta && statMeta ? (
+                              <div className="space-y-0.5">
+                                <p className="font-semibold">{label}</p>
+                                <p className="text-[11px] text-muted-foreground">Estadística: {statMeta.name} ({statMeta.abbr})</p>
+                                <p className="text-[11px] text-muted-foreground">{abilityMeta.description}</p>
+                              </div>
+                            ) : (
+                              <p className="font-semibold">{label}</p>
+                            )
+                          }
                         >
-                          {label}
-                          {statMeta ? (
-                            <span className="rounded bg-black/10 px-1.5 py-0.5 text-[10px] font-semibold leading-none">
-                              {statMeta.abbr}
-                            </span>
-                          ) : null}
-                        </button>
+                          <button
+                            type="button"
+                            disabled={isDisabled}
+                            onClick={() => onProficiencyChange(ability, !isSelected)}
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                              isSelected
+                                ? 'bg-primary text-primary-foreground border-primary'
+                                : isDisabled
+                                  ? 'bg-muted text-muted-foreground border-muted cursor-not-allowed opacity-50'
+                                  : 'bg-background hover:bg-accent border-input'
+                            }`}
+                          >
+                            {label}
+                            {statMeta ? (
+                              <span className="rounded bg-black/10 px-1.5 py-0.5 text-[10px] font-semibold leading-none">
+                                {statMeta.abbr}
+                              </span>
+                            ) : null}
+                          </button>
+                        </HoverTooltip>
                       );
                     })}
                   </div>

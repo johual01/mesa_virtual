@@ -6,6 +6,7 @@ import { Types } from 'mongoose'
 import { IModifier } from './models/types'
 
 const GENERIC_BUCKET_NAME = config.GENERIC_BUCKET_NAME || ''
+const MINIO_DEFAULT_REGION = 'us-east-1'
 
 const minioClient = new Minio.Client({
   endPoint: config.ENDPOINT_MINIO,
@@ -14,6 +15,46 @@ const minioClient = new Minio.Client({
   accessKey: config.ACCESS_KEY_MINIO,
   secretKey: config.SECRET_KEY_MINIO,
 })
+
+const getDefaultBuckets = (): string[] => {
+    const buckets = [GENERIC_BUCKET_NAME, ...Object.keys(BUCKET_KEY)]
+        .map((bucket) => bucket.trim())
+        .filter((bucket) => bucket.length > 0);
+
+    return Array.from(new Set(buckets));
+};
+
+const buildPublicReadPolicy = (bucketName: string): string => {
+    return JSON.stringify({
+        Version: '2012-10-17',
+        Statement: [
+            {
+                Effect: 'Allow',
+                Principal: { AWS: ['*'] },
+                Action: ['s3:GetBucketLocation', 's3:ListBucket'],
+                Resource: [`arn:aws:s3:::${bucketName}`]
+            },
+            {
+                Effect: 'Allow',
+                Principal: { AWS: ['*'] },
+                Action: ['s3:GetObject'],
+                Resource: [`arn:aws:s3:::${bucketName}/*`]
+            }
+        ]
+    });
+};
+
+export const ensureMinioBuckets = async (buckets: string[] = getDefaultBuckets()): Promise<void> => {
+    for (const bucketName of buckets) {
+        const exists = await minioClient.bucketExists(bucketName);
+        if (!exists) {
+            await minioClient.makeBucket(bucketName, MINIO_DEFAULT_REGION);
+            console.log(`Bucket creado en MinIO: ${bucketName}`);
+        }
+
+        await minioClient.setBucketPolicy(bucketName, buildPublicReadPolicy(bucketName));
+    }
+};
 
 interface formatImage {
     type: string,

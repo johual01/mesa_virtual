@@ -46,8 +46,8 @@ class ApiService {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        const errorMessage = await this.extractErrorMessage(response);
+        throw new Error(errorMessage);
       }
 
       return await response.json();
@@ -55,6 +55,27 @@ class ApiService {
       console.error('API request failed:', error);
       throw error;
     }
+  }
+
+  private async extractErrorMessage(response: Response): Promise<string> {
+    const defaultMessage = `HTTP error status: ${response.status}`;
+    const contentType = response.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      const errorData = await response.json().catch(() => null) as
+        | { errMsg?: string; message?: string; error?: string }
+        | null;
+
+      if (errorData?.errMsg) return errorData.errMsg;
+      if (errorData?.message) return errorData.message;
+      if (typeof errorData?.error === 'string' && errorData.error.trim()) return errorData.error;
+      return defaultMessage;
+    }
+
+    const text = await response.text().catch(() => '');
+    if (text.trim()) return text;
+
+    return defaultMessage;
   }
 
   // GET request
