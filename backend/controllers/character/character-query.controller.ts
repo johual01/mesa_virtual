@@ -9,7 +9,7 @@ import CharacterClass, { IPersonaClass } from '../../models/PersonaD20/Class';
 import CharacterSubclass, { IPersonaSubclass } from '../../models/PersonaD20/Subclass';
 import { personaStadistics, IFeature, IModifier, IEffect } from '../../models/types';
 import { reduceModifiers } from '../../functions';
-import { calculateBonification } from 'diceLogic';
+import { calculateBonification } from 'dicelogic';
 import CustomFeature from '../../models/PersonaD20/CustomFeature';
 import CharacterEquipment from '../../models/PersonaD20/CharacterEquipment';
 import Spell from '../../models/Spell';

@@ -28,7 +28,7 @@ RUN npm run build
 # Stage 2: Production
 FROM node:20-alpine AS production
 
-WORKDIR /app
+WORKDIR /app/backend
 
 # Instalar wget para healthcheck
 RUN apk add --no-cache wget
@@ -37,9 +37,9 @@ RUN apk add --no-cache wget
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Copiar package files
+# Copiar package files manteniendo estructura relativa para file:../packages
 COPY --from=builder /app/backend/package*.json ./
-COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/packages ../packages
 
 # Instalar solo dependencias de produccion
 RUN npm install --omit=dev

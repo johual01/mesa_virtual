@@ -8,7 +8,7 @@ import Campaign, { campaignState } from '../../models/Campaign';
 import Class from '../../models/PersonaD20/Class';
 import { elements, system as systems, personaStadistics } from '../../models/types';
 import { enumToArray, saveImage, arraysEqual, UploadedFile, parseMulterField, parseMulterNumber } from '../../functions';
-import { rollMaxDiceString } from 'diceLogic';
+import { rollMaxDiceString } from 'dicelogic';
 import { allTranslations } from '../../translations';
 
 // Extender Request para incluir el archivo de multer
