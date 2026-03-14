@@ -119,10 +119,10 @@ const CombatStatBlock = ({ label, value, sublabel }: {
   value: number | string; 
   sublabel?: string;
 }) => (
-  <div className="flex min-w-0 flex-col items-center rounded-lg border border-border bg-muted/30 p-2.5 text-center sm:p-3">
-    <span className="line-clamp-2 text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">{label}</span>
-    <span className="text-xl font-bold leading-tight sm:text-2xl">{value}</span>
-    {sublabel && <span className="text-[10px] text-muted-foreground sm:text-xs">{sublabel}</span>}
+  <div className="flex min-w-[100px] flex-col items-center rounded-lg border border-border bg-muted/30 p-3">
+    <span className="text-center text-[11px] uppercase tracking-wider text-muted-foreground leading-tight whitespace-normal">{label}</span>
+    <span className="text-2xl font-bold leading-tight">{value}</span>
+    {sublabel && <span className="text-xs text-muted-foreground">{sublabel}</span>}
   </div>
 );
 
@@ -259,31 +259,30 @@ export function InfoTab({ character }: InfoTabProps) {
         {/* Stats de combate */}
         <Card>
           <CardContent className="pt-4">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-              <CombatStatBlock 
-                label="PUNTOS" 
-                value={combatData?.defensiveStats?.HP?.total || 0}
-                sublabel="DE GOLPE"
-              />
-              <CombatStatBlock 
-                label="INICIATIVA" 
-                value={`+${combatData?.fisicalStats?.initiative?.total || 0}`}
-              />
-              <CombatStatBlock 
-                label="VELOCIDAD" 
-                value={combatData?.fisicalStats?.speed?.total || 0}
-                sublabel="CASILLAS"
-              />
-              <CombatStatBlock 
-                label="CLASE DE" 
-                value={combatData?.defensiveStats?.defense?.total || 10}
-                sublabel="ARMADURA"
-              />
-              <CombatStatBlock 
-                label="BONIF." 
-                value={`+${character.proficency}`}
-                sublabel="COMPETENCIA"
-              />
+            <div className="overflow-x-auto pb-1">
+              <div className="grid min-w-[560px] grid-cols-5 gap-2">
+                <CombatStatBlock 
+                  label="PUNTOS DE GOLPE" 
+                  value={combatData?.defensiveStats?.HP?.total || 0}
+                />
+                <CombatStatBlock 
+                  label="INICIATIVA" 
+                  value={`+${combatData?.fisicalStats?.initiative?.total || 0}`}
+                />
+                <CombatStatBlock 
+                  label="VELOCIDAD" 
+                  value={combatData?.fisicalStats?.speed?.total || 0}
+                  sublabel="CASILLAS"
+                />
+                <CombatStatBlock 
+                  label="CLASE DE ARMADURA" 
+                  value={combatData?.defensiveStats?.defense?.total || 10}
+                />
+                <CombatStatBlock 
+                  label="BONIF. COMPETENCIA" 
+                  value={`+${character.proficency}`}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

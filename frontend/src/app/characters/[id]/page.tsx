@@ -80,6 +80,7 @@ export default function CharacterDetailPage() {
   const [isSavingInspiration, setIsSavingInspiration] = useState(false);
   const [isXpModalOpen, setIsXpModalOpen] = useState(false);
   const [isInspirationModalOpen, setIsInspirationModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   
   // Establecer título dinámico basado en el personaje
   usePageTitle(character ? `${character.name} - Personaje` : "Personaje");
@@ -217,70 +218,82 @@ export default function CharacterDetailPage() {
           </div>
 
           {/* Info principal */}
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-            {/* Avatar */}
-            <div className="relative self-start">
-              {character.pictureRoute ? (
-                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary">
-                  <Image
-                    src={character.pictureRoute}
-                    alt={character.name}
-                    width={64}
-                    height={64}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center border-2 border-border">
-                  <User className="h-8 w-8 text-muted-foreground" />
-                </div>
-              )}
-              <Badge 
-                className="absolute -bottom-1 -right-1 text-xs"
-                variant={getStateVariant(character.state) as "default" | "secondary" | "destructive" | "outline"}
-              >
-                {character.level}
-              </Badge>
-            </div>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="relative self-start">
+                {character.pictureRoute ? (
+                  <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+                    <DialogTrigger asChild>
+                      <button
+                        type="button"
+                        className="h-16 w-16 overflow-hidden rounded-full border-2 border-primary transition-transform hover:scale-105"
+                        aria-label="Ver avatar en grande"
+                      >
+                        <Image
+                          src={character.pictureRoute}
+                          alt={character.name}
+                          width={64}
+                          height={64}
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>{character.name}</DialogTitle>
+                        <DialogDescription>Avatar del personaje</DialogDescription>
+                      </DialogHeader>
+                      <div className="relative mt-2 aspect-square w-full overflow-hidden rounded-md border bg-muted/30">
+                        <Image
+                          src={character.pictureRoute}
+                          alt={character.name}
+                          fill
+                          className="object-contain p-2"
+                          sizes="(max-width: 768px) 90vw, 700px"
+                        />
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center border-2 border-border">
+                    <User className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+                <Badge
+                  className="absolute -bottom-1 -right-1 text-xs"
+                  variant={getStateVariant(character.state) as "default" | "secondary" | "destructive" | "outline"}
+                >
+                  {character.level}
+                </Badge>
+              </div>
 
-            {/* Nombre y detalles */}
-            <div className="flex-1 min-w-0">
-              <h1 className="truncate text-xl font-bold sm:text-2xl">{character.name}</h1>
-              <p className="text-muted-foreground">
-                {character.persona} {character.class} {character.level}
-              </p>
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="text-xs">
-                  Nivel {character.level}
-                </Badge>
-                <Badge variant={getStateVariant(character.state) as "default" | "secondary" | "destructive" | "outline"} className="text-xs">
-                  {getStateLabel(character.state)}
-                </Badge>
+              <div className="min-w-0 flex-1">
+                <h1 className="truncate text-xl font-bold sm:text-2xl">{character.name}</h1>
+                <p className="text-muted-foreground">{character.persona} {character.class} {character.level}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <Badge variant="outline" className="text-xs">Nivel {character.level}</Badge>
+                  <Badge variant={getStateVariant(character.state) as "default" | "secondary" | "destructive" | "outline"} className="text-xs">
+                    {getStateLabel(character.state)}
+                  </Badge>
+                </div>
               </div>
             </div>
 
-            {/* Barra superior: XP e inspiración - Compacta */}
-            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:items-center">
-              {/* XP Display */}
+            <div className={`grid gap-2 ${character.level < 20 ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <Dialog open={isXpModalOpen} onOpenChange={setIsXpModalOpen}>
                 <DialogTrigger asChild>
-                  <button 
-                    className="flex h-[58px] items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                  <button
+                    className="flex h-[72px] min-w-0 flex-col items-start justify-center rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={!isOwner}
                   >
-                    <Sparkles className="h-4 w-4 text-primary" />
-                    <div className="text-left">
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-none text-center">EXPERIENCIA</p>
-                      <p className="text-lg font-bold leading-none mt-1.5 text-center">{character.experience?.toLocaleString() || 0}</p>
-                    </div>
+                    <p className="text-[11px] leading-none text-muted-foreground">EXPERIENCIA</p>
+                    <p className="mt-1 text-xl font-bold leading-none">{character.experience?.toLocaleString() || 0}</p>
                   </button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
                     <DialogTitle>Actualizar Experiencia</DialogTitle>
-                    <DialogDescription>
-                      Modifica los puntos de experiencia del personaje.
-                    </DialogDescription>
+                    <DialogDescription>Modifica los puntos de experiencia del personaje.</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
@@ -295,13 +308,11 @@ export default function CharacterDetailPage() {
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsXpModalOpen(false)}>
-                      Cancelar
-                    </Button>
+                    <Button variant="outline" onClick={() => setIsXpModalOpen(false)}>Cancelar</Button>
                     <Button onClick={handleUpdateXp} disabled={isSavingXp}>
                       {isSavingXp ? (
                         <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Guardando...
                         </>
                       ) : (
@@ -312,43 +323,28 @@ export default function CharacterDetailPage() {
                 </DialogContent>
               </Dialog>
 
-              {/* Inspiración Display */}
               <Dialog open={isInspirationModalOpen} onOpenChange={setIsInspirationModalOpen}>
                 <DialogTrigger asChild>
-                  <button 
-                    className="flex h-[58px] items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                  <button
+                    className="flex h-[72px] min-w-0 flex-col items-start justify-center rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={!isOwner}
                   >
-                    <Sparkles className="h-4 w-4 text-amber-500" />
-                    <div className="text-left">
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-none text-center">INSPIRACIÓN</p>
-                      <div className="flex items-center gap-1 mt-2 justify-center">
-                        {character.inspiration?.bonus ? (
-                          <Badge variant="secondary" className="h-5 text-xs px-1.5">+{character.inspiration.bonus}</Badge>
-                        ) : null}
-                        {character.inspiration?.reroll && (
-                          <Badge variant="secondary" className="h-5 text-xs px-1.5">V</Badge>
-                        )}
-                        {character.inspiration?.automaticSuccess && (
-                          <Badge variant="secondary" className="h-5 text-xs px-1.5">E.A.</Badge>
-                        )}
-                        {character.inspiration?.critic && (
-                          <Badge variant="secondary" className="h-5 text-xs px-1.5">C.A.</Badge>
-                        )}
-                        {!character.inspiration?.bonus && !character.inspiration?.reroll && 
-                         !character.inspiration?.critic && !character.inspiration?.automaticSuccess && (
-                          <span className="text-sm text-muted-foreground">Ninguna</span>
-                        )}
-                      </div>
+                    <p className="text-[11px] leading-none text-muted-foreground">INSPIRACIÓN</p>
+                    <div className="mt-1 flex min-h-[24px] flex-wrap items-center gap-1">
+                      {character.inspiration?.bonus ? <Badge variant="secondary" className="h-5 px-1.5 text-xs">+{character.inspiration.bonus}</Badge> : null}
+                      {character.inspiration?.reroll ? <Badge variant="secondary" className="h-5 px-1.5 text-xs">V</Badge> : null}
+                      {character.inspiration?.automaticSuccess ? <Badge variant="secondary" className="h-5 px-1.5 text-xs">E.A.</Badge> : null}
+                      {character.inspiration?.critic ? <Badge variant="secondary" className="h-5 px-1.5 text-xs">C.A.</Badge> : null}
+                      {!character.inspiration?.bonus && !character.inspiration?.reroll && !character.inspiration?.critic && !character.inspiration?.automaticSuccess ? (
+                        <span className="text-sm text-muted-foreground">Ninguna</span>
+                      ) : null}
                     </div>
                   </button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
                     <DialogTitle>Actualizar Inspiración</DialogTitle>
-                    <DialogDescription>
-                      Configura los modificadores de inspiración del personaje.
-                    </DialogDescription>
+                    <DialogDescription>Configura los modificadores de inspiración del personaje.</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
@@ -357,51 +353,39 @@ export default function CharacterDetailPage() {
                         id="bonus"
                         type="number"
                         value={inspirationValue.bonus}
-                        onChange={(e) => setInspirationValue({
-                          ...inspirationValue,
-                          bonus: Number(e.target.value) || 0
-                        })}
+                        onChange={(e) => setInspirationValue({ ...inspirationValue, bonus: Number(e.target.value) || 0 })}
                         placeholder="0"
                       />
                     </div>
                     <div className="space-y-3">
                       <Label>Otras Inspiraciones</Label>
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                        <div className="flex items-center justify-between rounded-lg border border-border p-3">
                           <span className="text-sm">Ventaja</span>
                           <Button
                             size="sm"
                             variant={inspirationValue.reroll ? "default" : "outline"}
-                            onClick={() => setInspirationValue({
-                              ...inspirationValue,
-                              reroll: !inspirationValue.reroll
-                            })}
+                            onClick={() => setInspirationValue({ ...inspirationValue, reroll: !inspirationValue.reroll })}
                           >
                             {inspirationValue.reroll ? "Activado" : "Desactivado"}
                           </Button>
                         </div>
-                        <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                        <div className="flex items-center justify-between rounded-lg border border-border p-3">
                           <span className="text-sm">Éxito automático</span>
                           <Button
                             size="sm"
                             variant={inspirationValue.automaticSuccess ? "default" : "outline"}
-                            onClick={() => setInspirationValue({
-                              ...inspirationValue,
-                              automaticSuccess: !inspirationValue.automaticSuccess
-                            })}
+                            onClick={() => setInspirationValue({ ...inspirationValue, automaticSuccess: !inspirationValue.automaticSuccess })}
                           >
                             {inspirationValue.automaticSuccess ? "Activado" : "Desactivado"}
                           </Button>
                         </div>
-                        <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                        <div className="flex items-center justify-between rounded-lg border border-border p-3">
                           <span className="text-sm">Crítico automático</span>
                           <Button
                             size="sm"
                             variant={inspirationValue.critic ? "default" : "outline"}
-                            onClick={() => setInspirationValue({
-                              ...inspirationValue,
-                              critic: !inspirationValue.critic
-                            })}
+                            onClick={() => setInspirationValue({ ...inspirationValue, critic: !inspirationValue.critic })}
                           >
                             {inspirationValue.critic ? "Activado" : "Desactivado"}
                           </Button>
@@ -410,13 +394,11 @@ export default function CharacterDetailPage() {
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsInspirationModalOpen(false)}>
-                      Cancelar
-                    </Button>
+                    <Button variant="outline" onClick={() => setIsInspirationModalOpen(false)}>Cancelar</Button>
                     <Button onClick={handleUpdateInspiration} disabled={isSavingInspiration}>
                       {isSavingInspiration ? (
                         <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Guardando...
                         </>
                       ) : (
@@ -427,18 +409,22 @@ export default function CharacterDetailPage() {
                 </DialogContent>
               </Dialog>
 
-              {/* Botón Subir de Nivel */}
-              {character.level < 20 && (
-                <Button 
-                  variant="default" 
+              {character.level < 20 ? (
+                <Button
+                  variant="default"
                   size="default"
                   disabled={!isOwner}
                   onClick={() => router.push(`/characters/${characterId}/level-up`)}
-                  className="h-[58px] px-4 flex flex-col gap-0.5 sm:col-span-2 lg:col-span-1"
+                  className="h-[72px] min-w-0 flex-col items-start justify-center px-3 py-2 text-left"
                 >
                   <ArrowUp className="h-4 w-4" />
-                  <span className="text-xs">Subir de nivel</span>
+                  <span className="hidden sm:inline">Subir de nivel</span>
                 </Button>
+              ) : (
+                <div className="flex h-[72px] min-w-0 flex-col items-start justify-center rounded-lg border border-border bg-card px-3 py-2">
+                  <p className="text-[11px] leading-none text-muted-foreground">BONIF. COMP.</p>
+                  <p className="mt-1 text-xl font-bold leading-none">+{character.proficency}</p>
+                </div>
               )}
             </div>
           </div>
