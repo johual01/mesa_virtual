@@ -21,7 +21,7 @@ const Navbar = () => {
             {user && <NavMenu className="hidden md:block" />}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {user ? (
               <>
                 <span className="hidden sm:inline-flex text-sm text-muted-foreground">
@@ -34,7 +34,7 @@ const Navbar = () => {
                 >
                   Perfil
                 </Button>
-                <Button onClick={logout}>Cerrar Sesión</Button>
+                <Button className="hidden sm:inline-flex" onClick={logout}>Cerrar Sesión</Button>
               </>
             ) : (
               <>

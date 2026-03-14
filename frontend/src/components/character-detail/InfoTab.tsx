@@ -119,10 +119,10 @@ const CombatStatBlock = ({ label, value, sublabel }: {
   value: number | string; 
   sublabel?: string;
 }) => (
-  <div className="flex flex-col items-center p-3 bg-muted/30 rounded-lg border border-border">
-    <span className="text-xs text-muted-foreground uppercase tracking-wider">{label}</span>
-    <span className="text-2xl font-bold">{value}</span>
-    {sublabel && <span className="text-xs text-muted-foreground">{sublabel}</span>}
+  <div className="flex min-w-0 flex-col items-center rounded-lg border border-border bg-muted/30 p-2.5 text-center sm:p-3">
+    <span className="line-clamp-2 text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">{label}</span>
+    <span className="text-xl font-bold leading-tight sm:text-2xl">{value}</span>
+    {sublabel && <span className="text-[10px] text-muted-foreground sm:text-xs">{sublabel}</span>}
   </div>
 );
 
@@ -259,7 +259,7 @@ export function InfoTab({ character }: InfoTabProps) {
         {/* Stats de combate */}
         <Card>
           <CardContent className="pt-4">
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
               <CombatStatBlock 
                 label="PUNTOS" 
                 value={combatData?.defensiveStats?.HP?.total || 0}

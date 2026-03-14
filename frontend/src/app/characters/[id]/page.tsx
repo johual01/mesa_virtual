@@ -219,7 +219,7 @@ export default function CharacterDetailPage() {
           {/* Info principal */}
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
             {/* Avatar */}
-            <div className="relative">
+            <div className="relative self-start">
               {character.pictureRoute ? (
                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary">
                   <Image

@@ -230,12 +230,12 @@ export default function CharactersPage() {
 // Componente para la grilla de personajes (evita duplicación)
 function CharacterGrid({ characters, router }: { characters: CharacterSummary[], router: ReturnType<typeof useRouter> }) {
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="flex flex-wrap gap-6">
       {characters.map((character) => (
-        <Card key={character._id} className="flex h-full flex-col overflow-hidden hover:shadow-lg transition-shadow">
+        <Card key={character._id} className="flex w-full sm:w-[240px] flex-col overflow-hidden hover:shadow-lg transition-shadow">
           <CardHeader className="pb-3">
             {character.pictureRoute && (
-              <div className="relative mb-3 h-48 w-full rounded-md border bg-muted/30 overflow-hidden">
+              <div className="relative mb-3 aspect-[3/4] w-full rounded-md border bg-muted/30 overflow-hidden">
                 <Image
                   src={character.pictureRoute}
                   alt={character.name}
@@ -266,7 +266,7 @@ function CharacterGrid({ characters, router }: { characters: CharacterSummary[],
               </div>
             </div>
           </CardHeader>
-          <CardContent className="mt-auto pt-0">
+          <CardContent className="pt-0">
             <div className="flex flex-col gap-2">
               <Button
                 variant="default"
