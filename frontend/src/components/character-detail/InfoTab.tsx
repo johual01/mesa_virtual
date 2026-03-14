@@ -101,12 +101,12 @@ const StatBlock = ({ abbr, value, modifier, isProficient }: {
   modifier: number;
   isProficient: boolean;
 }) => (
-  <div className="flex flex-col items-center p-3 bg-muted/30 rounded-lg border border-border min-w-[80px]">
-    <span className="text-xs text-muted-foreground uppercase tracking-wider">{abbr}</span>
-    <span className="text-2xl font-bold">
+  <div className="flex min-w-0 flex-col items-center rounded-lg border border-border bg-muted/30 p-2.5 text-center">
+    <span className="text-[10px] text-muted-foreground uppercase tracking-wide leading-tight">{abbr}</span>
+    <span className="text-xl font-bold leading-tight">
       <ModifierDisplay value={modifier} />
     </span>
-    <span className="text-sm text-muted-foreground">{value}</span>
+    <span className="text-sm text-muted-foreground leading-tight">{value}</span>
     {isProficient && (
       <div className="w-2 h-2 rounded-full bg-primary mt-1" title="Competente en salvación" />
     )}
@@ -119,10 +119,10 @@ const CombatStatBlock = ({ label, value, sublabel }: {
   value: number | string; 
   sublabel?: string;
 }) => (
-  <div className="flex min-w-[100px] flex-col items-center rounded-lg border border-border bg-muted/30 p-3">
-    <span className="text-center text-[11px] uppercase tracking-wider text-muted-foreground leading-tight whitespace-normal">{label}</span>
+  <div className="flex min-w-0 flex-col items-center rounded-lg border border-border bg-muted/30 p-2.5 text-center">
+    <span className="break-words text-[9px] uppercase tracking-wide text-muted-foreground leading-tight">{label}</span>
     <span className="text-2xl font-bold leading-tight">{value}</span>
-    {sublabel && <span className="text-xs text-muted-foreground">{sublabel}</span>}
+    {sublabel && <span className="break-words text-[9px] text-muted-foreground leading-tight">{sublabel}</span>}
   </div>
 );
 
@@ -242,7 +242,7 @@ export function InfoTab({ character }: InfoTabProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-3 justify-center">
+            <div className="grid grid-cols-5 gap-2">
               {stats && Object.entries(stats).map(([key, stat]) => (
                 <StatBlock
                   key={key}
@@ -259,30 +259,28 @@ export function InfoTab({ character }: InfoTabProps) {
         {/* Stats de combate */}
         <Card>
           <CardContent className="pt-4">
-            <div className="overflow-x-auto pb-1">
-              <div className="grid min-w-[560px] grid-cols-5 gap-2">
-                <CombatStatBlock 
-                  label="PUNTOS DE GOLPE" 
-                  value={combatData?.defensiveStats?.HP?.total || 0}
-                />
-                <CombatStatBlock 
-                  label="INICIATIVA" 
-                  value={`+${combatData?.fisicalStats?.initiative?.total || 0}`}
-                />
-                <CombatStatBlock 
-                  label="VELOCIDAD" 
-                  value={combatData?.fisicalStats?.speed?.total || 0}
-                  sublabel="CASILLAS"
-                />
-                <CombatStatBlock 
-                  label="CLASE DE ARMADURA" 
-                  value={combatData?.defensiveStats?.defense?.total || 10}
-                />
-                <CombatStatBlock 
-                  label="BONIF. COMPETENCIA" 
-                  value={`+${character.proficency}`}
-                />
-              </div>
+            <div className="grid grid-cols-5 gap-2">
+              <CombatStatBlock 
+                label="PUNTOS DE GOLPE" 
+                value={combatData?.defensiveStats?.HP?.total || 0}
+              />
+              <CombatStatBlock 
+                label="INICIATIVA" 
+                value={`+${combatData?.fisicalStats?.initiative?.total || 0}`}
+              />
+              <CombatStatBlock 
+                label="VELOCIDAD" 
+                value={combatData?.fisicalStats?.speed?.total || 0}
+                sublabel="CASILLAS"
+              />
+              <CombatStatBlock 
+                label="CLASE DE ARMADURA" 
+                value={combatData?.defensiveStats?.defense?.total || 10}
+              />
+              <CombatStatBlock 
+                label="BONIF. COMPETENCIA" 
+                value={`+${character.proficency}`}
+              />
             </div>
           </CardContent>
         </Card>

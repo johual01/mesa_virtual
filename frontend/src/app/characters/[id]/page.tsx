@@ -192,10 +192,10 @@ export default function CharacterDetailPage() {
       <div className="border-b border-border bg-card/50">
         <div className="container mx-auto px-4 py-4">
           {/* Breadcrumb y acciones */}
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2 overflow-hidden text-xs text-muted-foreground sm:text-sm">
-              <span>PERSONAD20</span>
-              <span>/</span>
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <div className="min-w-0 flex items-center gap-2 overflow-hidden whitespace-nowrap text-xs text-muted-foreground sm:text-sm">
+              <span className="hidden sm:inline">PERSONAD20</span>
+              <span className="hidden sm:inline">/</span>
               <button 
                 onClick={() => router.push('/characters')}
                 className="shrink-0 transition-colors hover:text-foreground"
@@ -205,7 +205,7 @@ export default function CharacterDetailPage() {
               <span>/</span>
               <span className="truncate text-foreground uppercase">{character.name}</span>
             </div>
-            <div className="flex items-center gap-2 self-end sm:self-auto">
+            <div className="shrink-0 flex items-center gap-2">
               {isOwner && (
                 <>
                   <Button variant="default" size="sm" onClick={() => router.push(`/characters/${characterId}/edit`)}>
@@ -218,8 +218,8 @@ export default function CharacterDetailPage() {
           </div>
 
           {/* Info principal */}
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
+          <div className="space-y-3 lg:flex lg:items-end lg:justify-between lg:gap-6 lg:space-y-0">
+            <div className="flex items-start gap-3 lg:flex-1">
               <div className="relative self-start">
                 {character.pictureRoute ? (
                   <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
@@ -269,7 +269,7 @@ export default function CharacterDetailPage() {
 
               <div className="min-w-0 flex-1">
                 <h1 className="truncate text-xl font-bold sm:text-2xl">{character.name}</h1>
-                <p className="text-muted-foreground">{character.persona} {character.class} {character.level}</p>
+                <p className="text-muted-foreground">{character.persona} {character.class}</p>
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                   <Badge variant="outline" className="text-xs">Nivel {character.level}</Badge>
                   <Badge variant={getStateVariant(character.state) as "default" | "secondary" | "destructive" | "outline"} className="text-xs">
@@ -279,7 +279,13 @@ export default function CharacterDetailPage() {
               </div>
             </div>
 
-            <div className={`grid gap-2 ${character.level < 20 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            <div
+              className={`grid w-full xl:w-fit gap-2 ${
+                character.level < 20
+                  ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)_56px] xl:grid-cols-[180px_180px_140px]'
+                  : 'grid-cols-2 xl:grid-cols-[180px_180px]'
+              }`}
+            >
               <Dialog open={isXpModalOpen} onOpenChange={setIsXpModalOpen}>
                 <DialogTrigger asChild>
                   <button
@@ -415,10 +421,10 @@ export default function CharacterDetailPage() {
                   size="default"
                   disabled={!isOwner}
                   onClick={() => router.push(`/characters/${characterId}/level-up`)}
-                  className="h-[72px] min-w-0 flex-col items-start justify-center px-3 py-2 text-left"
+                  className="h-14 w-14 min-w-0 p-0 xl:h-[72px] xl:w-[140px] xl:flex-col xl:items-center xl:justify-center xl:px-3 xl:py-2 xl:text-center"
                 >
                   <ArrowUp className="h-4 w-4" />
-                  <span className="hidden sm:inline">Subir de nivel</span>
+                  <span className="hidden xl:inline">Subir de nivel</span>
                 </Button>
               ) : (
                 <div className="flex h-[72px] min-w-0 flex-col items-start justify-center rounded-lg border border-border bg-card px-3 py-2">
