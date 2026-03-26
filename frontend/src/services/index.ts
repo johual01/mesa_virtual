@@ -5,6 +5,7 @@ export { authService } from './authService';
 export { campaignService } from './campaignService';
 export { characterService } from './characterService';
 export { profileService } from './profileService';
+export { personaD20Service } from './personaD20Service';
 
 // Servicios específicos de personajes
 export { characterFeaturesService } from './characterFeaturesService';

@@ -12,7 +12,8 @@ import {
   Swords, 
   Shield, 
   ArrowRight,
-  User
+  User,
+  ScrollText
 } from "lucide-react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
@@ -127,7 +128,7 @@ function DashboardContent() {
           <CardTitle className="text-lg">Accesos Rápidos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button 
               variant="outline" 
               className="h-auto p-4 flex flex-col items-center gap-3"
@@ -159,6 +160,17 @@ function DashboardContent() {
               <div className="text-center">
                 <p className="font-medium">Mi Perfil</p>
                 <p className="text-xs text-muted-foreground">Configurar tu cuenta</p>
+              </div>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 flex flex-col items-center gap-3"
+              onClick={() => router.push('/systems/persona-d20')}
+            >
+              <ScrollText className="h-6 w-6" />
+              <div className="text-center">
+                <p className="font-medium">Persona D20</p>
+                <p className="text-xs text-muted-foreground">Resumen y accesos del sistema</p>
               </div>
             </Button>
           </div>

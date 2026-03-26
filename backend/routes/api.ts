@@ -7,6 +7,7 @@ import * as Character from "../controllers/character"
 import * as CharacterFeatures from "../controllers/characterFeatures.controller"
 import * as CharacterSpells from "../controllers/characterSpells.controller"
 import * as CharacterInventory from "../controllers/characterInventory.controller"
+import * as PersonaD20Class from "../controllers/personaD20Class.controller"
 
 const router = Router();
 
@@ -74,5 +75,8 @@ router.get('/getDefaultItems/:characterId', validateToken, CharacterInventory.ge
 router.post('/addItem/:characterId', validateToken, CharacterInventory.addItem);
 router.patch('/editItem/:characterId/:itemId', validateToken, CharacterInventory.editItem);
 router.delete('/deleteItem/:characterId/:itemId', validateToken, CharacterInventory.deleteItem);
+
+// rutas de compendio Persona D20
+router.get('/personaD20/classes', validateToken, PersonaD20Class.getClasses);
 
 export default router;
