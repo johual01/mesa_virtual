@@ -81,6 +81,8 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    env_file:
+      - ./.env
     container_name: mesavirtual-backend
     restart: unless-stopped
     environment:
@@ -90,6 +92,7 @@ services:
       REFRESH_SECRET: ${REFRESH_SECRET:-your-refresh-secret-change-me}
       SECRET: ${SECRET:-your-jwt-secret-change-me}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
       URL: ${PUBLIC_URL:-http://localhost}/api/
       ENDPOINT_MINIO: minio
       PORT_MINIO: 9000
@@ -127,6 +130,8 @@ services:
         NEXT_PUBLIC_URL_API: ${NEXT_PUBLIC_URL_API:-/api}
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
         NEXT_PUBLIC_BASE_PATH: ""
+    env_file:
+      - ./.env
     container_name: mesavirtual-frontend
     restart: unless-stopped
     environment:

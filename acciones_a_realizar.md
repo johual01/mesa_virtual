@@ -1,1 +1,0 @@
-- Verificado Revenant y Commander

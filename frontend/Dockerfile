@@ -31,6 +31,15 @@ COPY --from=deps /app/packages ./packages
 # Copiar codigo fuente del frontend
 COPY frontend/ ./frontend/
 
+# Evitar que se usen envs locales de desarrollo dentro del build Docker
+RUN rm -f \
+    /app/frontend/.env \
+    /app/frontend/.env.local \
+    /app/frontend/.env.development \
+    /app/frontend/.env.development.local \
+    /app/frontend/.env.production \
+    /app/frontend/.env.production.local
+
 # Build arguments para variables de entorno en build time
 ARG NEXT_PUBLIC_URL_API
 ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -41,6 +50,12 @@ ENV NEXT_PUBLIC_URL_API=${NEXT_PUBLIC_URL_API}
 ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
 ENV NEXT_PUBLIC_BASE_PATH=${NEXT_PUBLIC_BASE_PATH}
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Generar env exclusivo para Docker con valores definidos en la raiz
+RUN printf "NEXT_PUBLIC_URL_API=%s\nNEXT_PUBLIC_GOOGLE_CLIENT_ID=%s\nNEXT_PUBLIC_BASE_PATH=%s\n" \
+    "$NEXT_PUBLIC_URL_API" \
+    "$NEXT_PUBLIC_GOOGLE_CLIENT_ID" \
+    "$NEXT_PUBLIC_BASE_PATH" > /app/frontend/.env.production
 
 # Build de Next.js
 WORKDIR /app/frontend

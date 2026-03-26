@@ -47,6 +47,34 @@ RUN npm install --omit=dev
 # Copiar codigo compilado
 COPY --from=builder /app/backend/dist ./dist
 
+# Permitir escritura para generar .env en runtime
+RUN chown -R nodejs:nodejs /app/backend /app/packages && \
+    printf '%s\n' \
+    '#!/bin/sh' \
+    'set -e' \
+    'cat > /app/backend/.env <<EOF' \
+    'MONGO_DB=${MONGO_DB}' \
+    'SECRET=${SECRET}' \
+    'REFRESH_SECRET=${REFRESH_SECRET}' \
+    'ENDPOINT_MINIO=${ENDPOINT_MINIO}' \
+    'PORT_MINIO=${PORT_MINIO}' \
+    'ACCESS_KEY_MINIO=${ACCESS_KEY_MINIO}' \
+    'SECRET_KEY_MINIO=${SECRET_KEY_MINIO}' \
+    'GENERIC_BUCKET_NAME=${GENERIC_BUCKET_NAME}' \
+    'SMTP_HOSTNAME=${SMTP_HOSTNAME}' \
+    'SMTP_PORT=${SMTP_PORT}' \
+    'SMTP_USERNAME=${SMTP_USERNAME}' \
+    'SMTP_PASSWORD=${SMTP_PASSWORD}' \
+    'PORT=${PORT}' \
+    'URL=${URL}' \
+    'FRONTEND_URL=${FRONTEND_URL}' \
+    'GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}' \
+    'MINIO_USE_SSL=${MINIO_USE_SSL}' \
+    'EOF' \
+    'exec node dist/backend/index.js' \
+    > /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Cambiar a usuario no-root
 USER nodejs
 
@@ -58,4 +86,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:5000/health || exit 1
 
 # Comando de inicio
-CMD ["node", "dist/backend/index.js"]
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
